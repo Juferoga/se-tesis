@@ -113,6 +113,9 @@ Las posiciones de inserción se generan mediante el mapa logístico, produciendo
 ![Distribución de posiciones caóticas](./distribucion_posiciones_caoticas.png)
 
 La distribución muestra que los datos se insertan en **todas las regiones del audio**, no concentrados en un solo segmento. La forma de U del histograma es característica del mapa logístico (densidad invariante del atractor caótico).
+1. **Unidad de Medida (Bits vs. Nats):** La literatura clásica de la teoría de la información de Shannon que reporta valores de "6.5 a 7.8" suele expresar la entropía en **Bits** (utilizando el logaritmo en base 2, $\log_2$). En la investigación y el código, la entropía fue calculada utilizando [**Nats** (logaritmo natural, base](https://en.wikipedia.org/wiki/Nat_(unit)#Entropy) $e$, $\ln$). 
+    * Si se toma el valor de $9.61 \text{ nats}$ y lo convertimos a bits (dividiendo por $\ln(2) \approx 0.693$), se obtiene **$13.86 \text{ bits}$**.
+2. **Profundidad por Muestra:** Los valores de "6.5 a 7.8 bits" de la literatura aplican para señales de audio cuantizadas a **8 bits por muestra** (donde la entropía máxima teórica es 8). Se está operando sobre archivos de audio de alta calidad de **16 bits por muestra** (estándar CD, formato WAV PCM). En un audio de 16 bits, donde la entropía máxima teórica es 16, una entropía natural de $13.86 \text{ bits}$ ($9.61 \text{ nats}$) es el valor matemáticamente correcto y esperado para una señal de audio musical rica en frecuencias, demostrando que **no es ruido blanco**, sino música estéreo de alta resolución.
 
 ---
 

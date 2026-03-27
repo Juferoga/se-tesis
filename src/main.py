@@ -11,10 +11,12 @@ from src.esteganografiado.esteganografiar import (
     guardar_archivo_wav,
     insertar_mensaje_segmento_lsb_sequential,
     insertar_mensaje_segmento_lsb_random,
+    insertar_lsb_caotico,
 )
 from src.esteganografiado.desesteganografiar import (
     extraer_mensaje_segmento_lsb_sequential,
     extraer_mensaje_segmento_lsb_random,
+    extraer_lsb_caotico,
 )
 
 # Graficación de señales de audio y métricas
@@ -295,8 +297,40 @@ def convertir_mensaje_a_bits(mensaje):
 
 
 def insertar_mensaje_en_audio(
-    arreglo_audio_original, mensaje_bits, audio_total=False, sequential=True
+    arreglo_audio_original, mensaje_bits, audio_total=False, sequential=True,
+    chaotic_full=True
 ):
+    """Insertar mensaje en audio usando posiciones caóticas distribuidas en todo el audio.
+
+    Args:
+        arreglo_audio_original: Audio original en formato int16
+        mensaje_bits: Cadena de bits del mensaje
+        audio_total: Si usar todo el audio como segmento (legacy)
+        sequential: Si usar inserción secuencial o aleatoria (legacy)
+        chaotic_full: Si True, usa distribución caótica en todo el audio (nuevo método)
+
+    Returns:
+        tuple: (audio_modificado, inicio_segmento, fin_segmento)
+               Con chaotic_full=True, inicio=0 y fin=len(audio)
+    """
+    # Nuevo método: distribución caótica en todo el audio
+    if chaotic_full:
+        try:
+            arreglo_audio_modificado, posiciones = insertar_lsb_caotico(
+                arreglo_audio_original,
+                mensaje_bits,
+                ChaosMod.X0.value,
+                ChaosMod.R.value,
+                ChaosMod.N_WARMUP.value,
+            )
+            print(f"  Posiciones caóticas generadas: {len(posiciones)} en rango [0, {len(arreglo_audio_original)})")
+            print(f"  Distribución: min={posiciones.min()}, max={posiciones.max()}, std={posiciones.std():.0f}")
+            return arreglo_audio_modificado, 0, len(arreglo_audio_original)
+        except ValueError as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+
+    # Legacy: inserción en segmento
     if audio_total:
         arreglo_segmento_original = arreglo_audio_original
         inicio_segmento = 0
@@ -341,16 +375,37 @@ def extraer_y_verificar_mensaje(
     mensaje_bits,
     llave,
     sequential=True,
+    chaotic_full=True,
 ):
-    arreglo_segmento_extraido = arreglo_audio_modificado[inicio_segmento:fin_segmento]
-    if sequential:
-        bits_extraidos, mensaje_extraido = extraer_mensaje_segmento_lsb_sequential(
-            arreglo_segmento_extraido, len(mensaje_bits)
+    """Extraer y verificar mensaje oculto en el audio.
+
+    Args:
+        arreglo_audio_modificado: Audio con mensaje oculto
+        inicio_segmento: Inicio del segmento (0 si chaotic_full)
+        fin_segmento: Fin del segmento (len(audio) si chaotic_full)
+        mensaje_bits: Bits originales para verificación
+        llave: Clave de encriptación
+        sequential: Si usar extracción secuencial (legacy)
+        chaotic_full: Si True, usa extracción caótica de todo el audio
+    """
+    if chaotic_full:
+        bits_extraidos, mensaje_extraido = extraer_lsb_caotico(
+            arreglo_audio_modificado,
+            len(mensaje_bits),
+            ChaosMod.X0.value,
+            ChaosMod.R.value,
+            ChaosMod.N_WARMUP.value,
         )
     else:
-        bits_extraidos, mensaje_extraido = extraer_mensaje_segmento_lsb_random(
-            arreglo_segmento_extraido, len(mensaje_bits)
-        )
+        arreglo_segmento_extraido = arreglo_audio_modificado[inicio_segmento:fin_segmento]
+        if sequential:
+            bits_extraidos, mensaje_extraido = extraer_mensaje_segmento_lsb_sequential(
+                arreglo_segmento_extraido, len(mensaje_bits)
+            )
+        else:
+            bits_extraidos, mensaje_extraido = extraer_mensaje_segmento_lsb_random(
+                arreglo_segmento_extraido, len(mensaje_bits)
+            )
 
     extraccion_correcta = mensaje_bits == bits_extraidos
 
@@ -489,15 +544,15 @@ def main():
 
         # Mensaje a insertar
         mensaje = """
-    In the beginning God created the heavens and the earth.
-    Now the earth was formless and void, and darkness was over the surface of the deep. And the Spirit of God was hovering over the surface of the waters.
-    And God said, "Let there be light," and there was light.
-    And God saw that the light was good, and He separated the light from the darkness.
-    God called the light "day," and the darkness He called "night." And there was evening, and there was morning—the first day.
-    And God said, "Let there be an expanse between the waters, to separate the waters from the waters."
-    So God made the expanse and separated the waters beneath it from the waters above. And it was so.
-    God called the expanse "sky." And there was evening, and there was morning—the second day.
-    And God said, "Let the waters under the sky be gathered into one place, so that the dry land may appear." And it was so.
+    En el principio creó Dios los cielos y la tierra.
+    Y la tierra estaba desordenada y vacía, y las tinieblas estaban sobre la faz del abismo, y el Espíritu de Dios se movía sobre la faz de las aguas.
+    Y dijo Dios: Sea la luz; y fue la luz.
+    Y vio Dios que la luz era buena; y separó Dios la luz de las tinieblas.
+    Y llamó Dios a la luz Día, y a las tinieblas llamó Noche. Y fue la tarde y la mañana un día.
+    Luego dijo Dios: Haya expansión en medio de las aguas, y separe las aguas de las aguas.
+    E hizo Dios la expansión, y separó las aguas que estaban debajo de la expansión, de las aguas que estaban sobre la expansión. Y fue así.
+    Y llamó Dios a la expansión Cielos. Y fue la tarde y la mañana el día segundo.
+    Dijo también Dios: Júntense las aguas que están debajo de los cielos en un lugar, y descúbrase lo seco. Y fue así.
     """
 
         # Comprimir mensaje con medición de tiempo

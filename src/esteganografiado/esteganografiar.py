@@ -128,3 +128,55 @@ def insertar_mensaje_segmento_lsb_random(segment_array, message_bits, num_least_
   # print("SEGMENTO MODIFICADO",modified_segment_array)
   
   return modified_segment_array
+
+def insertar_lsb_caotico(audio_array, message_bits, x0, r, n_warmup):
+  """Insertar mensaje en el audio COMPLETO usando posiciones caóticas.
+
+  El mapa logístico genera posiciones únicas distribuidas en todo el audio.
+  Para cada bit del mensaje, se modifica el LSB de la muestra en la posición
+  caótica correspondiente. Usa operaciones bitwise directas para manejar
+  correctamente valores negativos en complemento a dos (int16).
+
+  Args:
+      audio_array (numpy.ndarray): Audio completo en formato int16
+      message_bits (str): Cadena de bits del mensaje a insertar
+      x0 (float): Punto inicial del mapa logístico
+      r (float): Parámetro de caos
+      n_warmup (int): Iteraciones de calentamiento
+
+  Returns:
+      tuple: (audio_modificado, posiciones) donde posiciones es el array de
+             índices usados para la inserción
+
+  Raises:
+      ValueError: Si el mensaje es más largo que el audio
+  """
+  from src.utils.caos import generar_posiciones_caoticas
+
+  n_bits = len(message_bits)
+  n_muestras = len(audio_array)
+
+  if n_bits > n_muestras:
+    raise ValueError(
+      f"El mensaje ({n_bits} bits) es más largo que el audio ({n_muestras} muestras)"
+    )
+
+  # Generar posiciones caóticas distribuidas en todo el audio
+  posiciones = generar_posiciones_caoticas(x0, r, n_warmup, n_bits, n_muestras)
+
+  # Copiar audio para no modificar el original
+  audio_mod = np.copy(audio_array)
+
+  # Insertar cada bit del mensaje en la posición caótica correspondiente
+  # Usar operaciones bitwise sobre uint16 para manejar correctamente
+  # el complemento a dos de int16
+  audio_uint16 = audio_mod.view(np.uint16)
+
+  for i in range(n_bits):
+    pos = posiciones[i]
+    bit = int(message_bits[i])
+    # Limpiar LSB y poner el bit del mensaje
+    audio_uint16[pos] = (audio_uint16[pos] & 0xFFFE) | bit
+
+  # La vista uint16 modifica el array subyacente, así que audio_mod ya está actualizado
+  return audio_mod, posiciones

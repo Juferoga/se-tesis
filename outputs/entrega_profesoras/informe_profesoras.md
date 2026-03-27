@@ -18,14 +18,14 @@ Se ejecutó el flujo principal del repositorio y se consolidaron automáticament
 
 ## 3. Parámetros de ejecución
 - Método de inserción: **LSB aleatorio**
-- Inicio del segmento usado: **12549726**
-- Fin del segmento usado: **12593826**
-- Fecha/hora ejecución: **2026-03-22T12:46:02**
+- Inicio del segmento usado: **0**
+- Fin del segmento usado: **25143552**
+- Fecha/hora ejecución: **2026-03-24T19:02:58**
 
 ## 4. Métrica BPS
-- Bits insertados: **4984**
+- Bits insertados: **4656**
 - Duración del audio: **285.0743 s**
-- BPS calculado: **17.4832 bits/s**
+- BPS calculado: **16.3326 bits/s**
 
 Fórmula usada: `BPS = bits_insertados / duración_en_segundos`.
 

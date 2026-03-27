@@ -1,60 +1,315 @@
-# Respuestas a las Observaciones de Revisión del Trabajo de Grado
+# Resultados de Análisis — Sistema de Esteganografía en Audio con Caos
 
 ---
 
-## 1. Resultados del Proceso: Compresión, Encriptación y Formas de Onda
+## 1. Descripción General del Sistema
 
-Se solicitaron evidencias concretas de los estados intermedios del mensaje y las representaciones gráficas del audio. Todo esto se encuentra generado y disponible en este mismo directorio:
+El sistema implementado oculta información textual dentro de un archivo de audio WAV (PCM 16 bits) utilizando un enfoque basado en **caos determinista**. El proceso completo se compone de tres etapas secuenciales que transforman el texto original hasta ocultarlo de forma imperceptible en la señal de audio.
 
-*   **Resultado del texto comprimido:** Se encuentra en el archivo [`texto_comprimido.txt`](./texto_comprimido.txt). Este archivo representa la salida del algoritmo de compresión antes de pasar a la capa de seguridad.
-*   **Resultado del texto comprimido y encriptado:** Se encuentra en [`texto_comprimido_encriptado.json`](./texto_comprimido_encriptado.json). Este es el *payload* (carga útil) final que efectivamente se oculta dentro del archivo de audio portador.
-*   **Audio original:** Disponible en el archivo [`audio_original.wav`](./audio_original.wav).
-*   **Estegoaudio (con el mensaje oculto):** Disponible en el archivo [`audio_estegano.wav`](./audio_estegano.wav).
-*   **Onda del audio original:** Se puede visualizar en los archivos [`onda_original.png`](./onda_original.png) y de forma comparativa en [`audio_waveforms.png`](./audio_waveforms.png) y [`audio_waveforms_librosa.png`](./audio_waveforms_librosa.png).
-*   **Onda del estegoaudio (con el mensaje oculto):** Se encuentra en [`onda_estegoaudio.png`](./onda_estegoaudio.png). Además, se generó la gráfica comparativa [`onda_original_y_estegano.png`](./onda_original_y_estegano.png) y [`audio_difference.png`](./audio_difference.png) donde se evidencia visualmente que la alteración en el dominio del tiempo es imperceptible, garantizando la transparencia del método esteganográfico.
+### 1.1 Pipeline Completo
+
+```
+Texto original (español)
+    │
+    ▼
+┌─────────────────────────┐
+│  1. COMPRESIÓN           │  LLMLingua (modelo de lenguaje)
+│     Reduce redundancia   │  ~80% de las palabras conservadas
+└────────────┬────────────┘
+             ▼
+┌─────────────────────────┐
+│  2. ENCRIPTACIÓN         │  XOR con clave caótica
+│     Cifra los bytes      │  Clave generada por mapa logístico
+│     del texto comprimido │  x(n+1) = r · x(n) · (1 − x(n))
+└────────────┬────────────┘
+             ▼
+┌─────────────────────────┐
+│  3. ESTEGANOGRAFÍA       │  LSB con posiciones caóticas
+│     Oculta los bits      │  Posiciones en TODO el audio
+│     en el audio          │  generadas por el mapa logístico
+└─────────────────────────┘
+```
+
+### 1.2 Etapa de Compresión
+
+Se utiliza **LLMLingua**, un compresor basado en modelos de lenguaje, que elimina redundancia semántica del texto manteniendo la información esencial. El texto comprimido se codifica en UTF-8 para preservar los caracteres especiales del español (tildes, eñes, etc.).
+
+**Entrada:** Texto en español (Génesis 1:1-9, Reina-Valera 1960)
+**Salida:** Texto comprimido de 561 caracteres
+
+### 1.3 Etapa de Encriptación
+
+Los bytes del texto comprimido se cifran mediante una operación **XOR** con una clave pseudoaleatoria generada por el **mapa logístico**:
+
+$$x_{n+1} = r \cdot x_n \cdot (1 - x_n)$$
+
+Donde:
+- **x₀ = 0.123456** — Condición inicial (secreto)
+- **r = 3.999952** — Parámetro de caos, en el régimen totalmente caótico [3.57, 4]
+- **n_warmup = 100** — Iteraciones de calentamiento descartadas para evitar transitorios
+
+La clave generada tiene la misma longitud que el texto comprimido (582 bytes). El mapa logístico produce valores en (0, 1) que se escalan al rango [0, 255] para obtener bytes pseudoaleatorios.
+
+### 1.4 Etapa de Esteganografía (LSB Caótico)
+
+Los bits del texto encriptado se ocultan en el **bit menos significativo (LSB)** de muestras de audio seleccionadas. Las posiciones de inserción se determinan mediante el **mismo mapa logístico** con los mismos parámetros, garantizando que:
+
+1. Las posiciones son **pseudoaleatorias** y reproducibles con la misma semilla
+2. Se distribuyen en **todo el rango del audio** (25,143,552 muestras), no concentradas en un solo segmento
+3. Son **únicas** (sin repeticiones)
+4. Solo se modifica 1 bit por muestra (impacto máximo de ±1 en amplitud)
+
+**Operación bitwise para preservar complemento a dos:**
+```python
+# Inserción: se trabaja sobre la vista uint16 del audio int16
+muestra_uint16 = (muestra_uint16 & 0xFFFE) | bit
+```
+
+Esta operación conserva correctamente el signo de las muestras negativas, a diferencia de enfoques que usan `abs()`.
+
+### 1.5 Proceso de Extracción
+
+El proceso inverso requiere conocer los **mismos parámetros caóticos** (x₀, r, n_warmup) y la longitud del mensaje:
+
+```
+Audio esteganografiado
+    │
+    ▼
+1. Regenerar las mismas posiciones caóticas
+2. Leer el LSB de cada posición → bits encriptados
+3. XOR con la misma clave caótica → bytes del texto comprimido
+4. Descomprimir → texto original
+```
 
 ---
 
-## 2. Uso de Código ASCII
+## 2. Texto Utilizado
 
-**Pregunta:** *¿Usaron código ASCII?*
+Se utiliza un texto en **español** (Génesis 1:1-9, Reina-Valera 1960):
 
-**Respuesta:** Sí. Todo proceso criptográfico y de compresión opera a nivel de *bytes*. Para transformar el texto humano (caracteres) a un formato matemáticamente operable, se utiliza una codificación de caracteres. Se empleó ASCII (y por extensión UTF-8 para soportar caracteres especiales) con el fin de serializar el mensaje original en un arreglo de bytes que luego es procesado por los algoritmos de compresión y cifrado.
+> *En el principio creó Dios los cielos y la tierra. Y la tierra estaba desordenada y vacía, y las tinieblas estaban sobre la faz del abismo, y el Espíritu de Dios se movía sobre la faz de las aguas...*
 
----
-
-## 3. Aclaración Fundamental sobre los Valores de Entropía
-
-**Comentario:** *"La literatura nos dice que para una canción los valores ideales deben estar entre 6.5 y 7.8 por muestra, más alto que eso indica una señal de ruido. Lo reportado en la tesis de ustedes es 9.61."*
-
-**Respuesta y Justificación Matemática:**
-Este es un punto conceptual muy importante. La aparente discrepancia no radica en que el estegoaudio sea ruido, sino en la **unidad de medida y la profundidad de bits (bit-depth)** utilizada para el cálculo.
-
-1. **Unidad de Medida (Bits vs. Nats):** La literatura clásica de la teoría de la información de Shannon que reporta valores de "6.5 a 7.8" suele expresar la entropía en **Bits** (utilizando el logaritmo en base 2, $\log_2$). En la investigación y el código, la entropía fue calculada utilizando **Nats** (logaritmo natural, base $e$, $\ln$). 
-    * Si se toma el valor de $9.61 \text{ nats}$ y lo convertimos a bits (dividiendo por $\ln(2) \approx 0.693$), se obtiene **$13.86 \text{ bits}$**.
-2. **Profundidad por Muestra:** Los valores de "6.5 a 7.8 bits" de la literatura aplican para señales de audio cuantizadas a **8 bits por muestra** (donde la entropía máxima teórica es 8). Se está operando sobre archivos de audio de alta calidad de **16 bits por muestra** (estándar CD, formato WAV PCM). En un audio de 16 bits, donde la entropía máxima teórica es 16, una entropía natural de $13.86 \text{ bits}$ ($9.61 \text{ nats}$) es el valor matemáticamente correcto y esperado para una señal de audio musical rica en frecuencias, demostrando que **no es ruido blanco**, sino música estéreo de alta resolución.
+| Propiedad | Valor |
+|---|---|
+| Idioma | Español |
+| Longitud original | ~650 caracteres |
+| Longitud comprimida | 561 caracteres |
+| Payload (encriptado) | 582 bytes = 4,656 bits |
 
 ---
 
-## 4. Clasificación de las Pruebas Realizadas
+## 3. Distribución Caótica de Posiciones
 
-Atendiendo a la solicitud de clasificar las pruebas del modelo, se agrupan bajo la rigurosidad de la taxonomía del criptoanálisis y estegoanálisis:
+Las posiciones de inserción se generan mediante el mapa logístico, produciendo **4,656 posiciones únicas** distribuidas en todo el audio:
 
-### A. Análisis Estadístico
-Busca determinar si la inserción de datos alteró la distribución natural del medio portador, previniendo ataques basados en predictibilidad.
-* **Cálculo de Entropía (en Nats):** Demuestra que la cantidad media de información se mantiene estable sin saltos drásticos que delaten el mensaje.
-* **Análisis de Histogramas:** Respaldado por el archivo [`audio_histograms.png`](./audio_histograms.png) y [`frequency_distribution.png`](./frequency_distribution.png), donde se prueba que la distribución de frecuencias de los bits menos significativos (LSB) no levanta sospechas estadísticas.
+| Estadística | Valor |
+|---|---|
+| Total muestras audio | 25,143,552 |
+| Posiciones generadas | 4,656 |
+| Posición mínima | 1,208 |
+| Posición máxima | 25,143,249 |
+| Desviación estándar | 8,872,505 |
 
-### B. Análisis Diferencial
-Evalúa cómo una pequeña diferencia en la entrada (texto o clave) o la inyección del mensaje afecta el total del archivo.
-* **Diferencia de Señales en el Tiempo y Espectro:** Respaldado por [`audio_difference.png`](./audio_difference.png) y [`spectral_difference.png`](./spectral_difference.png). Miden la delta exacta entre el audio original y el estegoaudio, comprobando que la variación diferencial tiende a cero.
+![Distribución de posiciones caóticas](./distribucion_posiciones_caoticas.png)
 
-### C. Análisis de Sensibilidad de Claves
-Pertenece a la capa de cifrado implementada previo a la esteganografía.
-* **Efecto Avalancha (Avalanche Effect):** Garantiza que cambiar un solo bit en la contraseña o clave criptográfica arroja un [`texto_comprimido_encriptado.json`](./texto_comprimido_encriptado.json) completamente distinto (con un 50% de los bits cambiados), impidiendo que un atacante deduzca la clave mediante aproximaciones.
+La distribución muestra que los datos se insertan en **todas las regiones del audio**, no concentrados en un solo segmento. La forma de U del histograma es característica del mapa logístico (densidad invariante del atractor caótico).
 
-### D. Análisis de Robustez (y Fidelidad)
-Evalúa la supervivencia del secreto frente a alteraciones e imperceptibilidad.
-* **Inspección Visual de Ondas y Espectrogramas:** Respaldado por [`audio_spectrograms.png`](./audio_spectrograms.png), evidenciando que no existen marcas anómalas en el espectro de frecuencias.
-* **Métricas Estándar (SNR, PSNR, MSE):** Utilizadas en el informe técnico para validar matemáticamente la degradación nula y la relación señal a ruido, garantizando la calidad acústica original.
+---
 
+## 4. Error Cuadrático Medio (MSE) y Covarianza
+
+### 4.1 MSE y PSNR
+
+El **Error Cuadrático Medio (MSE)** mide la distorsión promedio introducida por la esteganografía:
+
+$$MSE = \frac{1}{N} \sum_{i=1}^{N} (x_i - y_i)^2$$
+
+El **PSNR** (Peak Signal-to-Noise Ratio) cuantifica la calidad de la señal:
+
+$$PSNR = 10 \cdot \log_{10}\left(\frac{MAX^2}{MSE}\right)$$
+
+| Métrica | Valor | Interpretación |
+|---|---|---|
+| **MSE** | **0.000093** | Distorsión prácticamente nula |
+| **PSNR** | **130.64 dB** | Indetectable (> 30 dB = imperceptible) |
+
+### 4.2 Covarianza y Correlación
+
+La **covarianza** mide la relación lineal entre las señales original y esteganografiada:
+
+| Métrica | Valor |
+|---|---|
+| Var(audio original) | 65,883,266.4112 |
+| Var(audio modificado) | 65,883,266.4066 |
+| **Cov(original, modificado)** | **65,883,266.4089** |
+| **Correlación de Pearson** | **1.0000000000** |
+
+La covarianza es prácticamente idéntica a las varianzas individuales, y la correlación es 1.0 (10 decimales), lo que confirma que la modificación LSB no altera la estructura estadística de la señal.
+
+![MSE y Covarianza](./mse_covarianza.png)
+
+---
+
+## 5. Análisis de Entropía
+
+La entropía mide la cantidad media de información por muestra. Para audio PCM de 16 bits, la entropía máxima teórica es **16 bits**.
+
+| Métrica | Audio Original | Audio Esteganografiado | Diferencia (Δ) |
+|---|---|---|---|
+| Entropía (nats) | 10.313015 | 10.313051 | 3.589×10⁻⁵ |
+| Entropía (bits) | 14.8785 | 14.8786 | 5.179×10⁻⁵ |
+| % del máximo | 92.99% | 92.99% | — |
+
+La diferencia es del orden de **10⁻⁵**, demostrando que la inserción LSB no altera significativamente la distribución estadística del audio.
+
+![Tabla de entropía](./entropia_tabla.png)
+
+---
+
+## 6. Análisis Diferencial: NPCR y UACI
+
+Métricas adaptadas del análisis de imágenes al dominio del audio:
+
+- **NPCR** (Number of Sample Changing Rate): Porcentaje de muestras que cambiaron.
+- **UACI** (Unified Average Changing Intensity): Intensidad promedio del cambio.
+
+| Alcance | NPCR |
+|---|---|
+| Audio completo | 0.0093% |
+| Cuartil Q1 (0-25%) | 0.0124% |
+| Cuartil Q2 (25-50%) | 0.0059% |
+| Cuartil Q3 (50-75%) | 0.0062% |
+| Cuartil Q4 (75-100%) | 0.0127% |
+| **UACI total** | **0.00000014%** |
+
+El NPCR aparece en **todos los cuartiles**, confirmando la distribución caótica de las posiciones.
+
+![NPCR y UACI](./npcr_uaci.png)
+
+---
+
+## 7. Análisis Estadístico del Texto
+
+### 7.1 Histogramas de Distribución de Bytes
+
+- **Texto original**: Distribución concentrada en caracteres ASCII y UTF-8 del español.
+- **Texto encriptado**: Distribución **pseudouniforme** en todo el rango [0, 255].
+
+![Histogramas de texto](./histograma_texto.png)
+
+### 7.2 Correlación Texto Original vs Encriptado
+
+| Métrica | Valor |
+|---|---|
+| Coeficiente de Pearson (r) | **-0.031370** |
+| P-valor | 0.4500 |
+
+Un coeficiente r ≈ -0.031 con p-valor > 0.05 indica **ausencia total de correlación lineal**, confirmando la calidad de la encriptación caótica XOR.
+
+![Correlación texto](./correlacion_texto.png)
+
+---
+
+## 8. Análisis de Sensibilidad de la Clave
+
+### 8.1 Componentes de la Clave
+
+| Componente | Valor | Descripción |
+|---|---|---|
+| x₀ | 0.123456 | Condición inicial del sistema dinámico |
+| r | 3.999952 | Parámetro de caos (régimen caótico: [3.57, 4]) |
+| n_warmup | 100 | Iteraciones de calentamiento |
+
+### 8.2 Prueba de Sensibilidad
+
+Perturbación mínima: **Δx₀ = 10⁻¹⁵** (1 femtounidad).
+
+| Resultado | Valor |
+|---|---|
+| Bytes diferentes | 581 / 582 (**99.83%**) |
+| Bits diferentes | 2,330 / 4,656 (**50.04%**) |
+| ¿Efecto avalancha? | **SÍ** (≈ 50% de cambio ≈ aleatorio) |
+
+Una perturbación de 10⁻¹⁵ en el punto inicial produce un texto desencriptado **completamente diferente** e ilegible. Esto demuestra la sensibilidad extrema a las condiciones iniciales, propiedad fundamental del caos determinista.
+
+![Sensibilidad de clave](./sensibilidad_clave.png)
+
+---
+
+## 9. Análisis de Robustez
+
+Se evaluó la resistencia del estegoaudio frente a ataques aplicados al **audio completo**:
+
+### 9.1 Ataque de Sal y Pimienta
+
+Reemplaza muestras aleatorias con valores extremos (±32767).
+
+| Proporción | Bits correctos | ¿Éxito (>95%)? |
+|---|---|---|
+| 1% | 99.7% | ✅ |
+| 5% | 97.4% | ✅ |
+| 10% | 95.2% | ✅ |
+| 25% | 87.9% | ❌ |
+
+### 9.2 Ataque de Oclusión
+
+Pone a cero un bloque contiguo del audio.
+
+| Proporción | Bits correctos | ¿Éxito (>95%)? |
+|---|---|---|
+| 1% | 99.4% | ✅ |
+| 5% | 95.6% | ✅ |
+| 10% | 96.0% | ✅ |
+| 25% | 88.4% | ❌ |
+
+La distribución caótica otorga **robustez natural** contra ataques localizados: al estar los bits dispersos en todo el audio, un ataque que afecte una región solo destruye los bits de esa zona, preservando el resto.
+
+![Robustez](./robustez_sal_pimienta_oclusion.png)
+
+---
+
+## 10. Análisis de Seguridad de la Clave
+
+| Propiedad | Valor |
+|---|---|
+| Longitud de la llave | 582 bytes (4,656 bits) |
+| Componentes secretos | x₀ (float64, 52 bits mantisa) + r (float64) |
+| Espacio de claves | ~2¹⁰⁰ ≈ 1.27 × 10³⁰ |
+| Fuerza bruta (10⁹ claves/s) | ~4.02 × 10¹³ años (~2,900× la edad del universo) |
+
+![Seguridad de clave](./seguridad_clave.png)
+
+---
+
+## 11. Visualizaciones de Formas de Onda
+
+### 11.1 Comparación Audio Original vs Esteganografiado
+
+La diferencia absoluta muestra cambios distribuidos en **todo el audio**.
+
+![Formas de onda](./onda_original_y_estegano.png)
+
+### 11.2 Zoom — Sección del Audio
+
+Al hacer zoom a una sección, se aprecian los cambios LSB individuales dispersos.
+
+![Zoom diferencia](./audio_difference_zoom.png)
+
+---
+
+## 12. Archivos Generados
+
+| Archivo | Descripción |
+|---|---|
+| `distribucion_posiciones_caoticas.png` | Mapa de distribución de posiciones caóticas |
+| `mse_covarianza.png` | Error cuadrático medio y covarianza |
+| `entropia_tabla.png` | Tabla de valores de entropía |
+| `npcr_uaci.png` | NPCR por cuartil del audio + UACI |
+| `histograma_texto.png` | Distribución de bytes pre/post encriptación |
+| `correlacion_texto.png` | Correlación de Pearson (texto) |
+| `sensibilidad_clave.png` | Efecto avalancha |
+| `robustez_sal_pimienta_oclusion.png` | Ataques de sal/pimienta y oclusión |
+| `seguridad_clave.png` | Análisis formal de espacio de claves |
+| `onda_original_y_estegano.png` | Formas de onda con distribución caótica |
+| `audio_difference_zoom.png` | Zoom a sección con cambios LSB |
+| `analisis_completo.json` | Resumen numérico de todos los análisis |

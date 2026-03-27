@@ -1,64 +1,64 @@
 {
-  "fecha_hora": "2026-03-22T12:46:02",
+  "fecha_hora": "2026-03-24T19:02:58",
   "metodo": "LSB aleatorio",
-  "inicio_segmento": 12549726,
-  "fin_segmento": 12593826,
-  "bits_insertados": 4984,
+  "inicio_segmento": 0,
+  "fin_segmento": 25143552,
+  "bits_insertados": 4656,
   "duracion_segundos": 285.07428571428574,
-  "bps": 17.48316228351507,
-  "tiempo_global_segundos": 79.0278389453888,
+  "bps": 16.332584990378447,
+  "tiempo_global_segundos": 124.94072437286377,
   "secciones": [
     {
       "nombre": "Carga de audio",
-      "tiempo_segundos": 0.018786191940307617
+      "tiempo_segundos": 0.056995391845703125
     },
     {
       "nombre": "Compresión de texto",
-      "tiempo_segundos": 65.96329760551453
+      "tiempo_segundos": 109.97833442687988
     },
     {
       "nombre": "Encriptación",
-      "tiempo_segundos": 0.003547191619873047
+      "tiempo_segundos": 0.024889707565307617
     },
     {
       "nombre": "Esteganografía",
-      "tiempo_segundos": 0.17870283126831055
+      "tiempo_segundos": 0.16944098472595215
     },
     {
       "nombre": "Guardar audio",
-      "tiempo_segundos": 0.1063392162322998
+      "tiempo_segundos": 0.12606215476989746
     },
     {
       "nombre": "Extracción mensaje",
-      "tiempo_segundos": 0.06338238716125488
+      "tiempo_segundos": 0.007044076919555664
     },
     {
       "nombre": "Descompresión",
-      "tiempo_segundos": 12.081002235412598
+      "tiempo_segundos": 14.07632827758789
     }
   ],
   "metricas": {
-    "mse": 9.867340938941323e-05,
-    "psnr_db": 40.05799865682064,
-    "distorsion": 9.867340938941323e-05,
+    "mse": 9.266789354185121e-05,
+    "psnr_db": 40.33070708928254,
+    "distorsion": 9.266789354185121e-05,
     "invisibilidad": {
-      "chi2_stat": 1.3009317595521692,
-      "chi2_p": 1.0,
+      "chi2_stat": 80000000245.53821,
+      "chi2_p": 0.0,
       "ks_stat": 0.017108282871091618,
       "ks_p": 0.0,
-      "mann_whitney_u": 316006583365870.5,
-      "mann_whitney_p": 0.07225383762088686
+      "mann_whitney_u": 316006581913670.5,
+      "mann_whitney_p": 0.07224936296083463
     },
     "entropia_nats": {
       "original": 10.313015078279994,
-      "modificado": 10.313015319629807
+      "modificado": 10.31305097042003
     },
-    "correlacion_cruzada": 6379.702600380705,
+    "correlacion_cruzada": 6379.70260004242,
     "analisis_componentes": {
       "media_original": -3.0794590597223497,
-      "media_modificado": -3.079456474566521,
+      "media_modificado": -3.0794483213827544,
       "std_original": 8116.850607898924,
-      "std_modificado": 8116.8506084751925
+      "std_modificado": 8116.850607613652
     }
   },
   "ataques": null

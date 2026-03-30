@@ -129,15 +129,11 @@ Se cuantifica la proporción y magnitud de las muestras alteradas por la inserci
 * **UACI (Unified Average Changing Intensity):** $1.414\times 10^{-7}\%$. Esta magnitud garantiza que la intensidad del cambio en las muestras alteradas tiende virtualmente a cero, conservando la [fidelidad estructural del medio transmisor](https://pmc.ncbi.nlm.nih.gov/articles/PMC7998182/).
 
 
-> **Fórmulas de Análisis Diferencial Aplicadas:**
+**Fórmulas de Análisis Diferencial Aplicadas:**
 
->
+$$\mathrm{NPCR}=\frac{\sum_{i=1}^{M}\sum_{j=1}^{N}D(i,j)}{MN}\times 100\%$$
 
-> $$\mathrm{NPCR}=\frac{\sum_{i=1}^{M}\sum_{j=1}^{N}D(i,j)}{MN}\times 100\%$$
-
->
-
-> $$\mathrm{UACI}=\frac{1}{MN}\sum_{i=1}^{M}\sum_{j=1}^{N}\frac{|C_1(i,j)-C_2(i,j)|}{L-1}\times 100\%$$
+$$\mathrm{UACI}=\frac{1}{MN}\sum_{i=1}^{M}\sum_{j=1}^{N}\frac{|C_1(i,j)-C_2(i,j)|}{L-1}\times 100\%$$
 
 
 ### C. Análisis de Sensibilidad de Claves

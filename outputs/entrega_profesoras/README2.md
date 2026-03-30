@@ -108,7 +108,7 @@ Se evalúa la distribución de la carga útil y su impacto estadístico sobre el
 * **Covarianza:** El valor cruzado de 65883266.40 demuestra una correlación altamente preservada entre la varianza original y la modificada.
 
 
-$$\operatorname{Cov}(X,Y)=\frac{1}{N}\sum_{n=1}^{N}(X_n-\mu_X)(Y_n-\mu_Y)$$
+$${Cov}(X,Y)=\frac{1}{N}\sum_{n=1}^{N}(X_n-\mu_X)(Y_n-\mu_Y)$$
 
 
 * **Histogramas de Distribución:** Como se evidencia a continuación, la distribución de la señal permanece inalterada, proveyendo resistencia ante [ataques de estegoanálisis basados en frecuencias LSB](https://en.wikipedia.org/wiki/Steganalysis):

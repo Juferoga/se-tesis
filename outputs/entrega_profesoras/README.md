@@ -149,8 +149,6 @@ La **covarianza** mide la relación lineal entre las señales original y estegan
 
 La covarianza es prácticamente idéntica a las varianzas individuales, y la correlación es 1.0 (10 decimales), lo que confirma que la modificación LSB no altera la estructura estadística de la señal.
 
-![MSE y Covarianza](./mse_covarianza.png)
-
 ---
 
 ## 5. Análisis de Entropía
@@ -279,8 +277,6 @@ La distribución caótica otorga **robustez natural** contra ataques localizados
 | Componentes secretos | x₀ (float64, 52 bits mantisa) + r (float64) |
 | Espacio de claves | ~2¹⁰⁰ ≈ 1.27 × 10³⁰ |
 | Fuerza bruta (10⁹ claves/s) | ~4.02 × 10¹³ años (~2,900× la edad del universo) |
-
-![Seguridad de clave](./seguridad_clave.png)
 
 ---
 

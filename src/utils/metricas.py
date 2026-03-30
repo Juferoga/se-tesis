@@ -549,9 +549,14 @@ def invisibilidad(audio_original, audio_modificado):
 # función para la medición de la entropia en el audio original y el audio modificado
 def entropia(audio_original, audio_modificado):
     """Calcular la entropía de dos audios.
-    formula entropia = -sum(p(x) * log2(p(x)))
+    Formula: H = -sum(p(x) * ln(p(x)))
 
-    La entropia minima es 0 y la maxima es log2(2^16) = 16
+    IMPORTANTE: esta implementación usa logaritmo natural (base e),
+    por lo tanto la unidad reportada es NATS (no bits).
+
+    Referencias rápidas para audio PCM 16-bit:
+      - máximo teórico en bits: 16 bits
+      - máximo teórico en nats: ln(2^16) ≈ 11.09 nats
 
     basado en https://stackoverflow.com/questions/15450192/fastest-way-to-compute-entropy-in-python :)
 
@@ -610,10 +615,68 @@ def entropia(audio_original, audio_modificado):
     for i in probs_modificado:
         ent_modificado -= i * log(i, base_mod)
 
-    print(f"Entropía audio original   [0,16]: {ent_original}")
-    print(f"Entropía audio modificado [0,16]: {ent_modificado}")
+    print(f"Entropía audio original   [nats]: {ent_original}")
+    print(f"Entropía audio modificado [nats]: {ent_modificado}")
+
+    if ent_original > 8:
+        print(
+            f"ATENCIÓN: Entropía calculada en Nats ({ent_original:.2f} nats = {ent_original / log(2):.2f} bits). Válido para 16-bit audio, no es ruido"
+        )
+    if ent_modificado > 8:
+        print(
+            f"ATENCIÓN: Entropía calculada en Nats ({ent_modificado:.2f} nats = {ent_modificado / log(2):.2f} bits). Válido para 16-bit audio, no es ruido"
+        )
 
     return ent_original, ent_modificado
+
+
+def npcr_uaci(audio_original, audio_modificado, intensidad_maxima=65535.0):
+    """Calcular NPCR y UACI entre dos señales de audio.
+
+    NPCR = porcentaje de muestras que cambian.
+    UACI = cambio de intensidad promedio normalizado.
+    """
+    original = np.ravel(audio_original).astype(np.float64)
+    modificado = np.ravel(audio_modificado).astype(np.float64)
+
+    n = min(len(original), len(modificado))
+    if n == 0:
+        return 0.0, 0.0
+
+    original = original[:n]
+    modificado = modificado[:n]
+
+    npcr = np.mean(original != modificado) * 100
+    uaci = np.mean(np.abs(original - modificado) / intensidad_maxima) * 100
+
+    print(f"NPCR: {npcr:.6f}%")
+    print(f"UACI: {uaci:.8f}%")
+
+    return npcr, uaci
+
+
+def covarianza_audio(audio_original, audio_modificado):
+    """Calcular varianzas y covarianza entre dos señales de audio."""
+    original = np.ravel(audio_original).astype(np.float64)
+    modificado = np.ravel(audio_modificado).astype(np.float64)
+
+    n = min(len(original), len(modificado))
+    if n == 0:
+        return 0.0, 0.0, 0.0
+
+    original = original[:n]
+    modificado = modificado[:n]
+
+    cov_matrix = np.cov(original, modificado)
+    var_original = cov_matrix[0, 0]
+    var_modificado = cov_matrix[1, 1]
+    cov_original_modificado = cov_matrix[0, 1]
+
+    print(f"Var(original): {var_original:.4f}")
+    print(f"Var(modificado): {var_modificado:.4f}")
+    print(f"Cov(original, modificado): {cov_original_modificado:.4f}")
+
+    return var_original, var_modificado, cov_original_modificado
 
 
 # función para la medición de la correlación cruzada en el audio original y el audio modificado

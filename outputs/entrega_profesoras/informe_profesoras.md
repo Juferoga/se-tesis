@@ -20,7 +20,7 @@ Se ejecutó el flujo principal del repositorio y se consolidaron automáticament
 - Método de inserción: **LSB aleatorio**
 - Inicio del segmento usado: **0**
 - Fin del segmento usado: **25143552**
-- Fecha/hora ejecución: **2026-03-24T19:02:58**
+- Fecha/hora ejecución: **2026-03-29T22:03:09**
 
 ## 4. Métrica BPS
 - Bits insertados: **4656**

@@ -38,6 +38,8 @@ from src.utils.metricas import (
     distorsion,
     invisibilidad,
     entropia,
+    npcr_uaci,
+    covarianza_audio,
     correlacion_cruzada,
     analisis_componentes,
     medir_recursos,
@@ -289,16 +291,17 @@ def convertir_mensaje_a_bits(mensaje):
         ChaosMod.X0.value, ChaosMod.R.value, ChaosMod.N_WARMUP.value, longitud_de_llave
     )
     mensaje_encriptado = xor_encriptado(mensaje_en_bytes, llave)
-    mensaje_para_paso = "".join([chr(b) for b in mensaje_encriptado])
-    mensaje_bits = "".join(
-        [format(ord(char), "08b") for char in str(mensaje_para_paso)]
-    )
+    # Flujo 100% en bytes/uint8: sin chr()/ord()
+    mensaje_bits = "".join(np.unpackbits(mensaje_encriptado).astype(str).tolist())
     return mensaje_bits, llave
 
 
 def insertar_mensaje_en_audio(
-    arreglo_audio_original, mensaje_bits, audio_total=False, sequential=True,
-    chaotic_full=True
+    arreglo_audio_original,
+    mensaje_bits,
+    audio_total=False,
+    sequential=True,
+    chaotic_full=True,
 ):
     """Insertar mensaje en audio usando posiciones caóticas distribuidas en todo el audio.
 
@@ -323,8 +326,12 @@ def insertar_mensaje_en_audio(
                 ChaosMod.R.value,
                 ChaosMod.N_WARMUP.value,
             )
-            print(f"  Posiciones caóticas generadas: {len(posiciones)} en rango [0, {len(arreglo_audio_original)})")
-            print(f"  Distribución: min={posiciones.min()}, max={posiciones.max()}, std={posiciones.std():.0f}")
+            print(
+                f"  Posiciones caóticas generadas: {len(posiciones)} en rango [0, {len(arreglo_audio_original)})"
+            )
+            print(
+                f"  Distribución: min={posiciones.min()}, max={posiciones.max()}, std={posiciones.std():.0f}"
+            )
             return arreglo_audio_modificado, 0, len(arreglo_audio_original)
         except ValueError as e:
             print(f"Error: {e}")
@@ -397,7 +404,9 @@ def extraer_y_verificar_mensaje(
             ChaosMod.N_WARMUP.value,
         )
     else:
-        arreglo_segmento_extraido = arreglo_audio_modificado[inicio_segmento:fin_segmento]
+        arreglo_segmento_extraido = arreglo_audio_modificado[
+            inicio_segmento:fin_segmento
+        ]
         if sequential:
             bits_extraidos, mensaje_extraido = extraer_mensaje_segmento_lsb_sequential(
                 arreglo_segmento_extraido, len(mensaje_bits)
@@ -410,9 +419,13 @@ def extraer_y_verificar_mensaje(
     extraccion_correcta = mensaje_bits == bits_extraidos
 
     if extraccion_correcta:
-        mensaje_original_bytes = np.array(
-            [ord(c) for c in mensaje_extraido], dtype=np.uint8
+        # Reconstruir bytes desde bits extraídos sin convertir a caracteres intermedios
+        n_bytes = len(bits_extraidos) // 8
+        bits_uint8 = np.fromiter(
+            (1 if bit == "1" else 0 for bit in bits_extraidos[: n_bytes * 8]),
+            dtype=np.uint8,
         )
+        mensaje_original_bytes = np.packbits(bits_uint8)
         mensaje_desencriptado_bytes = xor_encriptado(mensaje_original_bytes, llave)
         # Decodificar desde UTF-8 para recuperar caracteres Unicode correctamente
         mensaje_desencriptado = bytes(mensaje_desencriptado_bytes).decode("utf-8")
@@ -427,6 +440,9 @@ def ejecutar_ataques(
     fin_segmento,
     mensaje_bits_length,
     sequential=False,
+    x0=ChaosMod.X0.value,
+    r=ChaosMod.R.value,
+    n_warmup=ChaosMod.N_WARMUP.value,
 ):
     """Ejecutar la batería de ataques sobre el audio esteganografiado y evaluar su robustez
 
@@ -454,7 +470,13 @@ def ejecutar_ataques(
     # Ejecutar todos los ataques
     with TimerContextManager("Ejecución de ataques") as timer:
         resultados = attacks.run_all_attacks(
-            inicio_segmento, fin_segmento, mensaje_bits_length, sequential
+            inicio_segmento,
+            fin_segmento,
+            mensaje_bits_length,
+            sequential,
+            x0,
+            r,
+            n_warmup,
         )
 
     print("\n--- Resumen de resultados de ataques ---")
@@ -648,6 +670,10 @@ def main():
         entropia_original, entropia_modificada = entropia(
             arreglo_audio_original, arreglo_audio_modificado
         )
+        npcr_val, uaci_val = npcr_uaci(arreglo_audio_original, arreglo_audio_modificado)
+        var_orig, var_mod, cov_orig_mod = covarianza_audio(
+            arreglo_audio_original, arreglo_audio_modificado
+        )
         correlacion_val = correlacion_cruzada(
             arreglo_audio_original, arreglo_audio_modificado
         )
@@ -697,6 +723,9 @@ def main():
                     fin_segmento,
                     len(mensaje_bits),
                     sequential,
+                    ChaosMod.X0.value,
+                    ChaosMod.R.value,
+                    ChaosMod.N_WARMUP.value,
                 )
             section_names.append("Módulo de ataques")
             execution_times.append(timer.elapsed)
@@ -716,6 +745,15 @@ def main():
             "entropia_nats": {
                 "original": float(entropia_original),
                 "modificado": float(entropia_modificada),
+            },
+            "npcr_uaci": {
+                "npcr": float(npcr_val),
+                "uaci": float(uaci_val),
+            },
+            "covarianza": {
+                "var_original": float(var_orig),
+                "var_modificado": float(var_mod),
+                "cov_original_modificado": float(cov_orig_mod),
             },
             "correlacion_cruzada": float(correlacion_val),
             "analisis_componentes": {

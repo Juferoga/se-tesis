@@ -29,10 +29,12 @@
   },
   "sensibilidad_clave": {
     "perturbacion": 1e-15,
-    "bytes_dif": 581,
-    "porcentaje_dif": 99.82817869415808,
-    "bits_dif": 2330,
-    "porcentaje_bits": 50.04295532646048
+    "perturbacion_r": 1e-12,
+    "perturbacion_n_warmup": 1,
+    "bytes_dif": 578,
+    "porcentaje_dif": 99.3127147766323,
+    "bits_dif": 2317,
+    "porcentaje_bits": 49.763745704467354
   },
   "robustez": {
     "sal_pimienta": {

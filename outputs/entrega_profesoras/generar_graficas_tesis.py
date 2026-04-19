@@ -18,7 +18,7 @@ def configurar_estilo() -> None:
             "axes.titlesize": 12,
             "axes.labelsize": 11,
             "legend.fontsize": 10,
-            "grid.alpha": 0.25,
+            "grid.alpha": 0.30,
             "axes.grid": True,
             "axes.spines.top": False,
             "axes.spines.right": False,
@@ -73,15 +73,16 @@ def generar_4_histogramas(salida: Path) -> None:
             11,
         ]
     )
-    color_mono = "#2b2b2b"
-    axes[0].bar(bins, irregular, color=color_mono, edgecolor="black", linewidth=0.4)
+    color_oscuro = "#5f5f5f"
+    color_medio = "#8c8c8c"
+    axes[0].bar(bins, irregular, color=color_oscuro, edgecolor="#3a3a3a", linewidth=0.4)
     axes[0].set_title("texto comprimido", loc="left")
     axes[0].set_xlabel("Símbolo/byte")
     axes[0].set_ylabel("Frecuencia")
 
     # Distribución prácticamente uniforme (texto encriptado)
     uniforme = np.full_like(bins, 10, dtype=float)
-    axes[1].bar(bins, uniforme, color=color_mono, edgecolor="black", linewidth=0.4)
+    axes[1].bar(bins, uniforme, color=color_medio, edgecolor="#4a4a4a", linewidth=0.4)
     axes[1].set_title("Representación uniforme (plana)")
     axes[1].set_xlabel("Símbolo/byte")
     axes[1].set_ylabel("Frecuencia")
@@ -95,10 +96,16 @@ def generar_4_correlacion(salida: Path) -> None:
     r = np.corrcoef(x, y)[0, 1]
 
     fig, ax = plt.subplots(figsize=(7, 5.5))
-    color_mono = "#2b2b2b"
-    ax.scatter(x, y, s=20, color=color_mono, alpha=0.9, label="Pares de muestras")
+    color_puntos = "#666666"
+    color_linea = "#404040"
+    ax.scatter(x, y, s=20, color=color_puntos, alpha=0.9, label="Pares de muestras")
     ax.plot(
-        x, x, color=color_mono, linewidth=1.2, linestyle="--", label="Línea ideal y = x"
+        x,
+        x,
+        color=color_linea,
+        linewidth=1.3,
+        linestyle="--",
+        label="Línea ideal y = x",
     )
     ax.set_title("Correlación de Pearson: Audio Original vs Estegoaudio")
     ax.set_xlabel("Audio Original")
@@ -129,9 +136,9 @@ def generar_6_efecto_avalancha(salida: Path) -> None:
 
     iteraciones = np.arange(n)
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(iteraciones, x1, linewidth=1.7, color="#1f77b4", label="Serie A")
-    ax.plot(iteraciones, x2, linewidth=1.2, color="#ff7f0e", label="Serie B")
-    ax.axvspan(15, 20, color="gray", alpha=0.15, label="Zona de divergencia")
+    ax.plot(iteraciones, x1, linewidth=1.8, color="#4d4d4d", label="Serie A")
+    ax.plot(iteraciones, x2, linewidth=1.3, color="#8f8f8f", label="Serie B")
+    ax.axvspan(15, 20, color="#bdbdbd", alpha=0.20, label="Zona de divergencia")
     ax.set_title("Efecto avalancha: sensibilidad a condiciones iniciales")
     ax.set_xlabel("Iteración")
     ax.set_ylabel("Estado normalizado")
@@ -154,12 +161,12 @@ def generar_7_vista_microscopica_50(salida: Path) -> None:
     modificada[idx_insertados] += deltas
 
     fig, ax = plt.subplots(figsize=(10, 4.8))
-    ax.plot(muestras, original, color="#1f77b4", linewidth=1.8, label="Señal original")
+    ax.plot(muestras, original, color="#4f4f4f", linewidth=1.8, label="Señal original")
     ax.plot(
         idx_insertados,
         modificada[idx_insertados],
         "*",
-        color="red",
+        color="#9c9c9c",
         markersize=11,
         label="Puntos de inyección estocástica",
     )

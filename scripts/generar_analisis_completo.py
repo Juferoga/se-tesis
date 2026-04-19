@@ -48,19 +48,20 @@ X0 = ChaosMod.X0.value  # 0.123456
 R = ChaosMod.R.value  # 3.999952
 N_WARMUP = ChaosMod.N_WARMUP.value  # 100
 
-# Estilo premium para todas las gráficas
-plt.style.use("dark_background")
+# Estilo en escala de grises para todas las gráficas
+plt.style.use("default")
+plt.rcParams["image.cmap"] = "gray"
 COLORES = {
-    "original": "#00D4AA",
-    "modificado": "#FF6B6B",
-    "acento": "#4ECDC4",
-    "alerta": "#FFE66D",
-    "texto": "#E8E8E8",
-    "grid": "#333333",
-    "exito": "#00D4AA",
-    "fallo": "#FF6B6B",
+    "original": "#4d4d4d",
+    "modificado": "#8f8f8f",
+    "acento": "#b0b0b0",
+    "alerta": "#2f2f2f",
+    "texto": "#202020",
+    "grid": "#c2c2c2",
+    "exito": "#6e6e6e",
+    "fallo": "#a8a8a8",
 }
-DPI = 200
+DPI = 320
 FONT_TITLE = {"fontsize": 14, "fontweight": "bold", "color": COLORES["texto"]}
 FONT_LABEL = {"fontsize": 11, "color": COLORES["texto"]}
 
@@ -195,8 +196,8 @@ def analisis_entropia(datos):
     print(f"  Delta entropía:      {abs(h_mod_nats - h_orig_nats):.10f} nats")
 
     # Gráfica: tabla visual
-    fig, ax = plt.subplots(figsize=(10, 4), facecolor="#1a1a2e")
-    ax.set_facecolor("#1a1a2e")
+    fig, ax = plt.subplots(figsize=(10, 4), facecolor="white")
+    ax.set_facecolor("white")
     ax.axis("off")
 
     tabla_data = [
@@ -220,7 +221,7 @@ def analisis_entropia(datos):
             "—",
         ],
     ]
-    colores_celda = [["#2a2a4a"] * 4] * 4
+    colores_celda = [["#f0f0f0"] * 4] * 4
     tabla = ax.table(
         cellText=tabla_data,
         colLabels=[
@@ -230,14 +231,14 @@ def analisis_entropia(datos):
             "Diferencia (Delta)",
         ],
         cellColours=colores_celda,
-        colColours=["#3a3a5a"] * 4,
+        colColours=["#d9d9d9"] * 4,
         loc="center",
         cellLoc="center",
     )
     tabla.auto_set_font_size(False)
     tabla.set_fontsize(11)
     for key, cell in tabla.get_celld().items():
-        cell.set_edgecolor("#555577")
+        cell.set_edgecolor("#a9a9a9")
         cell.set_text_props(color=COLORES["texto"])
         if key[0] == 0:
             cell.set_text_props(color=COLORES["original"], fontweight="bold")
@@ -294,9 +295,9 @@ def analisis_mse_covarianza(datos):
     print(f"  Correlación audio:  {r_audio:.10f}")
 
     # Gráfica: tabla + barras
-    fig, axes = plt.subplots(1, 2, figsize=(16, 5), facecolor="#1a1a2e")
+    fig, axes = plt.subplots(1, 2, figsize=(16, 5), facecolor="white")
     for ax in axes:
-        ax.set_facecolor("#1a1a2e")
+        ax.set_facecolor("white")
 
     # Tabla
     axes[0].axis("off")
@@ -308,19 +309,19 @@ def analisis_mse_covarianza(datos):
         ["Cov(orig, mod)", f"{cov_orig_mod:.4f}"],
         ["Correlación señales", f"{r_audio:.10f}"],
     ]
-    colores_celda = [["#2a2a4a"] * 2] * 6
+    colores_celda = [["#f0f0f0"] * 2] * 6
     tabla = axes[0].table(
         cellText=tabla_data,
         colLabels=["Métrica", "Valor"],
         cellColours=colores_celda,
-        colColours=["#3a3a5a"] * 2,
+        colColours=["#d9d9d9"] * 2,
         loc="center",
         cellLoc="center",
     )
     tabla.auto_set_font_size(False)
     tabla.set_fontsize(12)
     for key, cell in tabla.get_celld().items():
-        cell.set_edgecolor("#555577")
+        cell.set_edgecolor("#a9a9a9")
         cell.set_text_props(color=COLORES["texto"])
         if key[0] == 0:
             cell.set_text_props(color=COLORES["original"], fontweight="bold")
@@ -335,7 +336,7 @@ def analisis_mse_covarianza(datos):
         vals,
         color=[COLORES["original"], COLORES["acento"]],
         width=0.4,
-        edgecolor="#555577",
+        edgecolor="#8f8f8f",
     )
     axes[1].set_title("Error Cuadrático Medio (MSE)", **FONT_TITLE)
     axes[1].set_ylabel("MSE", **FONT_LABEL)
@@ -363,7 +364,7 @@ def analisis_mse_covarianza(datos):
         fontsize=11,
         color=COLORES["alerta"],
         bbox=dict(
-            boxstyle="round,pad=0.4", facecolor="#2a2a4a", edgecolor=COLORES["alerta"]
+            boxstyle="round,pad=0.4", facecolor="#efefef", edgecolor=COLORES["alerta"]
         ),
     )
 
@@ -423,15 +424,15 @@ def analisis_npcr_uaci(datos):
     print(f"  Audio completo — NPCR: {npcr_total:.6f}%  UACI: {uaci_total:.8f}%")
 
     # Gráfica comparativa
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5), facecolor="#1a1a2e")
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5), facecolor="white")
     for ax in axes:
-        ax.set_facecolor("#1a1a2e")
+        ax.set_facecolor("white")
 
     # NPCR por cuartiles + total
     cats = ["Q1", "Q2", "Q3", "Q4", "Total"]
     npcr_vals = npcr_cuartiles + [npcr_total]
     colores = [COLORES["acento"]] * 4 + [COLORES["original"]]
-    bars1 = axes[0].bar(cats, npcr_vals, color=colores, width=0.5, edgecolor="#555577")
+    bars1 = axes[0].bar(cats, npcr_vals, color=colores, width=0.5, edgecolor="#8f8f8f")
     axes[0].set_title("NPCR por Cuartil del Audio", **FONT_TITLE)
     axes[0].set_ylabel("NPCR (%)", **FONT_LABEL)
     axes[0].grid(axis="y", alpha=0.2, color=COLORES["grid"])
@@ -454,7 +455,7 @@ def analisis_npcr_uaci(datos):
         [uaci_total],
         color=[COLORES["original"]],
         width=0.3,
-        edgecolor="#555577",
+        edgecolor="#8f8f8f",
     )
     axes[1].set_title("UACI (Unified Average Changing Intensity)", **FONT_TITLE)
     axes[1].set_ylabel("UACI (%)", **FONT_LABEL)
@@ -500,16 +501,16 @@ def analisis_histogramas_texto(datos):
     texto_bytes = datos["texto_bytes"]
     texto_enc = datos["texto_encriptado"]
 
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5), facecolor="#1a1a2e")
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5), facecolor="white")
     for ax in axes:
-        ax.set_facecolor("#1a1a2e")
+        ax.set_facecolor("white")
 
     axes[0].hist(
         texto_bytes,
         bins=range(0, 257),
         color=COLORES["original"],
         alpha=0.85,
-        edgecolor="#1a1a2e",
+        edgecolor="#707070",
         linewidth=0.3,
     )
     axes[0].set_title("Distribución de Bytes — Texto Original", **FONT_TITLE)
@@ -523,7 +524,7 @@ def analisis_histogramas_texto(datos):
         bins=range(0, 257),
         color=COLORES["modificado"],
         alpha=0.85,
-        edgecolor="#1a1a2e",
+        edgecolor="#707070",
         linewidth=0.3,
     )
     axes[1].set_title(
@@ -561,8 +562,8 @@ def analisis_correlacion_texto(datos):
     print(f"  Coeficiente de Pearson: {r_pearson:.6f}")
     print(f"  P-valor:                {p_valor:.6f}")
 
-    fig, ax = plt.subplots(figsize=(8, 8), facecolor="#1a1a2e")
-    ax.set_facecolor("#1a1a2e")
+    fig, ax = plt.subplots(figsize=(8, 8), facecolor="white")
+    ax.set_facecolor("white")
     ax.scatter(
         texto_bytes, texto_enc, c=COLORES["acento"], alpha=0.6, s=20, edgecolors="none"
     )
@@ -598,7 +599,7 @@ def analisis_correlacion_texto(datos):
         color=COLORES["alerta"],
         bbox=dict(
             boxstyle="round,pad=0.4",
-            facecolor="#2a2a4a",
+            facecolor="#efefef",
             edgecolor=COLORES["alerta"],
             alpha=0.9,
         ),
@@ -659,9 +660,9 @@ def analisis_sensibilidad_clave(datos):
     print(f"  Bytes diferentes:  {bytes_diferentes}/{longitud} ({porcentaje_dif:.2f}%)")
     print(f"  Bits diferentes:   {bits_dif}/{total_bits} ({porcentaje_bits:.2f}%)")
 
-    fig, axes = plt.subplots(2, 2, figsize=(16, 10), facecolor="#1a1a2e")
+    fig, axes = plt.subplots(2, 2, figsize=(16, 10), facecolor="white")
     for ax in axes.flat:
-        ax.set_facecolor("#1a1a2e")
+        ax.set_facecolor("white")
 
     x = np.arange(longitud)
     axes[0][0].bar(x, texto_correcto, color=COLORES["original"], alpha=0.8, width=1.0)
@@ -720,7 +721,7 @@ def analisis_sensibilidad_clave(datos):
         color=COLORES["texto"],
         verticalalignment="top",
         fontfamily="monospace",
-        bbox=dict(boxstyle="round,pad=0.6", facecolor="#2a2a4a", edgecolor="#555577"),
+        bbox=dict(boxstyle="round,pad=0.6", facecolor="#efefef", edgecolor="#8f8f8f"),
     )
 
     fig.suptitle(
@@ -821,16 +822,16 @@ def generar_6_fallo_perturbacion(datos):
         ax.set_facecolor("white")
 
     x = np.arange(len(enc_ori))
-    axes[0].bar(x, enc_ori, color="#2b2b2b", width=1.0)
+    axes[0].bar(x, enc_ori, color="#5f5f5f", width=1.0, edgecolor="#4a4a4a")
     axes[0].set_title("Entrada original cifrada", loc="left")
     axes[0].set_ylabel("Byte")
 
-    axes[1].bar(x, enc_per, color="#2b2b2b", width=1.0)
+    axes[1].bar(x, enc_per, color="#8a8a8a", width=1.0, edgecolor="#666666")
     axes[1].set_title("Entrada perturbada (1 bit) cifrada", loc="left")
     axes[1].set_ylabel("Byte")
 
     dif_abs = np.abs(enc_ori.astype(np.int16) - enc_per.astype(np.int16))
-    axes[2].bar(x, dif_abs, color="#4d4d4d", width=1.0)
+    axes[2].bar(x, dif_abs, color="#b4b4b4", width=1.0, edgecolor="#8f8f8f")
     axes[2].set_title("Diferencia absoluta entre cifrados", loc="left")
     axes[2].set_xlabel("Índice de byte")
     axes[2].set_ylabel("|Δ|")
@@ -868,7 +869,7 @@ def _panel_ataques_con_texto(datos, tipo: str, nombre_archivo: str):
     texto_ref = datos["texto_comprimido"]
     niveles = [0.05, 0.10, 0.25]
 
-    fig, axes = plt.subplots(3, 2, figsize=(16, 10), facecolor="white")
+    fig, axes = plt.subplots(3, 2, figsize=(20, 12), facecolor="white")
     for row in axes:
         for ax in row:
             ax.set_facecolor("white")
@@ -881,14 +882,36 @@ def _panel_ataques_con_texto(datos, tipo: str, nombre_archivo: str):
             audio_at = ataque_oclusion(audio, p)
             titulo = f"Oclusión {int(p * 100)}%"
 
-        # "Imagen atacada": representación plana de la señal perturbada
+        # "Imagen atacada": mapa de intensidad en escala de grises (más legible)
         ax_img = axes[i][0]
-        muestra = audio_at[:1200]
-        ax_img.plot(np.arange(len(muestra)), muestra, color="#2b2b2b", linewidth=0.8)
-        ax_img.set_title(f"{titulo} — Señal atacada", loc="left")
-        ax_img.set_xlabel("Muestra")
-        ax_img.set_ylabel("Amplitud")
-        ax_img.grid(alpha=0.2, color="#bbbbbb")
+        if tipo == "oclusion":
+            idx_ataque = np.where((audio_at == 0) & (audio != 0))[0]
+            if len(idx_ataque) > 0:
+                centro = int(idx_ataque[len(idx_ataque) // 2])
+                ini = max(0, centro - 6000)
+                fin = min(len(audio_at), centro + 6000)
+                muestra = audio_at[ini:fin]
+            else:
+                muestra = audio_at[:12000]
+        else:
+            muestra = audio_at[:12000]
+
+        filas = 120
+        cols = max(1, len(muestra) // filas)
+        muestra = muestra[: filas * cols].reshape(filas, cols)
+        im = ax_img.imshow(
+            muestra,
+            cmap="gray",
+            aspect="auto",
+            interpolation="nearest",
+            vmin=-32768,
+            vmax=32767,
+        )
+        ax_img.set_title(f"{titulo} — Mapa de amplitud", loc="left")
+        ax_img.set_xlabel("Ventana temporal")
+        ax_img.set_ylabel("Bloques de muestras")
+        ax_img.grid(alpha=0.3, color="#b0b0b0")
+        fig.colorbar(im, ax=ax_img, fraction=0.04, pad=0.02, label="Amplitud")
 
         texto_rec = _recuperar_texto_desde_audio(audio_at, datos)
         similitud = _similitud_textual(texto_ref, texto_rec)
@@ -905,13 +928,13 @@ def _panel_ataques_con_texto(datos, tipo: str, nombre_archivo: str):
             vista if vista else "<sin texto recuperado legible>",
             ha="left",
             va="top",
-            fontsize=9,
+            fontsize=10,
             family="monospace",
             wrap=True,
             color="#1a1a1a",
         )
 
-    fig.tight_layout()
+    fig.tight_layout(pad=2.0)
     _guardar(fig, nombre_archivo)
 
 
@@ -958,9 +981,9 @@ def analisis_robustez(datos):
         print(f"  Oclusión       {p * 100:.0f}%: {pct_oc:.2f}% bits correctos")
 
     # Gráfica
-    fig, axes = plt.subplots(1, 2, figsize=(16, 6), facecolor="#1a1a2e")
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6), facecolor="white")
     for ax in axes:
-        ax.set_facecolor("#1a1a2e")
+        ax.set_facecolor("white")
 
     labels = [f"{p * 100:.0f}%" for p in proporciones]
     x_pos = np.arange(len(proporciones))
@@ -970,7 +993,7 @@ def analisis_robustez(datos):
         COLORES["exito"] if v >= 95 else COLORES["fallo"] for v in resultados_sp
     ]
     bars1 = axes[0].bar(
-        x_pos, resultados_sp, color=colores_sp, width=0.5, edgecolor="#555577"
+        x_pos, resultados_sp, color=colores_sp, width=0.5, edgecolor="#8f8f8f"
     )
     axes[0].axhline(
         y=95,
@@ -1004,7 +1027,7 @@ def analisis_robustez(datos):
         COLORES["exito"] if v >= 95 else COLORES["fallo"] for v in resultados_oc
     ]
     bars2 = axes[1].bar(
-        x_pos, resultados_oc, color=colores_oc, width=0.5, edgecolor="#555577"
+        x_pos, resultados_oc, color=colores_oc, width=0.5, edgecolor="#8f8f8f"
     )
     axes[1].axhline(
         y=95,
@@ -1075,8 +1098,8 @@ def analisis_seguridad_clave(datos):
     print(f"  Espacio de claves:        ~2^100 ({espacio_total:.2e})")
     print(f"  Fuerza bruta a {velocidad:.0e} claves/s: {anios:.2e} anos")
 
-    fig, ax = plt.subplots(figsize=(12, 7), facecolor="#1a1a2e")
-    ax.set_facecolor("#1a1a2e")
+    fig, ax = plt.subplots(figsize=(12, 7), facecolor="white")
+    ax.set_facecolor("white")
     ax.axis("off")
 
     info = (
@@ -1115,7 +1138,7 @@ def analisis_seguridad_clave(datos):
         fontfamily="monospace",
         bbox=dict(
             boxstyle="round,pad=0.8",
-            facecolor="#2a2a4a",
+            facecolor="#efefef",
             edgecolor=COLORES["original"],
             linewidth=2,
         ),
@@ -1144,9 +1167,9 @@ def visualizaciones_mejoradas(datos):
     posiciones = datos["posiciones"]
 
     # --- Onda original vs esteganografiado (overlay) ---
-    fig, axes = plt.subplots(3, 1, figsize=(16, 10), facecolor="#1a1a2e")
+    fig, axes = plt.subplots(3, 1, figsize=(16, 10), facecolor="white")
     for ax in axes:
-        ax.set_facecolor("#1a1a2e")
+        ax.set_facecolor("white")
 
     axes[0].plot(orig, color=COLORES["original"], alpha=0.7, linewidth=0.3)
     axes[0].set_title("Audio Original", **FONT_TITLE)
@@ -1176,7 +1199,7 @@ def visualizaciones_mejoradas(datos):
         color=COLORES["alerta"],
         bbox=dict(
             boxstyle="round,pad=0.3",
-            facecolor="#2a2a4a",
+            facecolor="#efefef",
             edgecolor=COLORES["alerta"],
             alpha=0.8,
         ),
@@ -1193,9 +1216,9 @@ def visualizaciones_mejoradas(datos):
     _guardar(fig, "onda_original_y_estegano.png")
 
     # --- Mapa de distribución de posiciones caóticas ---
-    fig2, axes2 = plt.subplots(2, 1, figsize=(16, 8), facecolor="#1a1a2e")
+    fig2, axes2 = plt.subplots(2, 1, figsize=(16, 8), facecolor="white")
     for ax in axes2:
-        ax.set_facecolor("#1a1a2e")
+        ax.set_facecolor("white")
 
     # Scatter de posiciones
     axes2[0].scatter(
@@ -1219,7 +1242,7 @@ def visualizaciones_mejoradas(datos):
         bins=n_bins,
         color=COLORES["acento"],
         alpha=0.85,
-        edgecolor="#1a1a2e",
+        edgecolor="#707070",
     )
     axes2[1].set_title(
         f"Histograma de Posiciones Caóticas ({n_bins} segmentos del audio)",
@@ -1258,8 +1281,8 @@ def visualizaciones_mejoradas(datos):
     diff_zoom = diff[seccion_inicio:seccion_fin]
     x_zoom = np.arange(seccion_inicio, seccion_fin)
 
-    fig3, ax3 = plt.subplots(figsize=(16, 4), facecolor="#1a1a2e")
-    ax3.set_facecolor("#1a1a2e")
+    fig3, ax3 = plt.subplots(figsize=(16, 4), facecolor="white")
+    ax3.set_facecolor("white")
     ax3.plot(x_zoom, diff_zoom, color=COLORES["alerta"], linewidth=0.5, alpha=0.9)
     n_zoom = np.sum(diff_zoom > 0)
     ax3.set_title(

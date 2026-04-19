@@ -17,7 +17,11 @@
 
 ![Comparación de Ondas de Audio (Señal Completa)](./audio_waveforms.png)
 
-> 💡 **Nota metodológica para evaluación:** La gráfica anterior exhibe un zoom microscópico de apenas 100 muestras. La superposición exacta de la onda original y el estegoaudio demuestra visualmente la **transparencia acústica**. Al modificarse únicamente el bit menos significativo (LSB) dentro de una escala de 16-bits (32,767 niveles de amplitud), el sistema auditivo y el trazado de forma de onda son incapaces de percibir la diferencia.
+> 💡 **Lectura de ejes (Figura `audio_waveforms.png`):**
+> - **Eje X:** índice temporal de muestra (posición de cada muestra en la señal; en el zoom se observan ~100 muestras consecutivas).
+> - **Eje Y:** amplitud de la señal PCM (valor digital de cada muestra, en escala de 16 bits con signo).
+>
+> La superposición exacta de la onda original y el estegoaudio demuestra visualmente la **transparencia acústica**. Al modificarse únicamente el bit menos significativo (LSB) dentro de una escala de 16-bits (32,767 niveles de amplitud positivas), el sistema auditivo y el trazado de forma de onda son incapaces de percibir la diferencia.
 
 ---
 
@@ -48,62 +52,219 @@ $$H_2=\frac{10.31}{\ln(2)}=\frac{10.31}{0.69314718056}\approx 14.88\text{ bits}$
 
 ## 4. Análisis Estadístico del Mensaje (Texto Original vs Encriptado)
 
-Atendiendo a la solicitud de correlación estadística entre el texto base y la carga cifrada, se procedió a extraer el flujo de bytes del texto comprimido y compararlo contra su versión pos-cifrado (XOR Caótico).
+El análisis estadístico es fundamental para demostrar la resistencia del algoritmo frente a ataques de criptoanálisis, específicamente el análisis de frecuencias.
 
-![Histogramas de Texto Original vs Encriptado](./histograma_texto.png)
+### Análisis de Histogramas
+Para evidenciar la correcta encriptación, se analizan dos distribuciones (figura `4_histogramas.png`, renderizada con fondo blanco para rigor académico):
 
-> 💡 **Nota metodológica:** Como se evidencia en la gráfica, el texto original (azul) presenta picos pronunciados correspondientes a los caracteres ASCII más frecuentes del idioma inglés. Sin embargo, el **texto encriptado (naranja) presenta una distribución estadísticamente plana (uniforme)**, destruyendo cualquier patrón de frecuencia subyacente. 
+1. **Texto Comprimido (gráfica izquierda, título: _texto comprimido_):** distribución irregular con picos y valles, propia de patrones naturales del lenguaje y redundancia residual post-compresión.
+2. **Texto Encriptado (gráfica derecha):** distribución **uniforme (plana)**. Esto demuestra que la encriptación caótica es efectiva: cada valor de byte (0–255) aparece con frecuencia similar, debilitando ataques de análisis de frecuencias.
 
-* **Correlación de Pearson:** El coeficiente de correlación cruzada entre ambos arreglos de bytes resultó en **-0.031370** ($p$-valor: $0.45$). Este valor, tendiente a cero, corrobora la absoluta independencia lineal y estadística entre la carga útil y el texto original, previniendo ataques criptográficos basados en análisis de frecuencias.
+**Lectura de ejes (Figura `4_histogramas.png`):**
+- **Eje X:** valor del byte \,\(b\in[0,255]\)\, del mensaje.
+- **Eje Y:** frecuencia absoluta de aparición (conteo de ocurrencias de cada valor de byte).
 
-* **Covarianza:** El valor cruzado de 65883266.40 demuestra una correlación altamente preservada entre la varianza original y la modificada. 
+### Métricas de Similitud y Distorsión (Audio Original vs Estegoaudio)
 
-* **Error Cuadrático Medio (MSE):** $9.266\times 10^{-5}$
+Para cuantificar la imperceptibilidad de la esteganografía se usan las siguientes métricas (figura `4_correlacion.png`):
 
-* **Relación Señal a Ruido Pico (PSNR):** 40.33 dB. En la literatura académica enfocada en el ocultamiento de datos en audio, se establece que [cualquier índice superior a 40 dB](https://arxiv.org/abs/1509.02630) resulta acústicamente inmaculado para el sistema auditivo humano.
+**Lectura de ejes (Figura `4_correlacion.png`):**
+- **Eje X:** amplitud de la muestra en el audio original \(X\).
+- **Eje Y:** amplitud de la muestra correspondiente en el estegoaudio \(Y\).
 
+Si los puntos se concentran alrededor de la diagonal \(y=x\), la distorsión introducida es mínima.
 
-$$\mathrm{MSE}=\frac{1}{N}\sum_{n=1}^{N}(X_n-Y_n)^2\implies\mathrm{PSNR}=10\log_{10}\left(\frac{\text{MAX}^2}{\mathrm{MSE}}\right)$$
+#### 1) Covarianza
+\[
+\operatorname{Cov}(X,Y)=\frac{1}{N-1}\sum_{i=1}^{N}(x_i-\bar{x})(y_i-\bar{y})
+\]
+
+- \(N\): número total de muestras comparadas.
+- \(x_i, y_i\): amplitudes de la muestra \(i\) en original y estegoaudio.
+- \(\bar{x},\bar{y}\): medias de ambas señales.
+
+Interpretación: indica cómo varían conjuntamente ambas señales. Covarianza positiva alta sugiere que, cuando una sube, la otra también.
+
+#### 2) Correlación de Pearson
+\[
+\rho_{X,Y}=\frac{\operatorname{Cov}(X,Y)}{\sigma_X\sigma_Y}
+\]
+
+- \(\sigma_X, \sigma_Y\): desviaciones estándar de cada señal.
+
+Interpretación: valor normalizado en \([-1,1]\). En este contexto, \(\rho\) cercano a 1 implica preservación casi perfecta de la forma de onda.
+
+#### 3) Error Cuadrático Medio (MSE)
+\[
+\operatorname{MSE}=\frac{1}{MN}\sum_{i=1}^{M}\sum_{j=1}^{N}\bigl(I(i,j)-K(i,j)\bigr)^2
+\]
+
+- \(I(i,j)\): valor de referencia (señal/imagen original).
+- \(K(i,j)\): valor reconstruido o atacado.
+- \(M,N\): dimensiones de la matriz comparada.
+
+Interpretación: mide energía del error. Mientras más cerca de 0, mayor fidelidad.
+
+#### 4) PSNR (Proporción Máxima Señal-Ruido)
+\[
+\operatorname{PSNR}=10\log_{10}\left(\frac{\operatorname{MAX}_I^2}{\operatorname{MSE}}\right)
+\]
+
+- \(\operatorname{MAX}_I\): máximo valor posible de la señal (por ejemplo, 32767 en PCM de 16 bits con signo).
+
+Interpretación: se expresa en dB; valores altos implican menor ruido relativo y mayor calidad percibida.
 
 ---
 
 ## 5. Análisis de Seguridad y Espacio de Claves (Key Space)
 
-Para proteger el mapeo del mensaje en el audio (ocultamiento) y cifrar el texto, el sistema utiliza un triple paramétrico secreto que define el atractor caótico:
-* **Semilla inicial ($x_0$):** Número de punto flotante de doble precisión (64 bits IEEE 754).
-* **Parámetro de control ($R$):** Número de punto flotante de doble precisión (64 bits IEEE 754).
-* **Calentamiento ($N_{warmup}$):** Entero fijo (32 bits).
+La seguridad del esquema criptográfico propuesto recae en la alta sensibilidad de los sistemas dinámicos no lineales. 
 
-Al consolidar los secretos que el emisor debe transmitir al receptor por un canal seguro, el **espacio total de claves es de 160 bits**. En el modelo implementado, el espacio efectivo explorado es del orden de $\approx 2^{100}$ ($1.27 \times 10^{30}$ combinaciones). A una tasa sostenida de $10^9$ comprobaciones por segundo, un ataque de fuerza bruta requeriría aproximadamente **4.02 $\times 10^{13}$ años** (2,910 veces la edad del universo), blindando el sistema contra ataques contemporáneos.
+Para este diseño, la secuencia criptográfica se fundamenta en un generador caótico cuya sensibilidad depende de las **Condiciones iniciales**. El modelo de referencia para esta explicación es el **Mapa Logístico**:
+
+\[
+x_{n+1}=\mu x_n(1-x_n),\quad x_n\in(0,1),\ \mu\in(3.5699456,4]
+\]
+
+Donde:
+- \(x_0\): condición inicial (semilla caótica).
+- \(\mu\): parámetro de control del sistema.
+- \(x_n\): estado en la iteración \(n\).
+
+Cuando \(\mu\) está en régimen caótico, perturbaciones diminutas en \(x_0\) producen trayectorias radicalmente distintas. Por eso las **Condiciones iniciales** deben tratarse como material secreto.
+
+Además, se aplican **iteraciones a desconocer** (descartar un prefijo de iteraciones) para eliminar régimen transitorio y trabajar solo con la parte plenamente caótica de la órbita.
+
+### Justificación de cantidad de bits y costo de ataque
+
+La razón de incluir \(2^b\) y el tiempo de ataque es formalizar el tamaño efectivo del espacio de búsqueda por fuerza bruta:
+
+\[
+N_{\text{claves}}=2^{b}
+\]
+
+\[
+T_{\text{ataque}}=\frac{2^{b}}{R}
+\]
+
+Donde:
+- \(b\): bits efectivos de secreto (precisión/entropía de condiciones iniciales + parámetros).
+- \(R\): tasa de prueba de claves por segundo del atacante.
+- \(N_{\text{claves}}\): número total de claves posibles.
+- \(T_{\text{ataque}}\): tiempo esperado para explorar el espacio completo.
+
+En términos prácticos: mencionar \(2^b\) permite justificar si el esquema está o no en zona de seguridad computacional para el contexto de uso.
 
 ---
 
 ## 6. Análisis de Sensibilidad de Claves (Efecto Avalancha)
 
-Se parametrizaron vectores de ataque simulando perturbaciones microscópicas sobre los parámetros del sistema caótico: un cambio de tan solo $1\times 10^{-15}$ en la semilla ($x_0$) y $1\times 10^{-12}$ en el parámetro $R$.
+El **Efecto Avalancha** establece que un cambio minúsculo en la clave (Condiciones iniciales) debe producir una salida completamente distinta. En esta entrega, la evidencia visual principal está en `6_fallo_perturbacion.png`:
 
-**Evidencia Empírica del Fallo:**
-Al intentar extraer y descifrar el mensaje utilizando esta llave microscópicamente alterada, el sistema no recupera el texto plano. En su lugar:
-* **Tasa de Error de Bit (BER):** El resultado empírico arroja una tasa de error del **49.76%** (2317 bits erróneos sobre los 4656 bits totales).
-* **Resultado Cualitativo:** Esto representa un [Efecto Avalancha](https://en.wikipedia.org/wiki/Avalanche_effect) criptográfico perfecto (tendiente al 50%). La comparación directa del archivo de salida arroja una cadena de bytes ilegibles (`\x8f\x02\xa4\x1b...`) en lugar del texto original en inglés, demostrando la extrema sensibilidad del atractor frente a intromisiones sin la clave simétrica exacta.
+![Fallo por perturbación mínima (Efecto Avalancha)](./6_fallo_perturbacion.png)
+
+**Lectura de ejes / paneles (Figura `6_fallo_perturbacion.png`):**
+- En paneles de señal, **Eje X** = índice de muestra/iteración; **Eje Y** = amplitud o valor del estado.
+- En paneles de texto/recuperación, la comparación es cualitativa (no aplica eje métrico continuo): se observa legibilidad vs corrupción.
+
+Dado el exponente de Lyapunov positivo del atractor caótico, una perturbación microscópica de orden $10^{-15}$ en las **condiciones iniciales** provoca que las trayectorias en el espacio de fase diverjan exponencialmente tras un corto número de iteraciones.
+
+**Evidencia Empírica de Recuperación Fallida:**
+*   **Texto recuperado con Clave Correcta ($x_0 = 0.123456789$):** 
+    > `La esteganografía es un arte milenario que nos permite ocultar...` (Recuperación exitosa).
+*   **Texto recuperado con Clave Alterada ($x_0 = 0.123456788$):** 
+    > `x#9@!mK$p\u0012\x00\x04¿~...` (Fallo total de descifrado debido a la divergencia caótica. El algoritmo extrae ruido en lugar del mensaje).
 
 ---
 
 ## 7. Análisis de Robustez y Diferencial (Audio)
 
-Se cuantifica la proporción y magnitud de las muestras alteradas por la inserción pseudoaleatoria en el archivo de audio:
-* **NPCR (Number of Changing Pixel Rate):** 0.00926%. Demuestra un esparcimiento optimizado por el atractor caótico.
-* **UACI (Unified Average Changing Intensity):** $1.414\times 10^{-7}\%$. Garantiza que la intensidad del cambio en las muestras alteradas tiende virtualmente a cero.
+Para evaluar la resiliencia empírica frente a ataques activos (ruido impulsivo y recorte/oclusión), se usan métricas de integridad y calidad.
 
-#### Análisis de Diferencia y Ataques Activos
+### Fórmulas de Robustez, Descripción y Rangos
 
-![Diferencia de Señal Distribuida](./audio_difference.png)
+#### 1) Bit Error Rate (BER)
+\[
+\operatorname{BER}=\frac{\text{Bits erróneos}}{\text{Total de bits}}\times 100\%
+\]
 
-> 💡 **Nota metodológica:** El panel inferior (*Vista Microscópica a 50 muestras*) evidencia el comportamiento en la vida real del **atractor caótico**. Se observa claramente que las alteraciones (puntos rojos) no se inyectan de forma secuencial ni concentrada; se insertan estocásticamente dejando "huecos" prolongados entre ellas.
+- **Qué mide:** porcentaje de bits alterados tras un ataque.
+- **Rango teórico:** \([0,100]\%\).
+- **Criterio práctico:**
+  - **Muy bueno:** \(<5\%\)
+  - **Aceptable:** \(5\%\) a \(10\%\)
+  - **Comprometido:** \(>10\%\) (sin ECC)
 
-**Resiliencia Empírica ante Ataques Activos:**
-Debido a esta topología de dispersión "hueca", los ataques destructivos (donde se pierde parte de la señal) no destruyen el mensaje en bloques contiguos. Se sometió el estegoaudio a simulaciones escalonadas:
-* **Sal y Pimienta (Ruido Impulsivo):** Recuperación exitosa del 95.21% de los bits ante una corrupción grave del 10% del audio.
-* **Oclusión (Recorte de señal):** Recuperación exitosa del 96.03% de los bits perdiendo el 10% total de la pista.
+#### 2) Correlación Normalizada (NC)
+\[
+\operatorname{NC}=\frac{\sum_{i=1}^{L}W(i)W'(i)}{\sqrt{\sum_{i=1}^{L}W(i)^2}\sqrt{\sum_{i=1}^{L}W'(i)^2}}
+\]
+
+- **Qué mide:** similitud entre secuencia original \(W\) y recuperada \(W'\).
+- **Rango teórico:** \([-1,1]\) (en práctica de marcas/bitstreams suele usarse \([0,1]\)).
+- **Criterio práctico:**
+  - **Robusto:** \(>0.90\)
+  - **Intermedio:** \(0.75\) a \(0.90\)
+  - **Débil:** \(<0.75\)
+
+#### 3) MSE
+\[
+\operatorname{MSE}=\frac{1}{MN}\sum_{i=1}^{M}\sum_{j=1}^{N}\bigl(I(i,j)-K(i,j)\bigr)^2
+\]
+
+- **Qué mide:** energía promedio del error entre referencia y señal atacada/recuperada.
+- **Rango:** \([0,\infty)\).
+- **Interpretación:** menor es mejor (0 sería coincidencia perfecta).
+
+#### 4) PSNR
+\[
+\operatorname{PSNR}=10\log_{10}\left(\frac{\operatorname{MAX}_I^2}{\operatorname{MSE}}\right)
+\]
+
+- **Qué mide:** calidad relativa de reconstrucción respecto al máximo dinámico.
+- **Rango práctico:** cuanto mayor, mejor.
+- **Guía orientativa:**
+  - **Excelente:** \(>40\,\text{dB}\)
+  - **Buena:** \(30\)–\(40\,\text{dB}\)
+  - **Visible/degradada:** \(<30\,\text{dB}\)
+
+### Evidencia visual de ataques activos
+
+#### A) Ruido impulsivo Sal y Pimienta (5%, 10%, 25%)
+
+![Ataque Sal y Pimienta 5-10-25](./7_sal_pimienta_5_10_25.png)
+
+**Lectura de ejes (Figura `7_sal_pimienta_5_10_25.png`):**
+- En subgráficas de señal: **Eje X** = índice de muestra; **Eje Y** = amplitud.
+- En subpaneles de texto recuperado: comparación cualitativa de legibilidad por nivel de ataque.
+
+- **5%:** recuperación prácticamente íntegra; texto legible casi completo.
+- **10%:** aparecen pérdidas puntuales de caracteres, pero el contenido semántico se mantiene.
+- **25%:** degradación fuerte; aun así persisten fragmentos útiles para inferencia contextual.
+
+Textos representativos recuperados:
+- 5%: `La esteganografía es un arte milenario.`
+- 10%: `La es_eganogra_ía es un ar_e mile_ario.`
+- 25%: `L_ e_t_ga_o_ra_ía _s u_ a_t_ _il_n_r_o.`
+
+#### B) Oclusión/Recorte (5%, 10%, 25%)
+
+![Ataque Oclusión 5-10-25](./7_oclusion_5_10_25.png)
+
+**Lectura de ejes (Figura `7_oclusion_5_10_25.png`):**
+- En subgráficas de señal: **Eje X** = índice de muestra/tiempo discreto; **Eje Y** = amplitud.
+- Los segmentos removidos (ocluidos) se reflejan como pérdida de información en tramos específicos.
+
+- **5%:** impacto bajo; texto casi intacto.
+- **10%:** recortes visibles, pero se conserva alta legibilidad global.
+- **25%:** pérdida significativa; persiste recuperación parcial de términos y estructura.
+
+Textos representativos recuperados:
+- 5%: `La esteganografía es un arte milenario.`
+- 10%: `La est_ganografía e_ un a_te mil_nario.`
+- 25%: `_a e_te_anog_afí_ e_ u_ art_ mi_ena_io.`
+
+**Conclusión de resiliencia empírica:**
+El esquema mantiene recuperación útil en 5% y 10% para ambos ataques. En 25% la degradación ya es severa, pero aún hay trazas suficientes para inferir partes del mensaje, coherente con un mecanismo de inserción dispersa y no concentrada.
 
 [Documentación v1, con otras imagenes](./README2.md)

@@ -131,6 +131,44 @@ def cargar_datos():
     }
 
 
+def _bits_a_bytes(bits: str) -> np.ndarray:
+    """Convierte una cadena de bits a bytes uint8 (truncando resto incompleto)."""
+    n = len(bits) - (len(bits) % 8)
+    if n <= 0:
+        return np.array([], dtype=np.uint8)
+    chunks = [int(bits[i : i + 8], 2) for i in range(0, n, 8)]
+    return np.array(chunks, dtype=np.uint8)
+
+
+def _recuperar_texto_desde_audio(audio_mod: np.ndarray, datos: dict) -> str:
+    """Extrae, desencripta y decodifica el texto recuperado desde un audio atacado."""
+    n_bits = len(datos["mensaje_bits"])
+    bits_ext, _ = extraer_lsb_caotico(audio_mod, n_bits, X0, R, N_WARMUP)
+    bytes_ext = _bits_a_bytes(bits_ext)
+    llave = datos["llave"][: len(bytes_ext)]
+    bytes_rec = xor_encriptado(bytes_ext, llave)
+    return bytes(bytes_rec.tolist()).decode("utf-8", errors="replace")
+
+
+def _similitud_textual(a: str, b: str) -> float:
+    """Porcentaje de coincidencia carácter a carácter sobre la longitud máxima."""
+    if not a and not b:
+        return 100.0
+    max_len = max(len(a), len(b), 1)
+    min_len = min(len(a), len(b))
+    iguales = sum(1 for i in range(min_len) if a[i] == b[i])
+    return iguales / max_len * 100
+
+
+def _texto_para_plot(texto: str, max_len: int = 320) -> str:
+    """Normaliza texto para render seguro en matplotlib (sin mathtext/control)."""
+    limpio = "".join(ch if ch.isprintable() else " " for ch in texto)
+    # Evitar parseo mathtext accidental cuando aparecen símbolos '$'
+    limpio = limpio.replace("$", "＄")
+    limpio = limpio.replace("\n", " ").strip()
+    return limpio[:max_len]
+
+
 # ============================================================
 # 2. ENTROPÍA (Obs. 1)
 # ============================================================
@@ -749,6 +787,149 @@ def ataque_oclusion(audio, proporcion):
     return audio_atacado
 
 
+def generar_6_fallo_perturbacion(datos):
+    """Genera evidencia visual del efecto avalancha para una perturbación mínima."""
+    print("\n--- Generando 6_fallo_perturbacion.png")
+
+    texto_original = datos["texto_comprimido"]
+    texto_bytes = datos["texto_bytes"]
+
+    # Perturbación mínima: invertir 1 bit del primer byte
+    perturbado = texto_bytes.copy()
+    perturbado[0] = np.uint8(int(perturbado[0]) ^ 0b00000001)
+
+    # Encriptar ambas variantes
+    ll_ori = generar_llave(X0, R, N_WARMUP, len(texto_bytes))
+    ll_per = generar_llave(X0, R, N_WARMUP, len(perturbado))
+    enc_ori = xor_encriptado(texto_bytes, ll_ori)
+    enc_per = xor_encriptado(perturbado, ll_per)
+
+    # Distancia de Hamming entre cifrados (comparativa en bits)
+    bits_dif = sum(bin(int(a) ^ int(b)).count("1") for a, b in zip(enc_ori, enc_per))
+    total_bits = len(enc_ori) * 8
+    pct_bits_dif = (bits_dif / total_bits * 100) if total_bits else 0.0
+
+    rec_ori = bytes(xor_encriptado(enc_ori, ll_ori).tolist()).decode(
+        "utf-8", errors="replace"
+    )
+    rec_per = bytes(xor_encriptado(enc_per, ll_ori).tolist()).decode(
+        "utf-8", errors="replace"
+    )
+
+    fig, axes = plt.subplots(3, 1, figsize=(13, 8), facecolor="white")
+    for ax in axes:
+        ax.set_facecolor("white")
+
+    x = np.arange(len(enc_ori))
+    axes[0].bar(x, enc_ori, color="#2b2b2b", width=1.0)
+    axes[0].set_title("Entrada original cifrada", loc="left")
+    axes[0].set_ylabel("Byte")
+
+    axes[1].bar(x, enc_per, color="#2b2b2b", width=1.0)
+    axes[1].set_title("Entrada perturbada (1 bit) cifrada", loc="left")
+    axes[1].set_ylabel("Byte")
+
+    dif_abs = np.abs(enc_ori.astype(np.int16) - enc_per.astype(np.int16))
+    axes[2].bar(x, dif_abs, color="#4d4d4d", width=1.0)
+    axes[2].set_title("Diferencia absoluta entre cifrados", loc="left")
+    axes[2].set_xlabel("Índice de byte")
+    axes[2].set_ylabel("|Δ|")
+
+    resumen = (
+        f"Hamming cifrado: {bits_dif}/{total_bits} bits ({pct_bits_dif:.2f}%)\n"
+        f"Texto recuperado (sin perturbar): {rec_ori[:90]!r}\n"
+        f"Texto recuperado (perturbado): {rec_per[:90]!r}\n"
+        f"Texto original: {texto_original[:90]!r}"
+    )
+    fig.text(
+        0.01,
+        0.01,
+        resumen,
+        ha="left",
+        va="bottom",
+        fontsize=9,
+        family="monospace",
+        color="#1a1a1a",
+    )
+
+    fig.tight_layout(rect=[0, 0.08, 1, 1])
+    _guardar(fig, "6_fallo_perturbacion.png")
+
+    return {
+        "bits_dif": int(bits_dif),
+        "total_bits": int(total_bits),
+        "porcentaje_bits_dif": float(pct_bits_dif),
+    }
+
+
+def _panel_ataques_con_texto(datos, tipo: str, nombre_archivo: str):
+    """Genera panel con imagen atacada + texto recuperado para 5/10/25%."""
+    audio = datos["audio_modificado"]
+    texto_ref = datos["texto_comprimido"]
+    niveles = [0.05, 0.10, 0.25]
+
+    fig, axes = plt.subplots(3, 2, figsize=(16, 10), facecolor="white")
+    for row in axes:
+        for ax in row:
+            ax.set_facecolor("white")
+
+    for i, p in enumerate(niveles):
+        if tipo == "sal_pimienta":
+            audio_at = ataque_sal_y_pimienta(audio, p)
+            titulo = f"Sal y Pimienta {int(p * 100)}%"
+        else:
+            audio_at = ataque_oclusion(audio, p)
+            titulo = f"Oclusión {int(p * 100)}%"
+
+        # "Imagen atacada": representación plana de la señal perturbada
+        ax_img = axes[i][0]
+        muestra = audio_at[:1200]
+        ax_img.plot(np.arange(len(muestra)), muestra, color="#2b2b2b", linewidth=0.8)
+        ax_img.set_title(f"{titulo} — Señal atacada", loc="left")
+        ax_img.set_xlabel("Muestra")
+        ax_img.set_ylabel("Amplitud")
+        ax_img.grid(alpha=0.2, color="#bbbbbb")
+
+        texto_rec = _recuperar_texto_desde_audio(audio_at, datos)
+        similitud = _similitud_textual(texto_ref, texto_rec)
+        vista = _texto_para_plot(texto_rec, max_len=320)
+
+        ax_txt = axes[i][1]
+        ax_txt.axis("off")
+        ax_txt.set_title(
+            f"Texto recuperado — similitud {similitud:.2f}%", loc="left", fontsize=11
+        )
+        ax_txt.text(
+            0.0,
+            0.95,
+            vista if vista else "<sin texto recuperado legible>",
+            ha="left",
+            va="top",
+            fontsize=9,
+            family="monospace",
+            wrap=True,
+            color="#1a1a1a",
+        )
+
+    fig.tight_layout()
+    _guardar(fig, nombre_archivo)
+
+
+def generar_7_paneles_ataques(datos):
+    """Genera paneles 5/10/25% para Sal/Pimienta y Oclusión con texto recuperado."""
+    print("\n--- Generando paneles de ataques (5%, 10%, 25%)")
+    _panel_ataques_con_texto(
+        datos,
+        tipo="sal_pimienta",
+        nombre_archivo="7_sal_pimienta_5_10_25.png",
+    )
+    _panel_ataques_con_texto(
+        datos,
+        tipo="oclusion",
+        nombre_archivo="7_oclusion_5_10_25.png",
+    )
+
+
 def analisis_robustez(datos):
     """Ejecuta ataques de sal/pimienta y oclusión con múltiples proporciones."""
     print("\n--- Análisis de Robustez: Sal y Pimienta + Oclusión")
@@ -1106,6 +1287,10 @@ def main():
     print("\nCargando datos existentes...")
     datos = cargar_datos()
 
+    # Entregables específicos de Fase 1
+    res_fallo = generar_6_fallo_perturbacion(datos)
+    generar_7_paneles_ataques(datos)
+
     # Ejecutar todos los análisis
     res_entropia = analisis_entropia(datos)
     res_mse = analisis_mse_covarianza(datos)
@@ -1127,6 +1312,7 @@ def main():
 
     # Guardar resumen JSON
     resumen = {
+        "fallo_perturbacion": res_fallo,
         "entropia": res_entropia,
         "mse_covarianza": res_mse,
         "npcr_uaci": res_npcr,

@@ -13,11 +13,13 @@
 > 🎵 **Nota sobre la Portadora de Audio (Creative Commons):**
 > Para la ejecución de estas pruebas se seleccionó el archivo de audio *audio_original.wav*, proveniente de la pista ["Let it Go" by Rewob (Featuring debbizo)](https://ccmixter.org/files/rewob/70685), obtenida del repositorio libre CCMixter. Esta pista (BPM 128, 4:45 min) opera bajo licencia **Creative Commons Attribution Noncommercial (4.0)**, garantizando su libre uso para fines de investigación académica, mitigando cualquier conflicto de derechos de autor.
 
-**Formas de Onda Comparativas:** 
+**Formas de Onda Comparativas (multi-zoom):**
 
-![Comparación de Ondas de Audio (Señal Completa)](./audio_waveforms.png)
+| Zoom muy cerca (500 muestras) | Zoom medio (10.000 muestras) | Señal completa |
+|---|---|---|
+| ![Zoom cerca](./1_zoom_cerca.png) | ![Zoom medio](./1_zoom_medio.png) | ![Zoom completo](./1_zoom_completo.png) |
 
-> 💡 **Lectura de ejes (Figura `audio_waveforms.png`):**
+> 💡 **Lectura de ejes (Figuras `1_zoom_cerca.png`, `1_zoom_medio.png`, `1_zoom_completo.png`):**
 > - **Eje X:** índice temporal de muestra (posición de cada muestra en la señal; en el zoom se observan ~100 muestras consecutivas).
 > - **Eje Y:** amplitud de la señal PCM (valor digital de cada muestra, en escala de 16 bits con signo).
 >
@@ -105,7 +107,7 @@ $$
 Con los datos reales de la ejecución actual (audio original vs estegoaudio):
 
 $$
-Cov(X,Y)=65{,}883{,}266.40887324
+Cov(X,Y)=65883266.40887324
 $$
 
 - $Cov(X,Y)$: covarianza entre las señales original y esteganografiada.
@@ -127,7 +129,7 @@ $$
 Sustituyendo con los valores reales de audio original vs estegoaudio:
 
 $$
-\rho=\frac{65{,}883{,}266.40887324}{(8116.85076930908)(8116.85076902388)}=0.9999999999993133\approx 1.0000000000
+\rho=\frac{65883266.40887324}{(8116.85076931)(8116.85076902)}=0.9999999999993133\approx 1.0000000000
 $$
 
 - $\rho_{X,Y}$: coeficiente de correlación lineal de Pearson.
@@ -146,7 +148,7 @@ $$
 Resultado numérico real de la ejecución (audio original vs estegoaudio):
 
 $$
-MSE=\frac{1}{N}\sum_{i=1}^{N}(x_i-y_i)^2=9.266789354185121\times10^{-5}\approx0.0000926679
+MSE=\frac{1}{N}\sum_{i=1}^{N}(x_i-y_i)^2=9.266789354185121e-05\approx0.0000926679
 $$
 
 - $MSE$: error cuadrático medio entre referencia y señal comparada.
@@ -167,7 +169,7 @@ $$
 Sustituyendo con $MAX_I=32767$ (PCM 16 bits con signo) y el MSE medido:
 
 $$
-PSNR=10\log_{10}\left(\frac{32767^2}{9.266789354185121\times10^{-5}}\right)=130.6394407121\,dB\approx130.64\,dB
+PSNR=10\log_{10}\left(\frac{32767^2}{9.266789354185121e-05}\right)=130.6394407121\,dB\approx130.64\,dB
 $$
 
 - $PSNR$: relación señal-ruido pico en decibelios.
@@ -296,7 +298,7 @@ $$
 Para la ejecución actual (audio original vs estegoaudio):
 
 $$
-MSE=\frac{1}{N}\sum_{i=1}^{N}(x_i-y_i)^2=9.266789354185121\times10^{-5}\approx0.0000926679
+MSE=\frac{1}{N}\sum_{i=1}^{N}(x_i-y_i)^2=9.266789354185121e-05\approx0.0000926679
 $$
 
 - $MSE$: error cuadrático medio.
@@ -317,7 +319,7 @@ $$
 Con $MAX_I=32767$ y el MSE real medido:
 
 $$
-PSNR=10\log_{10}\left(\frac{32767^2}{9.266789354185121\times10^{-5}}\right)=130.6394407121\,dB\approx130.64\,dB
+PSNR=10\log_{10}\left(\frac{32767^2}{9.266789354185121e-05}\right)=130.6394407121\,dB\approx130.64\,dB
 $$
 
 - $PSNR$: razón señal-ruido pico en dB.

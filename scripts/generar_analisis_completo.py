@@ -18,6 +18,7 @@ Uso:
 from __future__ import annotations
 
 import json
+import re
 import wave
 from math import log
 from pathlib import Path
@@ -821,16 +822,34 @@ def generar_6_fallo_perturbacion(datos):
         ax.set_facecolor("white")
 
     x = np.arange(len(enc_ori))
-    axes[0].bar(x, enc_ori, color="#5f5f5f", width=1.0, edgecolor="#4a4a4a")
+    axes[0].bar(
+        x,
+        enc_ori,
+        color=COLORES["original"],
+        width=1.0,
+        edgecolor="#2f4f6f",
+    )
     axes[0].set_title("Entrada original cifrada", loc="left")
     axes[0].set_ylabel("Byte")
 
-    axes[1].bar(x, enc_per, color="#8a8a8a", width=1.0, edgecolor="#666666")
+    axes[1].bar(
+        x,
+        enc_per,
+        color=COLORES["modificado"],
+        width=1.0,
+        edgecolor="#8a4d00",
+    )
     axes[1].set_title("Entrada perturbada (1 bit) cifrada", loc="left")
     axes[1].set_ylabel("Byte")
 
     dif_abs = np.abs(enc_ori.astype(np.int16) - enc_per.astype(np.int16))
-    axes[2].bar(x, dif_abs, color="#b4b4b4", width=1.0, edgecolor="#8f8f8f")
+    axes[2].bar(
+        x,
+        dif_abs,
+        color=COLORES["fallo"],
+        width=1.0,
+        edgecolor="#8f3b74",
+    )
     axes[2].set_title("Diferencia absoluta entre cifrados", loc="left")
     axes[2].set_xlabel("Índice de byte")
     axes[2].set_ylabel("|Δ|")
@@ -860,6 +879,125 @@ def generar_6_fallo_perturbacion(datos):
         "total_bits": int(total_bits),
         "porcentaje_bits_dif": float(pct_bits_dif),
     }
+
+
+def generar_zooms_seccion_1(datos):
+    """Genera zooms comparativos de forma de onda para la Sección 1."""
+    print("\n--- Generando zooms de Sección 1 (onda original vs estegano)")
+
+    orig = datos["audio_original"]
+    mod = datos["audio_modificado"]
+
+    configuraciones = [
+        ("1_zoom_cerca.png", 500, "Zoom muy cercano"),
+        ("1_zoom_medio.png", 10_000, "Zoom medio"),
+        ("1_zoom_completo.png", len(orig), "Señal completa"),
+    ]
+
+    for nombre, n_muestras, titulo in configuraciones:
+        n = min(len(orig), n_muestras)
+        x = np.arange(n)
+
+        fig, ax = plt.subplots(figsize=(16, 4.5), facecolor="white")
+        ax.set_facecolor("white")
+
+        linewidth = 0.7 if n <= 10_000 else 0.2
+        ax.plot(
+            x,
+            orig[:n],
+            color=COLORES["original"],
+            linewidth=linewidth,
+            alpha=0.9,
+            label="Audio original",
+        )
+        ax.plot(
+            x,
+            mod[:n],
+            color=COLORES["modificado"],
+            linewidth=linewidth,
+            alpha=0.75,
+            label="Audio esteganografiado",
+        )
+
+        ax.set_title(f"Sección 1 — {titulo} ({n:,} muestras)", **FONT_TITLE)
+        ax.set_xlabel("Índice de muestra", **FONT_LABEL)
+        ax.set_ylabel("Amplitud", **FONT_LABEL)
+        ax.grid(alpha=0.15, color=COLORES["grid"])
+        ax.legend(loc="upper right", fontsize=10)
+
+        fig.tight_layout()
+        _guardar(fig, nombre)
+
+
+def inyectar_valores_en_readme(res_mse: dict) -> None:
+    """Reemplaza placeholders matemáticos en README con valores calculados."""
+    ruta_readme = SALIDA / "README.md"
+    if not ruta_readme.exists():
+        print(f"  [WARN] README no encontrado en {ruta_readme}")
+        return
+
+    contenido = ruta_readme.read_text(encoding="utf-8")
+
+    sigma_x = np.sqrt(res_mse["var_orig"])
+    sigma_y = np.sqrt(res_mse["var_mod"])
+
+    reemplazos = {
+        "{{VAL_COV}}": f"{res_mse['cov_orig_mod']:.8f}",
+        "{{VAL_PEARSON}}": f"{res_mse['r_audio']:.16f}",
+        "{{VAL_SIGMA_X}}": f"{sigma_x:.8f}",
+        "{{VAL_SIGMA_Y}}": f"{sigma_y:.8f}",
+        "{{VAL_MSE}}": f"{res_mse['mse']:.15e}",
+        "{{VAL_MSE_APROX}}": f"{res_mse['mse']:.10f}",
+        "{{VAL_PSNR}}": f"{res_mse['psnr_db']:.10f}",
+    }
+
+    faltantes = [token for token in reemplazos if token not in contenido]
+    for token, valor in reemplazos.items():
+        contenido = contenido.replace(token, valor)
+
+    # Fallback idempotente: si no hay placeholders, refrescar ecuaciones por patrón.
+    contenido = re.sub(
+        r"Cov\(X,Y\)=\d[\d\.eE\+\-]*",
+        f"Cov(X,Y)={res_mse['cov_orig_mod']:.8f}",
+        contenido,
+    )
+    contenido = re.sub(
+        r"\\rho=\\frac\{[^\n]*\}\{\([^\n]*\)\([^\n]*\)\}=[^\n]*",
+        lambda _m: (
+            "\\rho=\\frac"
+            f"{{{res_mse['cov_orig_mod']:.8f}}}"
+            f"{{({sigma_x:.8f})({sigma_y:.8f})}}={res_mse['r_audio']:.16f}"
+            "\\approx 1.0000000000"
+        ),
+        contenido,
+    )
+    contenido = re.sub(
+        r"MSE=\\frac\{1\}\{N\}\\sum_\{i=1\}\^\{N\}\(x_i-y_i\)\^2=[^\n]*",
+        lambda _m: (
+            "MSE=\\frac{1}{N}\\sum_{i=1}^{N}(x_i-y_i)^2="
+            f"{res_mse['mse']:.15e}\\approx{res_mse['mse']:.10f}"
+        ),
+        contenido,
+    )
+    contenido = re.sub(
+        r"PSNR=10\\log_\{10\}\\left\(\\frac\{32767\^2\}\{[^\n]*\}\right\)=[^\n]*",
+        lambda _m: (
+            "PSNR=10\\log_{10}\\left(\\frac{32767^2}{"
+            f"{res_mse['mse']:.15e}"
+            "}\\right)="
+            f"{res_mse['psnr_db']:.10f}\\,dB\\approx130.64\\,dB"
+        ),
+        contenido,
+    )
+
+    ruta_readme.write_text(contenido, encoding="utf-8")
+    print("  [OK] Inyección de valores en README.md completada")
+    if faltantes:
+        print(
+            "  [WARN] Placeholders no encontrados (ya inyectados previamente o ausentes):"
+        )
+        for token in faltantes:
+            print(f"    - {token}")
 
 
 def _panel_ataques_con_texto(datos, tipo: str, nombre_archivo: str):
@@ -1310,6 +1448,7 @@ def main():
     datos = cargar_datos()
 
     # Entregables específicos de Fase 1
+    generar_zooms_seccion_1(datos)
     res_fallo = generar_6_fallo_perturbacion(datos)
     generar_7_paneles_ataques(datos)
 
@@ -1323,6 +1462,9 @@ def main():
     res_rob = analisis_robustez(datos)
     res_seg = analisis_seguridad_clave(datos)
     visualizaciones_mejoradas(datos)
+
+    # Inyección automatizada de valores matemáticos en README
+    inyectar_valores_en_readme(res_mse)
 
     # Resumen final
     print("\n" + "=" * 60)

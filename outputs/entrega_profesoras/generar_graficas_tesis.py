@@ -73,8 +73,8 @@ def generar_4_histogramas(salida: Path) -> None:
             11,
         ]
     )
-    color_oscuro = "#5f5f5f"
-    color_medio = "#8c8c8c"
+    color_oscuro = "#1f77b4"
+    color_medio = "#ff7f0e"
     axes[0].bar(bins, irregular, color=color_oscuro, edgecolor="#3a3a3a", linewidth=0.4)
     axes[0].set_title("texto comprimido", loc="left")
     axes[0].set_xlabel("Símbolo/byte")
@@ -96,8 +96,8 @@ def generar_4_correlacion(salida: Path) -> None:
     r = np.corrcoef(x, y)[0, 1]
 
     fig, ax = plt.subplots(figsize=(7, 5.5))
-    color_puntos = "#666666"
-    color_linea = "#404040"
+    color_puntos = "#2ca02c"
+    color_linea = "#d62728"
     ax.scatter(x, y, s=20, color=color_puntos, alpha=0.9, label="Pares de muestras")
     ax.plot(
         x,
@@ -136,9 +136,9 @@ def generar_6_efecto_avalancha(salida: Path) -> None:
 
     iteraciones = np.arange(n)
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(iteraciones, x1, linewidth=1.8, color="#4d4d4d", label="Serie A")
-    ax.plot(iteraciones, x2, linewidth=1.3, color="#8f8f8f", label="Serie B")
-    ax.axvspan(15, 20, color="#bdbdbd", alpha=0.20, label="Zona de divergencia")
+    ax.plot(iteraciones, x1, linewidth=1.8, color="#1f77b4", label="Serie A")
+    ax.plot(iteraciones, x2, linewidth=1.3, color="#ff7f0e", label="Serie B")
+    ax.axvspan(15, 20, color="#2ca02c", alpha=0.15, label="Zona de divergencia")
     ax.set_title("Efecto avalancha: sensibilidad a condiciones iniciales")
     ax.set_xlabel("Iteración")
     ax.set_ylabel("Estado normalizado")
@@ -161,12 +161,12 @@ def generar_7_vista_microscopica_50(salida: Path) -> None:
     modificada[idx_insertados] += deltas
 
     fig, ax = plt.subplots(figsize=(10, 4.8))
-    ax.plot(muestras, original, color="#4f4f4f", linewidth=1.8, label="Señal original")
+    ax.plot(muestras, original, color="#1f77b4", linewidth=1.8, label="Señal original")
     ax.plot(
         idx_insertados,
         modificada[idx_insertados],
         "*",
-        color="#9c9c9c",
+        color="#d62728",
         markersize=11,
         label="Puntos de inyección estocástica",
     )

@@ -48,18 +48,17 @@ X0 = ChaosMod.X0.value  # 0.123456
 R = ChaosMod.R.value  # 3.999952
 N_WARMUP = ChaosMod.N_WARMUP.value  # 100
 
-# Estilo en escala de grises para todas las gráficas
+# Estilo en color para todas las gráficas
 plt.style.use("default")
-plt.rcParams["image.cmap"] = "gray"
 COLORES = {
-    "original": "#4d4d4d",
-    "modificado": "#8f8f8f",
-    "acento": "#b0b0b0",
-    "alerta": "#2f2f2f",
-    "texto": "#202020",
-    "grid": "#c2c2c2",
-    "exito": "#6e6e6e",
-    "fallo": "#a8a8a8",
+    "original": "#1f77b4",
+    "modificado": "#ff7f0e",
+    "acento": "#9467bd",
+    "alerta": "#d62728",
+    "texto": "#1f2937",
+    "grid": "#cbd5e1",
+    "exito": "#2ca02c",
+    "fallo": "#e377c2",
 }
 DPI = 320
 FONT_TITLE = {"fontsize": 14, "fontweight": "bold", "color": COLORES["texto"]}
@@ -882,7 +881,7 @@ def _panel_ataques_con_texto(datos, tipo: str, nombre_archivo: str):
             audio_at = ataque_oclusion(audio, p)
             titulo = f"Oclusión {int(p * 100)}%"
 
-        # "Imagen atacada": mapa de intensidad en escala de grises (más legible)
+        # "Imagen atacada": mapa de intensidad en color
         ax_img = axes[i][0]
         if tipo == "oclusion":
             idx_ataque = np.where((audio_at == 0) & (audio != 0))[0]
@@ -901,7 +900,7 @@ def _panel_ataques_con_texto(datos, tipo: str, nombre_archivo: str):
         muestra = muestra[: filas * cols].reshape(filas, cols)
         im = ax_img.imshow(
             muestra,
-            cmap="gray",
+            cmap="viridis",
             aspect="auto",
             interpolation="nearest",
             vmin=-32768,

@@ -73,7 +73,7 @@ Donde:
 El análisis estadístico es fundamental para demostrar la resistencia del algoritmo frente a ataques de criptoanálisis, específicamente el análisis de frecuencias.
 
 ### Análisis de Histogramas
-Para evidenciar la correcta encriptación, se analizan dos distribuciones (figura `4_histogramas.png`, renderizada en escala de grises para impresión y lectura académica):
+Para evidenciar la correcta encriptación, se analizan dos distribuciones (figura `4_histogramas.png`, renderizada en color para mejorar contraste y legibilidad):
 
 ![Histogramas del texto comprimido y encriptado](4_histogramas.png)
 
@@ -102,6 +102,12 @@ $$
 Cov(X,Y)=\frac{1}{N-1}\sum_{i=1}^{N}(x_i-\bar{x})(y_i-\bar{y})
 $$
 
+Con los datos reales de la ejecución actual (audio original vs estegoaudio):
+
+$$
+Cov(X,Y)=65{,}883{,}266.40887324
+$$
+
 - $Cov(X,Y)$: covarianza entre las señales original y esteganografiada.
 - $N$: número total de muestras comparadas.
 - $x_i$: amplitud de la muestra $i$ en la señal original.
@@ -118,6 +124,12 @@ $$
 \rho_{X,Y}=\frac{Cov(X,Y)}{\sigma_X\sigma_Y}
 $$
 
+Sustituyendo con los valores reales de audio original vs estegoaudio:
+
+$$
+\rho=\frac{65{,}883{,}266.40887324}{(8116.85076930908)(8116.85076902388)}=0.9999999999993133\approx 1.0000000000
+$$
+
 - $\rho_{X,Y}$: coeficiente de correlación lineal de Pearson.
 - $Cov(X,Y)$: covarianza entre ambas señales.
 - $\sigma_X$: desviación estándar de la señal original.
@@ -129,6 +141,12 @@ Interpretación: valor normalizado en $[-1,1]$. En este contexto, $\rho$ cercano
 
 $$
 MSE=\frac{1}{MN}\sum_{i=1}^{M}\sum_{j=1}^{N}(I(i,j)-K(i,j))^2
+$$
+
+Resultado numérico real de la ejecución (audio original vs estegoaudio):
+
+$$
+MSE=\frac{1}{N}\sum_{i=1}^{N}(x_i-y_i)^2=9.266789354185121\times10^{-5}\approx0.0000926679
 $$
 
 - $MSE$: error cuadrático medio entre referencia y señal comparada.
@@ -144,6 +162,12 @@ Interpretación: mide energía del error. Mientras más cerca de 0, mayor fideli
 
 $$
 PSNR=10\log_{10}(\frac{MAX_I^2}{MSE})
+$$
+
+Sustituyendo con $MAX_I=32767$ (PCM 16 bits con signo) y el MSE medido:
+
+$$
+PSNR=10\log_{10}\left(\frac{32767^2}{9.266789354185121\times10^{-5}}\right)=130.6394407121\,dB\approx130.64\,dB
 $$
 
 - $PSNR$: relación señal-ruido pico en decibelios.
@@ -269,6 +293,12 @@ $$
 MSE=\frac{1}{MN}\sum_{i=1}^{M}\sum_{j=1}^{N}(I(i,j)-K(i,j))^2
 $$
 
+Para la ejecución actual (audio original vs estegoaudio):
+
+$$
+MSE=\frac{1}{N}\sum_{i=1}^{N}(x_i-y_i)^2=9.266789354185121\times10^{-5}\approx0.0000926679
+$$
+
 - $MSE$: error cuadrático medio.
 - $I(i,j)$: valor de referencia (señal original).
 - $K(i,j)$: valor recuperado/atacado.
@@ -282,6 +312,12 @@ $$
 
 $$
 PSNR=10\log_{10}(\frac{MAX_I^2}{MSE})
+$$
+
+Con $MAX_I=32767$ y el MSE real medido:
+
+$$
+PSNR=10\log_{10}\left(\frac{32767^2}{9.266789354185121\times10^{-5}}\right)=130.6394407121\,dB\approx130.64\,dB
 $$
 
 - $PSNR$: razón señal-ruido pico en dB.

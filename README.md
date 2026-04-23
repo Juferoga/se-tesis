@@ -1,5 +1,7 @@
 # Proyecto de grado  Criptosistema esteganográfico de audio, basado en atractores caóticos y compresión de textos por medio de redes neuronales.
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Juferoga/se-tesis)
+
 ## Descripción
 
 Este proyecto permite la manipulación y procesamiento de señales de audio, incluyendo compresión, encriptación y esteganografía. Además, proporciona herramientas para la visualización y análisis de señales de audio.

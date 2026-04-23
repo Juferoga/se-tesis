@@ -1,0 +1,63 @@
+{
+  "fallo_perturbacion": {
+    "bits_dif": 1,
+    "total_bits": 4656,
+    "porcentaje_bits_dif": 0.02147766323024055
+  },
+  "entropia": {
+    "h_orig_nats": 10.313015078280245,
+    "h_mod_nats": 10.313050970420306,
+    "h_orig_bits": 14.878535710048014,
+    "h_mod_bits": 14.878587491460488
+  },
+  "mse_covarianza": {
+    "mse": 9.266789354185121e-05,
+    "psnr_db": 130.6394407121165,
+    "var_orig": 65883266.411233395,
+    "var_mod": 65883266.40660355,
+    "cov_orig_mod": 65883266.40887324,
+    "r_audio": 0.9999999999993133
+  },
+  "npcr_uaci": {
+    "npcr_total": 0.009266789354185121,
+    "uaci_total": 1.4140214166758403e-07,
+    "npcr_cuartiles": [
+      0.0123610220226641,
+      0.0058543836606697415,
+      0.00615664803445432,
+      0.012695103698952319
+    ]
+  },
+  "correlacion_texto": {
+    "r_pearson": -0.03137039300377246,
+    "p_valor": 0.45003333647635113
+  },
+  "sensibilidad_clave": {
+    "perturbacion": 1e-15,
+    "perturbacion_r": 1e-12,
+    "perturbacion_n_warmup": 1,
+    "bytes_dif": 578,
+    "porcentaje_dif": 99.3127147766323,
+    "bits_dif": 2317,
+    "porcentaje_bits": 49.763745704467354
+  },
+  "robustez": {
+    "sal_pimienta": {
+      "1%": 99.65635738831615,
+      "5%": 97.37972508591065,
+      "10%": 95.21048109965635,
+      "25%": 87.86512027491409
+    },
+    "oclusion": {
+      "1%": 99.39862542955326,
+      "5%": 95.57560137457045,
+      "10%": 96.0266323024055,
+      "25%": 88.4020618556701
+    }
+  },
+  "seguridad_clave": {
+    "long_bytes": 582,
+    "espacio_claves": "2^100",
+    "anios_bruta": 40169423537538.64
+  }
+}

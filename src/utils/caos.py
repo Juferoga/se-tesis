@@ -79,3 +79,41 @@ def generar_llave(x0, r, n_warmup, length):
   # packbits: Convierte una matriz de bits en una matriz de bytes (8 bits) (uint8)
   key = np.packbits(key_bits)[:length]
   return key
+
+def generar_posiciones_caoticas(x0, r, n_warmup, n_posiciones, total_muestras):
+  """Generar n_posiciones índices ÚNICOS distribuidos en [0, total_muestras)
+  usando el mapa logístico.
+
+  A diferencia de generar_secuencia_aleatoria, esta función está optimizada
+  para generar posiciones en rangos muy grandes (millones de muestras) y
+  retorna un array numpy para mejor rendimiento.
+
+  Args:
+      x0 (float): Punto inicial del mapa logístico (rango: (0, 1))
+      r (float): Parámetro de caos (rango: [3.57, 4])
+      n_warmup (int): Iteraciones de calentamiento
+      n_posiciones (int): Cantidad de posiciones únicas a generar
+      total_muestras (int): Tamaño total del audio (límite superior exclusivo)
+
+  Returns:
+      numpy.ndarray: Array de int64 con n_posiciones índices únicos en [0, total_muestras)
+  """
+  posiciones = []
+  usadas = set()
+  x = x0
+
+  # Calentar el sistema
+  for _ in range(n_warmup):
+    x = mapa_logistico(x, r)
+
+  # Generar posiciones únicas
+  while len(posiciones) < n_posiciones:
+    x = mapa_logistico(x, r)
+    pos = int(x * total_muestras)
+    # Asegurar que esté en rango válido
+    pos = max(0, min(pos, total_muestras - 1))
+    if pos not in usadas:
+      usadas.add(pos)
+      posiciones.append(pos)
+
+  return np.array(posiciones, dtype=np.int64)

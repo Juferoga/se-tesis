@@ -1,3 +1,4 @@
+import numpy as np
 from src.utils.utils import get_least_significant_bits
 from src.utils.caos import mapa_logistico, generar_secuencia_aleatoria
 from src.utils.chaos_mod_enum import ChaosMod
@@ -80,4 +81,46 @@ def extraer_mensaje_segmento_lsb_random(modified_segment_array, message_length, 
   #print("Mensaje extraído", extracted_message)
   
   # Retornar los bits extraídos y el mensaje extraído
+  return extracted_bits, extracted_message
+
+def extraer_lsb_caotico(audio_array, message_length_bits, x0, r, n_warmup):
+  """Extraer un mensaje oculto en posiciones caóticas del audio COMPLETO.
+
+  Regenera las mismas posiciones caóticas usadas durante la inserción y
+  lee el LSB de cada posición para reconstruir el mensaje. Usa operaciones
+  bitwise sobre la vista uint16 para manejar correctamente el complemento a dos.
+
+  Args:
+      audio_array (numpy.ndarray): Audio completo en formato int16
+      message_length_bits (int): Longitud del mensaje en bits
+      x0 (float): Punto inicial del mapa logístico (mismo que en inserción)
+      r (float): Parámetro de caos (mismo que en inserción)
+      n_warmup (int): Iteraciones de calentamiento (mismo que en inserción)
+
+  Returns:
+      tuple: (bits_extraidos_str, mensaje_extraido_str)
+  """
+  from src.utils.caos import generar_posiciones_caoticas
+
+  n_muestras = len(audio_array)
+
+  # Regenerar las mismas posiciones caóticas
+  posiciones = generar_posiciones_caoticas(x0, r, n_warmup, message_length_bits, n_muestras)
+
+  # Leer LSBs usando vista uint16 (correcto para complemento a dos)
+  audio_uint16 = audio_array.view(np.uint16)
+
+  extracted_bits_list = []
+  for pos in posiciones:
+    lsb = str(audio_uint16[pos] & 1)
+    extracted_bits_list.append(lsb)
+
+  extracted_bits = ''.join(extracted_bits_list)
+
+  # Convertir bits a caracteres (cada 8 bits = 1 byte)
+  extracted_message = ''.join([
+    chr(int(extracted_bits[i:i+8], 2))
+    for i in range(0, len(extracted_bits), 8)
+  ])
+
   return extracted_bits, extracted_message

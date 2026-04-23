@@ -1,0 +1,74 @@
+{
+  "fecha_hora": "2026-03-29T22:03:09",
+  "metodo": "LSB aleatorio",
+  "inicio_segmento": 0,
+  "fin_segmento": 25143552,
+  "bits_insertados": 4656,
+  "duracion_segundos": 285.07428571428574,
+  "bps": 16.332584990378447,
+  "tiempo_global_segundos": 83.92878842353821,
+  "secciones": [
+    {
+      "nombre": "Carga de audio",
+      "tiempo_segundos": 0.11458396911621094
+    },
+    {
+      "nombre": "Compresión de texto",
+      "tiempo_segundos": 71.19151139259338
+    },
+    {
+      "nombre": "Encriptación",
+      "tiempo_segundos": 0.03078150749206543
+    },
+    {
+      "nombre": "Esteganografía",
+      "tiempo_segundos": 0.05702328681945801
+    },
+    {
+      "nombre": "Guardar audio",
+      "tiempo_segundos": 0.10202383995056152
+    },
+    {
+      "nombre": "Extracción mensaje",
+      "tiempo_segundos": 0.013731956481933594
+    },
+    {
+      "nombre": "Descompresión",
+      "tiempo_segundos": 12.22908639907837
+    }
+  ],
+  "metricas": {
+    "mse": 9.266789354185121e-05,
+    "psnr_db": 40.33070708928254,
+    "distorsion": 9.266789354185121e-05,
+    "invisibilidad": {
+      "chi2_stat": 80000000245.53821,
+      "chi2_p": 0.0,
+      "ks_stat": 0.017108282871091618,
+      "ks_p": 0.0,
+      "mann_whitney_u": 316006581913670.5,
+      "mann_whitney_p": 0.07224936296083463
+    },
+    "entropia_nats": {
+      "original": 10.313015078279994,
+      "modificado": 10.31305097042003
+    },
+    "npcr_uaci": {
+      "npcr": 0.009266789354185121,
+      "uaci": 1.414021416675836e-07
+    },
+    "covarianza": {
+      "var_original": 65883266.411233395,
+      "var_modificado": 65883266.40660355,
+      "cov_original_modificado": 65883266.40887324
+    },
+    "correlacion_cruzada": 6379.70260004242,
+    "analisis_componentes": {
+      "media_original": -3.0794590597223497,
+      "media_modificado": -3.0794483213827544,
+      "std_original": 8116.850607898924,
+      "std_modificado": 8116.850607613652
+    }
+  },
+  "ataques": null
+}

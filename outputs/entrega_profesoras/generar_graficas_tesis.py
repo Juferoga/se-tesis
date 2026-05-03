@@ -83,42 +83,119 @@ def generar_4_histogramas(salida: Path) -> None:
     # Distribución prácticamente uniforme (texto encriptado)
     uniforme = np.full_like(bins, 10, dtype=float)
     axes[1].bar(bins, uniforme, color=color_medio, edgecolor="#4a4a4a", linewidth=0.4)
-    axes[1].set_title("Representación uniforme (plana)")
+    axes[1].set_title("Texto encriptado")
     axes[1].set_xlabel("Símbolo/byte")
     axes[1].set_ylabel("Frecuencia")
+
+    fig.suptitle(
+        "Histogramas del texto comprimido y encriptado",
+        fontsize=14,
+        fontweight="bold",
+        y=1.03,
+    )
 
     guardar_figura(fig, salida / "4_histogramas.png")
 
 
 def generar_4_correlacion(salida: Path) -> None:
-    x = np.linspace(-1.0, 1.0, 240)
-    y = x.copy()  # correlación perfecta
-    r = np.corrcoef(x, y)[0, 1]
+    import scipy.io.wavfile as wav
 
-    fig, ax = plt.subplots(figsize=(7, 5.5))
+    # Cargar audios reales del proyecto
+    raiz = salida.resolve().parent.parent
+    ruta_orig = raiz / "data" / "audio_test.wav"
+    ruta_esteg = raiz / "data" / "audio_test_modificado.wav"
+
+    if not ruta_orig.exists() or not ruta_esteg.exists():
+        print(f"[WARN] Audios no encontrados en {ruta_orig} / {ruta_esteg}")
+        print("[WARN] Generando 4_correlacion.png con datos sintéticos.")
+        x = np.linspace(-1.0, 1.0, 240)
+        y = x.copy()
+        r = 1.0
+    else:
+        _, orig = wav.read(str(ruta_orig))
+        _, esteg = wav.read(str(ruta_esteg))
+        if orig.ndim > 1:
+            orig = orig[:, 0]
+        if esteg.ndim > 1:
+            esteg = esteg[:, 0]
+        n = min(len(orig), len(esteg))
+        orig = orig[:n].astype(np.float64)
+        esteg = esteg[:n].astype(np.float64)
+        # Submuestreo aleatorio para visualización (50 000 puntos)
+        np.random.seed(42)
+        idx = np.random.choice(n, size=min(50000, n), replace=False)
+        x = orig[idx]
+        y = esteg[idx]
+        r = np.corrcoef(orig, esteg)[0, 1]
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5.5))
     color_puntos = "#2ca02c"
     color_linea = "#d62728"
-    ax.scatter(x, y, s=20, color=color_puntos, alpha=0.9, label="Pares de muestras")
+
+    # Panel 1: vista global
+    ax = axes[0]
+    ax.scatter(x, y, s=8, color=color_puntos, alpha=0.4, edgecolors="none", label="Pares de muestras")
+    # Línea ideal y=x (escala real del audio)
+    lim_min = min(x.min(), y.min())
+    lim_max = max(x.max(), y.max())
     ax.plot(
-        x,
-        x,
+        [lim_min, lim_max],
+        [lim_min, lim_max],
         color=color_linea,
         linewidth=1.3,
         linestyle="--",
         label="Línea ideal y = x",
     )
-    ax.set_title("Correlación de Pearson: Audio Original vs Estegoaudio")
-    ax.set_xlabel("Audio Original")
-    ax.set_ylabel("Estegoaudio")
+    ax.set_title("Correlación global — Audio Original vs Estegoaudio")
+    ax.set_xlabel("Amplitud audio original")
+    ax.set_ylabel("Amplitud estegoaudio")
     ax.text(
-        -0.95,
-        0.8,
-        f"r = {r:.4f}",
+        0.05,
+        0.95,
+        f"Pearson r = {r:.10f}",
+        transform=ax.transAxes,
         fontsize=11,
-        bbox={"facecolor": "white", "alpha": 0.8},
+        verticalalignment="top",
+        bbox={"facecolor": "white", "alpha": 0.9, "edgecolor": "#888888"},
     )
     ax.legend(loc="lower right")
+    ax.grid(alpha=0.3)
 
+    # Panel 2: zoom microscópico donde se ve la dispersión de ±1
+    ax2 = axes[1]
+    # Seleccionar solo puntos dentro de un rango pequeño para ver la nube
+    mask = (x > -2000) & (x < 2000) & (y > -2000) & (y < 2000)
+    if mask.sum() > 100:
+        xz = x[mask][:5000]
+        yz = y[mask][:5000]
+    else:
+        xz = x[:5000]
+        yz = y[:5000]
+    ax2.scatter(xz, yz, s=15, color=color_puntos, alpha=0.5, edgecolors="none")
+    ax2.plot([-10, 10], [-10, 10], color=color_linea, linewidth=1.3, linestyle="--")
+    ax2.set_xlim(-10, 10)
+    ax2.set_ylim(-10, 10)
+    ax2.set_title("Zoom microscópico — Dispersión de ±1 nivel LSB")
+    ax2.set_xlabel("Amplitud audio original")
+    ax2.set_ylabel("Amplitud estegoaudio")
+    ax2.text(
+        0.05,
+        0.95,
+        "La nube de puntos se desvía ±1\\nunidad de cuantización",
+        transform=ax2.transAxes,
+        fontsize=10,
+        verticalalignment="top",
+        bbox={"facecolor": "#fff8dc", "alpha": 0.95, "edgecolor": "#d62728"},
+    )
+    ax2.grid(alpha=0.3)
+
+    fig.suptitle(
+        "Correlación de Pearson — Transparencia acústica del esquema LSB",
+        fontsize=14,
+        fontweight="bold",
+        y=1.02,
+    )
+    fig.tight_layout()
     guardar_figura(fig, salida / "4_correlacion.png")
 
 

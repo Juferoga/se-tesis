@@ -1,14 +1,14 @@
 {
   "fallo_perturbacion": {
-    "bits_dif": 1,
+    "bits_dif": 2317,
     "total_bits": 4656,
-    "porcentaje_bits_dif": 0.02147766323024055
+    "porcentaje_bits_dif": 49.763745704467354
   },
   "entropia": {
-    "h_orig_nats": 10.313015078280245,
-    "h_mod_nats": 10.313050970420306,
-    "h_orig_bits": 14.878535710048014,
-    "h_mod_bits": 14.878587491460488
+    "h_orig_nats": 10.313015078280243,
+    "h_mod_nats": 10.313050970420305,
+    "h_orig_bits": 14.878535710048011,
+    "h_mod_bits": 14.878587491460486
   },
   "mse_covarianza": {
     "mse": 9.266789354185121e-05,
@@ -29,7 +29,7 @@
     ]
   },
   "correlacion_texto": {
-    "r_pearson": -0.03137039300377246,
+    "r_pearson": -0.03137039300377245,
     "p_valor": 0.45003333647635113
   },
   "sensibilidad_clave": {

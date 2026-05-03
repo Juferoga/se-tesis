@@ -789,76 +789,111 @@ def ataque_oclusion(audio, proporcion):
 
 
 def generar_6_fallo_perturbacion(datos):
-    """Genera evidencia visual del efecto avalancha para una perturbación mínima."""
+    """Genera evidencia visual del efecto avalancha para una perturbación mínima en la CLAVE."""
     print("\n--- Generando 6_fallo_perturbacion.png")
 
     texto_original = datos["texto_comprimido"]
     texto_bytes = datos["texto_bytes"]
 
-    # Perturbación mínima: invertir 1 bit del primer byte
-    perturbado = texto_bytes.copy()
-    perturbado[0] = np.uint8(int(perturbado[0]) ^ 0b00000001)
+    # Clave correcta
+    llave_correcta = generar_llave(X0, R, N_WARMUP, len(texto_bytes))
+    cifrado_correcto = xor_encriptado(texto_bytes, llave_correcta)
 
-    # Encriptar ambas variantes
-    ll_ori = generar_llave(X0, R, N_WARMUP, len(texto_bytes))
-    ll_per = generar_llave(X0, R, N_WARMUP, len(perturbado))
-    enc_ori = xor_encriptado(texto_bytes, ll_ori)
-    enc_per = xor_encriptado(perturbado, ll_per)
+    # Clave perturbada mínimamente (condiciones iniciales)
+    perturbacion_x0 = 1e-15
+    perturbacion_r = 1e-12
+    perturbacion_warmup = 1
+    x0_perturbado = X0 + perturbacion_x0
+    r_perturbado = R + perturbacion_r
+    n_warmup_perturbado = N_WARMUP + perturbacion_warmup
 
-    # Distancia de Hamming entre cifrados (comparativa en bits)
-    bits_dif = sum(bin(int(a) ^ int(b)).count("1") for a, b in zip(enc_ori, enc_per))
-    total_bits = len(enc_ori) * 8
+    llave_perturbada = generar_llave(
+        x0_perturbado, r_perturbado, n_warmup_perturbado, len(texto_bytes)
+    )
+    cifrado_perturbado = xor_encriptado(texto_bytes, llave_perturbada)
+
+    # Distancia de Hamming entre cifrados
+    bits_dif = sum(
+        bin(int(a) ^ int(b)).count("1")
+        for a, b in zip(cifrado_correcto, cifrado_perturbado)
+    )
+    total_bits = len(cifrado_correcto) * 8
     pct_bits_dif = (bits_dif / total_bits * 100) if total_bits else 0.0
 
-    rec_ori = bytes(xor_encriptado(enc_ori, ll_ori).tolist()).decode(
-        "utf-8", errors="replace"
-    )
-    rec_per = bytes(xor_encriptado(enc_per, ll_ori).tolist()).decode(
-        "utf-8", errors="replace"
-    )
+    # Texto recuperado con ambas claves
+    rec_correcto = bytes(
+        xor_encriptado(cifrado_correcto, llave_correcta).tolist()
+    ).decode("utf-8", errors="replace")
+    rec_perturbado = bytes(
+        xor_encriptado(cifrado_perturbado, llave_correcta).tolist()
+    ).decode("utf-8", errors="replace")
 
-    fig, axes = plt.subplots(3, 1, figsize=(13, 8), facecolor="white")
+    n_show = 96  # mostrar primeros 96 bytes
+    x = np.arange(n_show)
+
+    fig, axes = plt.subplots(3, 1, figsize=(14, 10), facecolor="white")
     for ax in axes:
         ax.set_facecolor("white")
 
-    x = np.arange(len(enc_ori))
     axes[0].bar(
         x,
-        enc_ori,
+        cifrado_correcto[:n_show],
         color=COLORES["original"],
         width=1.0,
         edgecolor="#2f4f6f",
     )
-    axes[0].set_title("Entrada original cifrada", loc="left")
-    axes[0].set_ylabel("Byte")
+    axes[0].set_title(
+        f"Cifrado con clave correcta  (x₀={X0}, r={R}, n={N_WARMUP})",
+        loc="left",
+        fontsize=12,
+        fontweight="bold",
+    )
+    axes[0].set_ylabel("Valor del byte")
+    axes[0].set_xlim(-1, n_show)
 
     axes[1].bar(
         x,
-        enc_per,
+        cifrado_perturbado[:n_show],
         color=COLORES["modificado"],
         width=1.0,
         edgecolor="#8a4d00",
     )
-    axes[1].set_title("Entrada perturbada (1 bit) cifrada", loc="left")
-    axes[1].set_ylabel("Byte")
+    axes[1].set_title(
+        f"Cifrado con clave perturbada  (x₀+{perturbacion_x0}, r+{perturbacion_r}, n+{perturbacion_warmup})",
+        loc="left",
+        fontsize=12,
+        fontweight="bold",
+    )
+    axes[1].set_ylabel("Valor del byte")
+    axes[1].set_xlim(-1, n_show)
 
-    dif_abs = np.abs(enc_ori.astype(np.int16) - enc_per.astype(np.int16))
+    dif_abs = np.abs(
+        cifrado_correcto.astype(np.int16) - cifrado_perturbado.astype(np.int16)
+    )
     axes[2].bar(
         x,
-        dif_abs,
-        color=COLORES["fallo"],
+        dif_abs[:n_show],
+        color=COLORES["alerta"],
         width=1.0,
         edgecolor="#8f3b74",
     )
-    axes[2].set_title("Diferencia absoluta entre cifrados", loc="left")
+    axes[2].set_title(
+        "Diferencia absoluta |cifrado_correcto − cifrado_perturbado|",
+        loc="left",
+        fontsize=12,
+        fontweight="bold",
+    )
     axes[2].set_xlabel("Índice de byte")
     axes[2].set_ylabel("|Δ|")
+    axes[2].set_xlim(-1, n_show)
 
+    # Texto resumen
     resumen = (
-        f"Hamming cifrado: {bits_dif}/{total_bits} bits ({pct_bits_dif:.2f}%)\n"
-        f"Texto recuperado (sin perturbar): {rec_ori[:90]!r}\n"
-        f"Texto recuperado (perturbado): {rec_per[:90]!r}\n"
-        f"Texto original: {texto_original[:90]!r}"
+        f"DISTANCIA DE HAMMING: {bits_dif}/{total_bits} bits  ({pct_bits_dif:.2f}%)\n"
+        f"Clave correcta:    x₀={X0},  r={R},  n_warmup={N_WARMUP}\n"
+        f"Clave perturbada:  x₀={x0_perturbado},  r={r_perturbado},  n_warmup={n_warmup_perturbado}\n"
+        f"Recuperado (correcta):  {rec_correcto[:90]!r}\n"
+        f"Recuperado (perturbada): {rec_perturbado[:90]!r}"
     )
     fig.text(
         0.01,
@@ -871,7 +906,14 @@ def generar_6_fallo_perturbacion(datos):
         color="#1a1a1a",
     )
 
-    fig.tight_layout(rect=[0, 0.08, 1, 1])
+    fig.suptitle(
+        "Efecto Avalancha — Perturbación mínima en clave → cifrados casi ortogonales",
+        fontsize=14,
+        fontweight="bold",
+        color=COLORES["texto"],
+        y=0.995,
+    )
+    fig.tight_layout(rect=[0, 0.10, 1, 0.98])
     _guardar(fig, "6_fallo_perturbacion.png")
 
     return {
@@ -1412,23 +1454,59 @@ def visualizaciones_mejoradas(datos):
     _guardar(fig2, "distribucion_posiciones_caoticas.png")
 
     # --- Zoom a diferencia en una sección del audio ---
-    # Tomar una sección del 30-35% del audio donde haya cambios
-    seccion_inicio = int(len(orig) * 0.30)
-    seccion_fin = int(len(orig) * 0.35)
-    diff_zoom = diff[seccion_inicio:seccion_fin]
-    x_zoom = np.arange(seccion_inicio, seccion_fin)
+    # Diferencia con signo: ε[n] = y[n] - x[n]
+    error = mod.astype(np.int32) - orig.astype(np.int32)
 
-    fig3, ax3 = plt.subplots(figsize=(16, 4), facecolor="white")
+    # Encontrar una ventana que garantice al menos algunos cambios LSB
+    idx_cambios = np.where(error != 0)[0]
+    if len(idx_cambios) > 0:
+        # Tomar una región de 50 000 muestras centrada en un cambio
+        centro = idx_cambios[len(idx_cambios) // 4]  # un cuarto para variar
+        seccion_inicio = max(0, centro - 25000)
+        seccion_fin = min(len(orig), centro + 25000)
+    else:
+        seccion_inicio = int(len(orig) * 0.30)
+        seccion_fin = seccion_inicio + 50000
+
+    error_zoom = error[seccion_inicio:seccion_fin]
+    x_zoom = np.arange(seccion_inicio, seccion_fin)
+    n_zoom = np.sum(error_zoom != 0)
+
+    fig3, ax3 = plt.subplots(figsize=(16, 5), facecolor="white")
     ax3.set_facecolor("white")
-    ax3.plot(x_zoom, diff_zoom, color=COLORES["alerta"], linewidth=0.5, alpha=0.9)
-    n_zoom = np.sum(diff_zoom > 0)
+
+    # Línea base en 0
+    ax3.plot(x_zoom, error_zoom, color="#cccccc", linewidth=0.2, alpha=0.5)
+    # Resaltar solo los puntos modificados
+    mask_mod = error_zoom != 0
+    ax3.scatter(
+        x_zoom[mask_mod],
+        error_zoom[mask_mod],
+        c=COLORES["alerta"],
+        s=12,
+        zorder=5,
+        label="Muestras con ε[n] = ±1",
+    )
+    ax3.axhline(y=0, color="#333333", linewidth=0.6)
+    ax3.axhline(
+        y=1,
+        color="#2ca02c",
+        linewidth=1.0,
+        linestyle="--",
+        alpha=0.6,
+        label="±1 nivel de cuantización",
+    )
+    ax3.axhline(y=-1, color="#2ca02c", linewidth=1.0, linestyle="--", alpha=0.6)
     ax3.set_title(
-        f"Zoom — Diferencia en Muestras [{seccion_inicio:,}:{seccion_fin:,}] — {n_zoom} cambios LSB",
+        f"Zoom — Error LSB ε[n] en muestras [{seccion_inicio:,}:{seccion_fin:,}] — {n_zoom} cambios visibles",
         **FONT_TITLE,
     )
-    ax3.set_xlabel("Muestra", **FONT_LABEL)
-    ax3.set_ylabel("Delta Amplitud", **FONT_LABEL)
-    ax3.grid(alpha=0.1, color=COLORES["grid"])
+    ax3.set_xlabel("Índice de muestra", **FONT_LABEL)
+    ax3.set_ylabel("Error ε[n] (niveles PCM)", **FONT_LABEL)
+    ax3.set_ylim(-2.5, 2.5)
+    ax3.set_yticks([-2, -1, 0, 1, 2])
+    ax3.legend(loc="upper right", fontsize=10)
+    ax3.grid(alpha=0.2, color=COLORES["grid"])
 
     fig3.tight_layout()
     _guardar(fig3, "audio_difference_zoom.png")

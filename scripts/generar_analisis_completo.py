@@ -341,10 +341,12 @@ def analisis_mse_covarianza(datos):
     axes[1].set_title("Error Cuadrático Medio (MSE)", **FONT_TITLE)
     axes[1].set_ylabel("MSE", **FONT_LABEL)
     axes[1].grid(axis="y", alpha=0.2, color=COLORES["grid"])
+    
+    offset_y = max(mse * 0.05, 1e-6)
     for bar, val in zip(bars, vals):
         axes[1].text(
             bar.get_x() + bar.get_width() / 2,
-            bar.get_height() + 0.001,
+            bar.get_height() + offset_y,
             f"{val:.6f}",
             ha="center",
             va="bottom",
@@ -352,6 +354,8 @@ def analisis_mse_covarianza(datos):
             fontsize=11,
             fontweight="bold",
         )
+    # Ajustar límite superior para que el texto no se corte
+    axes[1].set_ylim(0, max(mse * 1.2, 1e-5))
 
     # Anotar PSNR
     axes[1].text(
@@ -935,11 +939,11 @@ def comparar_estegoaudios_claves(datos):
 
     diff_full = np.abs(diff)
     idx_mod = np.where(diff_full > 0)[0]
-    axes[2].scatter(idx_mod[:5000], diff_full[idx_mod[:5000]], s=4, c=COLORES["alerta"],
-                    alpha=0.5, label=f"{n_distintos} muestras distintas en total")
-    axes[2].set_title("Panel 3 — Posiciones donde los estegoaudios difieren", **FONT_TITLE)
+    axes[2].hist(idx_mod, bins=200, color=COLORES["alerta"], alpha=0.7,
+                 label=f"{n_distintos} muestras distintas en total")
+    axes[2].set_title("Panel 3 — Distribución espacial de las diferencias (Histograma)", **FONT_TITLE)
     axes[2].set_xlabel("Índice de muestra", **FONT_LABEL)
-    axes[2].set_ylabel("|Δ|", **FONT_LABEL)
+    axes[2].set_ylabel("Frecuencia de diferencias", **FONT_LABEL)
     axes[2].legend(fontsize=9)
     axes[2].grid(alpha=0.15, color=COLORES["grid"])
 
@@ -973,9 +977,19 @@ def generar_zooms_seccion_1(datos):
         ("1_zoom_completo.png", len(orig), "Señal completa"),
     ]
 
+    # Encontrar el inicio de la señal activa para que el zoom sea significativo
+    umbral = np.max(np.abs(orig)) * 0.05
+    idx_activos = np.where(np.abs(orig) > umbral)[0]
+    inicio_activo = idx_activos[0] if len(idx_activos) > 0 else 0
+
     for nombre, n_muestras, titulo in configuraciones:
-        n = min(len(orig), n_muestras)
-        x = np.arange(n)
+        if "completo" in nombre:
+            start_idx = 0
+        else:
+            start_idx = inicio_activo
+
+        n = min(len(orig) - start_idx, n_muestras)
+        x = np.arange(start_idx, start_idx + n)
 
         fig, ax = plt.subplots(figsize=(16, 4.5), facecolor="white")
         ax.set_facecolor("white")
@@ -983,7 +997,7 @@ def generar_zooms_seccion_1(datos):
         linewidth = 0.7 if n <= 10_000 else 0.2
         ax.plot(
             x,
-            orig[:n],
+            orig[start_idx:start_idx+n],
             color=COLORES["original"],
             linewidth=linewidth,
             alpha=0.9,
@@ -991,7 +1005,7 @@ def generar_zooms_seccion_1(datos):
         )
         ax.plot(
             x,
-            mod[:n],
+            mod[start_idx:start_idx+n],
             color=COLORES["modificado"],
             linewidth=linewidth,
             alpha=0.75,
@@ -1606,16 +1620,17 @@ def analisis_histogramas_audio(datos):
     ax2.set_facecolor("white")
     barras = ax2.bar([-1, 0, 1], [cnt_m1, cnt_0, cnt_p1],
                      color=[COLORES["alerta"], COLORES["original"], COLORES["exito"]],
-                     edgecolor="#5a5a5a", width=0.6)
+                     edgecolor="#5a5a5a", width=0.6, log=True)
     ax2.set_title("Histograma del Error de Cuantización LSB  ε[n] = y[n] − x[n]", **FONT_TITLE)
     ax2.set_xlabel("Valor de ε[n]", **FONT_LABEL)
-    ax2.set_ylabel("Frecuencia (conteo de muestras)", **FONT_LABEL)
+    ax2.set_ylabel("Frecuencia (escala logarítmica)", **FONT_LABEL)
     ax2.set_xticks([-1, 0, 1])
-    ax2.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
     ax2.grid(axis="y", alpha=0.2, color=COLORES["grid"])
     for bar, val in zip(barras, [cnt_m1, cnt_0, cnt_p1]):
-        ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 500,
-                 f"{val:,}", ha="center", va="bottom", fontsize=11, fontweight="bold")
+        if val > 0:
+            ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() * 1.3,
+                     f"{val:,}", ha="center", va="bottom", fontsize=11, fontweight="bold")
+    ax2.set_ylim(bottom=1, top=max(cnt_m1, cnt_0, cnt_p1) * 5)
     fig2.tight_layout()
     _guardar(fig2, "4_error_lsb.png")
 

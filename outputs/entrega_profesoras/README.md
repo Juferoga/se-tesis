@@ -1,5 +1,4 @@
 # Reporte de Auditoría — Esteganografía LSB Caótica sobre Audio
-*(Versión corregida post-observaciones de las profesoras Isabel Amaya y Deicy Alvarado)*
 
 > **Texto oculto:** fragmento del poema de José Asunción Silva (dominio público, Colombia, 1896).
 > **Audio portador:** pista *"Let it Go"* de Rewob (CCMixter, CC-BY-NC 4.0).

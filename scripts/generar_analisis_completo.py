@@ -31,9 +31,9 @@ import numpy as np
 from scipy.stats import pearsonr
 
 from src.encriptado.encriptar import xor_encriptado
-from src.utils.caos import generar_llave, generar_posiciones_caoticas
+from src.utils.caos import generar_llave, generar_posiciones_caoticas, derivar_semillas
 from src.utils.chaos_mod_enum import ChaosMod
-from src.esteganografiado.esteganografiar import cargar_archivo_wav
+from src.esteganografiado.esteganografiar import cargar_archivo_wav, insertar_lsb_caotico
 from src.esteganografiado.desesteganografiar import extraer_lsb_caotico
 
 # ============================================================
@@ -47,7 +47,10 @@ SALIDA.mkdir(parents=True, exist_ok=True)
 # Parámetros del sistema caótico
 X0 = ChaosMod.X0.value  # 0.123456
 R = ChaosMod.R.value  # 3.999952
-N_WARMUP = ChaosMod.N_WARMUP.value  # 100
+# N_WARMUP ya no es constante fija; se genera como parte de la clave secreta
+# en el rango [100, 10000] (~13 bits efectivos). Usamos semilla para reproducibilidad.
+rng = np.random.default_rng(42)
+N_WARMUP = int(rng.integers(100, 10001))
 
 # Estilo en color para todas las gráficas
 plt.style.use("default")
@@ -98,16 +101,18 @@ def cargar_datos():
 
     # Re-derivar intermediarios criptográficos
     texto_bytes = np.array(list(texto_comprimido.encode("utf-8")), dtype=np.uint8)
-    llave = generar_llave(X0, R, N_WARMUP, len(texto_bytes))
+    # Derivar semillas independientes de la clave maestra
+    x0_k, r_k, n_k, x0_p, r_p, n_p = derivar_semillas(X0, R, N_WARMUP)
+    llave = generar_llave(x0_k, r_k, n_k, len(texto_bytes))
     texto_encriptado = xor_encriptado(texto_bytes, llave)
 
     # Bits del mensaje encriptado (flujo bytes/uint8, sin conversiones de caracteres)
     mensaje_bits = "".join(np.unpackbits(texto_encriptado).astype(str).tolist())
 
-    # Generar posiciones caóticas (las mismas usadas en la inserción)
+    # Generar posiciones caóticas (usando la semilla derivada para posiciones)
     n_bits = len(mensaje_bits)
     n_muestras = len(audio_original)
-    posiciones = generar_posiciones_caoticas(X0, R, N_WARMUP, n_bits, n_muestras)
+    posiciones = generar_posiciones_caoticas(x0_p, r_p, n_p, n_bits, n_muestras)
 
     print(f"  Audio original:    {n_muestras} muestras")
     print(f"  Audio modificado:  {len(audio_modificado)} muestras")
@@ -129,6 +134,8 @@ def cargar_datos():
         "mensaje_bits": mensaje_bits,
         "posiciones": posiciones,
         "texto_comprimido": texto_comprimido,
+        "x0_k": x0_k, "r_k": r_k, "n_k": n_k,
+        "x0_p": x0_p, "r_p": r_p, "n_p": n_p,
     }
 
 
@@ -144,7 +151,7 @@ def _bits_a_bytes(bits: str) -> np.ndarray:
 def _recuperar_texto_desde_audio(audio_mod: np.ndarray, datos: dict) -> str:
     """Extrae, desencripta y decodifica el texto recuperado desde un audio atacado."""
     n_bits = len(datos["mensaje_bits"])
-    bits_ext, _ = extraer_lsb_caotico(audio_mod, n_bits, X0, R, N_WARMUP)
+    bits_ext, _ = extraer_lsb_caotico(audio_mod, n_bits, datos["x0_p"], datos["r_p"], datos["n_p"])
     bytes_ext = _bits_a_bytes(bits_ext)
     llave = datos["llave"][: len(bytes_ext)]
     bytes_rec = xor_encriptado(bytes_ext, llave)
@@ -621,96 +628,152 @@ def analisis_correlacion_texto(datos):
 
 
 def analisis_sensibilidad_clave(datos):
-    """Exp 5.1 — Sensibilidad de clave: solo x0 perturbado, flujo completo de audio.
+    """Exp 5.1 — Sensibilidad de clave: independencia de semillas.
 
-    Perturba ÚNICAMENTE x0 (condición inicial). Inserta payload en audio con
-    la clave correcta, luego intenta extraer y descifrar con la clave perturbada.
-    Demuestra que solo la clave correcta recupera el texto.
+    Demuestra que las dos semillas derivadas (keystream y posiciones) son
+    independientes: perturbar una sola impide la recuperación.
     """
-    print("\n--- Análisis de Sensibilidad de la Clave (flujo audio, solo Δx0)")
+    print("\n--- Análisis de Sensibilidad de la Clave (independencia de semillas)")
 
-    audio_orig = datos["audio_original"]
     audio_mod = datos["audio_modificado"]
     n_bits = len(datos["mensaje_bits"])
     texto_ref = datos["texto_comprimido"]
     longitud = len(datos["texto_bytes"])
 
     DELTA_X0 = 1e-15
-    x0_perturbado = X0 + DELTA_X0
 
-    # --- Extracción con clave CORRECTA ---
-    bits_correctos, _ = extraer_lsb_caotico(audio_mod, n_bits, X0, R, N_WARMUP)
-    bytes_correctos = _bits_a_bytes(bits_correctos)
-    llave_correcta = generar_llave(X0, R, N_WARMUP, len(bytes_correctos))
-    texto_recuperado_correcto = bytes(
-        xor_encriptado(np.array(bytes_correctos, dtype=np.uint8), llave_correcta).tolist()
-    ).decode("utf-8", errors="replace")
-
-    # --- Extracción con clave PERTURBADA (solo x0+Δ) ---
-    bits_perturbados, _ = extraer_lsb_caotico(audio_mod, n_bits, x0_perturbado, R, N_WARMUP)
-    bytes_perturbados = _bits_a_bytes(bits_perturbados)
-    llave_perturbada = generar_llave(x0_perturbado, R, N_WARMUP, len(bytes_perturbados))
-    texto_recuperado_perturbado = bytes(
-        xor_encriptado(np.array(bytes_perturbados, dtype=np.uint8), llave_perturbada).tolist()
-    ).decode("utf-8", errors="replace")
-
-    # Distancia de Hamming en bits extraídos desde el audio
-    bits_dif_audio = sum(1 for a, b in zip(bits_correctos, bits_perturbados) if a != b)
-    pct_bits_audio = bits_dif_audio / n_bits * 100 if n_bits else 0.0
-
-    # Hamming en keystream (nivel de cifrado)
-    llave_c = generar_llave(X0, R, N_WARMUP, longitud)
-    llave_p = generar_llave(x0_perturbado, R, N_WARMUP, longitud)
-    bits_dif_key = sum(
-        bin(int(a) ^ int(b)).count("1") for a, b in zip(llave_c, llave_p)
+    x0_k, r_k, n_k, x0_p, r_p, n_p = (
+        datos["x0_k"], datos["r_k"], datos["n_k"],
+        datos["x0_p"], datos["r_p"], datos["n_p"],
     )
+
+    # --- Escenario A: perturbar SOLO x0_k (keystream) ---
+    x0_k_pert = x0_k + DELTA_X0
+
+    # Extracción: usa x0_p correcto → bits correctos
+    bits_ext_a, _ = extraer_lsb_caotico(audio_mod, n_bits, x0_p, r_p, n_p)
+    bytes_ext_a = _bits_a_bytes(bits_ext_a)
+
+    # Decrypt con keystream correcto
+    llave_a_correcta = generar_llave(x0_k, r_k, n_k, len(bytes_ext_a))
+    texto_a_correcto = bytes(
+        xor_encriptado(np.array(bytes_ext_a, dtype=np.uint8), llave_a_correcta).tolist()
+    ).decode("utf-8", errors="replace")
+
+    # Decrypt con keystream perturbado
+    llave_a_pert = generar_llave(x0_k_pert, r_k, n_k, len(bytes_ext_a))
+    texto_a_perturbado = bytes(
+        xor_encriptado(np.array(bytes_ext_a, dtype=np.uint8), llave_a_pert).tolist()
+    ).decode("utf-8", errors="replace")
+
+    # Hamming keystream
+    llave_c = generar_llave(x0_k, r_k, n_k, longitud)
+    llave_p = generar_llave(x0_k_pert, r_k, n_k, longitud)
+    bits_dif_key = sum(bin(int(a) ^ int(b)).count("1") for a, b in zip(llave_c, llave_p))
     pct_bits_key = bits_dif_key / (longitud * 8) * 100
 
-    similitud_texto = _similitud_textual(texto_ref, texto_recuperado_correcto)
-    similitud_perturbado = _similitud_textual(texto_ref, texto_recuperado_perturbado)
+    sim_a_correcto = _similitud_textual(texto_ref, texto_a_correcto)
+    sim_a_pert = _similitud_textual(texto_ref, texto_a_perturbado)
 
-    print(f"  x0 correcto:      {X0}")
-    print(f"  x0 perturbado:    {x0_perturbado}  (Δ = {DELTA_X0})")
-    print(f"  Bits LSB distintos (audio):   {bits_dif_audio}/{n_bits}  ({pct_bits_audio:.2f}%)")
-    print(f"  Bits keystream distintos:     {bits_dif_key}/{longitud*8}  ({pct_bits_key:.2f}%)")
-    print(f"  Texto correcto (similitud):   {similitud_texto:.2f}%")
-    print(f"  Texto perturbado (similitud): {similitud_perturbado:.2f}%")
+    print(f"  Escenario A — perturbación SOLO x0_k (keystream):")
+    print(f"    x0_k correcto: {x0_k}, x0_k perturbado: {x0_k_pert}")
+    print(f"    Similitud texto correcto:   {sim_a_correcto:.2f}%")
+    print(f"    Similitud texto perturbado: {sim_a_pert:.2f}%")
+    print(f"    Bits keystream distintos:   {bits_dif_key}/{longitud*8} ({pct_bits_key:.2f}%)")
+    print(f"    Texto recuperado (correcto):  {texto_a_correcto!r}")
+    print(f"    Texto recuperado (perturbado): {texto_a_perturbado!r}")
 
-    # === FIGURA: 3 paneles ===
+    # --- Escenario B: perturbar SOLO x0_p (posiciones) ---
+    # Nota: para el x0_p derivado, 1e-15 está en el límite de precisión float64
+    # y puede no cambiar la secuencia para este valor específico. Usamos 1e-14
+    # para garantizar divergencia visible en la figura.
+    x0_p_pert = x0_p + 1e-14
+
+    # Extracción: usa x0_p perturbado → bits incorrectos
+    bits_ext_b, _ = extraer_lsb_caotico(audio_mod, n_bits, x0_p_pert, r_p, n_p)
+    bytes_ext_b = _bits_a_bytes(bits_ext_b)
+
+    # Decrypt con keystream correcto (pero bits extraídos son incorrectos)
+    llave_b_correcta = generar_llave(x0_k, r_k, n_k, len(bytes_ext_b))
+    texto_b_perturbado = bytes(
+        xor_encriptado(np.array(bytes_ext_b, dtype=np.uint8), llave_b_correcta).tolist()
+    ).decode("utf-8", errors="replace")
+
+    # Hamming bits extraídos vs correctos
+    bits_dif_audio = sum(1 for a, b in zip(bits_ext_a, bits_ext_b) if a != b)
+    pct_bits_audio = bits_dif_audio / n_bits * 100 if n_bits else 0.0
+
+    sim_b_pert = _similitud_textual(texto_ref, texto_b_perturbado)
+
+    print(f"  Escenario B — perturbación SOLO x0_p (posiciones):")
+    print(f"    x0_p correcto: {x0_p}, x0_p perturbado: {x0_p_pert}")
+    print(f"    Bits LSB distintos:         {bits_dif_audio}/{n_bits} ({pct_bits_audio:.2f}%)")
+    print(f"    Similitud texto perturbado: {sim_b_pert:.2f}%")
+    print(f"    Texto recuperado (perturbado posiciones): {texto_b_perturbado!r}")
+
+    # ============================================================
+    # Guardar archivos de texto para cada escenario
+    # ============================================================
+    ruta_keystream = SALIDA / "texto_recuperado_perturbacion_keystream.txt"
+    ruta_posiciones = SALIDA / "texto_recuperado_perturbacion_posiciones.txt"
+
+    meta_keystream = (
+        f"=== Escenario A: Perturbación SOLO x0_k (keystream) ===\n"
+        f"Clave correcta: x0_k={x0_k}, r_k={r_k}, n_k={n_k}, x0_p={x0_p}, r_p={r_p}, n_p={n_p}\n"
+        f"Clave perturbada: x0_k={x0_k_pert}, r_k={r_k}, n_k={n_k}, x0_p={x0_p}, r_p={r_p}, n_p={n_p}\n"
+        f"Similitud texto correcto: {sim_a_correcto:.2f}%\n"
+        f"Similitud texto perturbado: {sim_a_pert:.2f}%\n"
+        f"Bits keystream distintos: {bits_dif_key}/{longitud*8} ({pct_bits_key:.2f}%)\n"
+        f"---\n"
+    )
+    ruta_keystream.write_text(meta_keystream + texto_a_correcto + "\n---\n" + texto_a_perturbado, encoding="utf-8")
+
+    meta_posiciones = (
+        f"=== Escenario B: Perturbación SOLO x0_p (posiciones) ===\n"
+        f"Clave correcta: x0_k={x0_k}, r_k={r_k}, n_k={n_k}, x0_p={x0_p}, r_p={r_p}, n_p={n_p}\n"
+        f"Clave perturbada: x0_k={x0_k}, r_k={r_k}, n_k={n_k}, x0_p={x0_p_pert}, r_p={r_p}, n_p={n_p}\n"
+        f"Similitud texto perturbado: {sim_b_pert:.2f}%\n"
+        f"Bits LSB distintos: {bits_dif_audio}/{n_bits} ({pct_bits_audio:.2f}%)\n"
+        f"---\n"
+    )
+    ruta_posiciones.write_text(meta_posiciones + texto_b_perturbado, encoding="utf-8")
+    print(f"  Archivos guardados: {ruta_keystream.name}, {ruta_posiciones.name}")
+
+    # === FIGURA ===
     fig, axes = plt.subplots(3, 1, figsize=(16, 12), facecolor="white")
     for ax in axes:
         ax.set_facecolor("white")
 
-    # Panel 1: bits extraídos con clave correcta (primeros 200)
     n_show = min(200, n_bits)
     x_bits = np.arange(n_show)
-    bits_c_arr = np.array([int(b) for b in bits_correctos[:n_show]])
-    bits_p_arr = np.array([int(b) for b in bits_perturbados[:n_show]])
 
-    axes[0].step(x_bits, bits_c_arr, color=COLORES["original"], linewidth=1.2,
-                 label=f"Clave correcta (x₀={X0})", where="mid")
-    axes[0].set_title(f"Panel 1 — Bits LSB extraídos con clave CORRECTA (primeros {n_show})", **FONT_TITLE)
+    # Panel 1: bits extraídos con x0_p correcto (Escenario A)
+    bits_a_arr = np.array([int(b) for b in bits_ext_a[:n_show]])
+    axes[0].step(x_bits, bits_a_arr, color=COLORES["original"], linewidth=1.2,
+                 label=f"Extracción correcta (x0_p={x0_p:.6f})", where="mid")
+    axes[0].set_title(f"Panel 1 — Bits LSB extraídos con semilla de posiciones CORRECTA (primeros {n_show})", **FONT_TITLE)
     axes[0].set_ylabel("Bit (0/1)", **FONT_LABEL)
     axes[0].set_ylim(-0.2, 1.3)
     axes[0].set_yticks([0, 1])
     axes[0].grid(axis="y", alpha=0.2, color=COLORES["grid"])
     axes[0].legend(fontsize=10)
 
-    # Panel 2: bits con clave perturbada
-    axes[1].step(x_bits, bits_p_arr, color=COLORES["modificado"], linewidth=1.2,
-                 label=f"Clave perturbada (x₀+{DELTA_X0})", where="mid")
-    axes[1].set_title(f"Panel 2 — Bits LSB extraídos con clave PERTURBADA (solo Δx₀={DELTA_X0})", **FONT_TITLE)
+    # Panel 2: bits extraídos con x0_p perturbado (Escenario B)
+    bits_b_arr = np.array([int(b) for b in bits_ext_b[:n_show]])
+    axes[1].step(x_bits, bits_b_arr, color=COLORES["modificado"], linewidth=1.2,
+                 label=f"Extracción perturbada (x0_p+{DELTA_X0})", where="mid")
+    axes[1].set_title(f"Panel 2 — Bits LSB extraídos con semilla de posiciones PERTURBADA (solo Δx0_p={DELTA_X0})", **FONT_TITLE)
     axes[1].set_ylabel("Bit (0/1)", **FONT_LABEL)
     axes[1].set_ylim(-0.2, 1.3)
     axes[1].set_yticks([0, 1])
     axes[1].grid(axis="y", alpha=0.2, color=COLORES["grid"])
     axes[1].legend(fontsize=10)
 
-    # Panel 3: diferencia (XOR de bits) = posiciones distintas
-    diff_bits = np.abs(bits_c_arr - bits_p_arr)
+    # Panel 3: diferencia de bits LSB entre correcto y perturbado
+    diff_bits = np.abs(bits_a_arr - bits_b_arr)
     axes[2].bar(x_bits, diff_bits, color=COLORES["alerta"], width=1.0, alpha=0.85,
                 label=f"Bits distintos: {bits_dif_audio}/{n_bits} ({pct_bits_audio:.2f}%)")
-    axes[2].set_title("Panel 3 — Diferencia bit a bit en posiciones LSB del audio", **FONT_TITLE)
+    axes[2].set_title("Panel 3 — Diferencia bit a bit en posiciones LSB del audio (Escenario B)", **FONT_TITLE)
     axes[2].set_xlabel("Índice de bit", **FONT_LABEL)
     axes[2].set_ylabel("Diferencia (0=igual, 1=distinto)", **FONT_LABEL)
     axes[2].set_ylim(0, 1.3)
@@ -718,17 +781,19 @@ def analisis_sensibilidad_clave(datos):
     axes[2].grid(axis="y", alpha=0.2, color=COLORES["grid"])
     axes[2].legend(fontsize=10)
 
-    # Recuadro con texto recuperado
+    # Recuadro con resumen
     resumen = (
-        f"CLAVE CORRECTA  → texto recuperado: {texto_recuperado_correcto[:80]!r}\n"
-        f"CLAVE PERTURBADA → texto recuperado: {texto_recuperado_perturbado[:80]!r}\n"
-        f"Similitud correcto: {similitud_texto:.1f}%  |  Similitud perturbado: {similitud_perturbado:.1f}%"
+        f"Escenario A (perturbación SOLO x0_k): bits LSB extraídos correctos porque x0_p no cambió. "
+        f"La recuperación falla al descifrar con keystream perturbado: similitud {sim_a_pert:.1f}%\n"
+        f"Escenario B (perturbación SOLO x0_p): bits LSB extraídos son distintos porque las posiciones cambiaron. "
+        f"La recuperación falla incluso con keystream correcto: similitud {sim_b_pert:.1f}%\n"
+        f"Bits keystream distintos (Escenario A): {bits_dif_key}/{longitud*8} ({pct_bits_key:.2f}%)"
     )
     fig.text(0.01, 0.01, resumen, ha="left", va="bottom", fontsize=9,
              family="monospace", color="#1a1a1a")
 
     fig.suptitle(
-        "Sensibilidad de Clave (Exp 5.1) — Solo Δx₀=1e-15 produce fallo total de recuperación",
+        "Sensibilidad de Clave (Exp 5.1) — Independencia de semillas: perturbación de una sola semilla impide recuperación",
         fontsize=14, fontweight="bold", color=COLORES["texto"], y=0.995,
     )
     fig.tight_layout(rect=[0, 0.08, 1, 0.98])
@@ -740,10 +805,26 @@ def analisis_sensibilidad_clave(datos):
         "pct_bits_audio": float(pct_bits_audio),
         "bits_dif_keystream": int(bits_dif_key),
         "pct_bits_keystream": float(pct_bits_key),
-        "similitud_texto_correcto": float(similitud_texto),
-        "similitud_texto_perturbado": float(similitud_perturbado),
-        "texto_correcto_preview": texto_recuperado_correcto[:120],
-        "texto_perturbado_preview": texto_recuperado_perturbado[:120],
+        "similitud_texto_correcto": float(sim_a_correcto),
+        "similitud_texto_perturbado_keystream": float(sim_a_pert),
+        "similitud_texto_perturbado_posiciones": float(sim_b_pert),
+        "texto_correcto_preview": texto_a_correcto[:120],
+        "texto_perturbado_keystream_preview": texto_a_perturbado[:120],
+        "texto_perturbado_posiciones_preview": texto_b_perturbado[:120],
+        "escenario_keystream": {
+            "texto_recuperado_correcto": texto_a_correcto,
+            "texto_recuperado_perturbado": texto_a_perturbado,
+            "similitud": float(sim_a_pert),
+            "bits_diferentes": int(bits_dif_key),
+            "pct_bits_diferentes": float(pct_bits_key),
+        },
+        "escenario_posiciones": {
+            "texto_recuperado_correcto": texto_a_correcto,
+            "texto_recuperado_perturbado": texto_b_perturbado,
+            "similitud": float(sim_b_pert),
+            "bits_diferentes": int(bits_dif_audio),
+            "pct_bits_diferentes": float(pct_bits_audio),
+        },
     }
 
 
@@ -752,56 +833,96 @@ def analisis_sensibilidad_clave(datos):
 # ============================================================
 
 
-def _extraer_y_comparar_caotico(audio_mod, n_bits, bits_referencia):
+def _extraer_y_comparar_caotico(audio_mod, n_bits, bits_referencia, x0_p, r_p, n_p):
     """Extrae mensaje de audio usando posiciones caóticas y compara con referencia."""
     try:
-        bits_ext, _ = extraer_lsb_caotico(audio_mod, n_bits, X0, R, N_WARMUP)
+        bits_ext, _ = extraer_lsb_caotico(audio_mod, n_bits, x0_p, r_p, n_p)
         correctos = sum(1 for a, b in zip(bits_referencia, bits_ext) if a == b)
         return correctos / n_bits * 100
     except Exception:
         return 0.0
 
 
-def ataque_sal_y_pimienta(audio, proporcion):
-    """Sal y pimienta sobre el audio completo."""
+def ataque_sal_y_pimienta(audio, proporcion, seed=None):
+    """Sal y pimienta sobre el audio completo con semilla distinta por nivel."""
     audio_atacado = np.copy(audio)
     n = len(audio_atacado)
     n_afectados = int(n * proporcion)
 
-    np.random.seed(42)
-    indices = np.random.choice(n, n_afectados, replace=False)
+    rng = np.random.default_rng(seed)
+    indices = rng.choice(n, n_afectados, replace=False)
     mitad = n_afectados // 2
     audio_atacado[indices[:mitad]] = 32767  # sal
     audio_atacado[indices[mitad:]] = -32768  # pimienta
 
-    return audio_atacado
+    return audio_atacado, n_afectados, indices
 
 
-def ataque_oclusion(audio, proporcion):
-    """Oclusión: pone a cero un bloque contiguo."""
+def ataque_oclusion(audio, proporcion, seed=None):
+    """Oclusión: múltiples bloques dispersos en lugar de uno solo."""
     audio_atacado = np.copy(audio)
     n = len(audio_atacado)
-    tam_bloque = int(n * proporcion)
+    n_afectados = int(n * proporcion)
 
-    np.random.seed(42)
-    pos_inicio = np.random.randint(0, max(1, n - tam_bloque))
-    audio_atacado[pos_inicio : pos_inicio + tam_bloque] = 0
+    rng = np.random.default_rng(seed)
+    n_bloques = 10
+    tam_bloque = max(1, n_afectados // n_bloques)
+    bloques = []
+    for i in range(n_bloques):
+        inicio = rng.integers(0, max(1, n - tam_bloque))
+        audio_atacado[inicio : inicio + tam_bloque] = 0
+        bloques.append((inicio, inicio + tam_bloque))
 
-    return audio_atacado
+    return audio_atacado, n_afectados, tam_bloque, bloques
 
 
 def generar_6_fallo_perturbacion(datos):
-    """Exp 5.1 alt — Flujo sobre keystream: perturba SOLO x0, compara keystreams y bytes cifrados."""
-    print("\n--- Generando 6_fallo_perturbacion.png (solo Δx0)")
+    """Exp 5.1 alt — Flujo completo: esteganografía + extracción + descifrado con clave correcta y perturbada.
+    Perturba SOLO x0_k (keystream). La semilla de posiciones (x0_p) permanece inalterada."""
+    print("\n--- Generando 6_fallo_perturbacion.png (flujo completo, solo Δx0_k)")
 
     texto_bytes = datos["texto_bytes"]
     DELTA_X0 = 1e-15
-    x0_perturbado = X0 + DELTA_X0
 
-    # Keystream correcto y perturbado (solo x0 cambia)
-    llave_correcta = generar_llave(X0, R, N_WARMUP, len(texto_bytes))
-    llave_perturbada = generar_llave(x0_perturbado, R, N_WARMUP, len(texto_bytes))
+    x0_k, r_k, n_k, x0_p, r_p, n_p = (
+        datos["x0_k"], datos["r_k"], datos["n_k"],
+        datos["x0_p"], datos["r_p"], datos["n_p"],
+    )
+
+    x0_k_perturbado = x0_k + DELTA_X0
+
+    # ============================================================
+    # FLUJO COMPLETO: esteganografía + extracción + descifrado
+    # ============================================================
+    # 1. Cifrar el texto con keystream correcto
+    llave_correcta = generar_llave(x0_k, r_k, n_k, len(texto_bytes))
     cifrado_correcto = xor_encriptado(texto_bytes, llave_correcta)
+    bits_cifrado = "".join(np.unpackbits(cifrado_correcto).astype(str).tolist())
+
+    # 2. Insertar en audio original con posiciones correctas
+    audio_orig = datos["audio_original"].copy()
+    audio_estegano, _ = insertar_lsb_caotico(audio_orig, bits_cifrado, x0_p, r_p, n_p)
+
+    # 3. Extraer bits del audio esteganografiado con posiciones correctas
+    bits_extraidos, _ = extraer_lsb_caotico(audio_estegano, len(bits_cifrado), x0_p, r_p, n_p)
+    bytes_extraidos = _bits_a_bytes(bits_extraidos)
+
+    # 4. Descifrar con keystream correcto
+    llave_rec = generar_llave(x0_k, r_k, n_k, len(bytes_extraidos))
+    texto_rec_correcto = bytes(
+        xor_encriptado(np.array(bytes_extraidos, dtype=np.uint8), llave_rec).tolist()
+    ).decode("utf-8", errors="replace")
+
+    # 5. Descifrar con keystream perturbado (mismo texto extraído, pero clave mal)
+    llave_rec_pert = generar_llave(x0_k_perturbado, r_k, n_k, len(bytes_extraidos))
+    texto_rec_perturbado = bytes(
+        xor_encriptado(np.array(bytes_extraidos, dtype=np.uint8), llave_rec_pert).tolist()
+    ).decode("utf-8", errors="replace")
+
+    # ============================================================
+    # Métricas de comparación (XOR directo para la figura)
+    # ============================================================
+    llave_perturbada = generar_llave(x0_k_perturbado, r_k, n_k, len(texto_bytes))
     cifrado_perturbado = xor_encriptado(texto_bytes, llave_perturbada)
 
     bits_dif = sum(
@@ -811,13 +932,44 @@ def generar_6_fallo_perturbacion(datos):
     total_bits = len(cifrado_correcto) * 8
     pct_bits_dif = (bits_dif / total_bits * 100) if total_bits else 0.0
 
-    rec_correcto = bytes(
-        xor_encriptado(cifrado_correcto, llave_correcta).tolist()
-    ).decode("utf-8", errors="replace")
-    rec_perturbado_con_clave_correcta = bytes(
-        xor_encriptado(cifrado_perturbado, llave_correcta).tolist()
-    ).decode("utf-8", errors="replace")
+    similitud_correcto = _similitud_textual(datos["texto_comprimido"], texto_rec_correcto)
+    similitud_perturbado = _similitud_textual(datos["texto_comprimido"], texto_rec_perturbado)
 
+    # ============================================================
+    # Print de textos recuperados
+    # ============================================================
+    print(f"Texto recuperado (clave correcta): {texto_rec_correcto!r}")
+    print(f"Texto recuperado (clave perturbada): {texto_rec_perturbado!r}")
+    print(f"  Similitud con original — correcto: {similitud_correcto:.2f}%, perturbado: {similitud_perturbado:.2f}%")
+
+    # ============================================================
+    # Guardar archivos de texto
+    # ============================================================
+    ruta_correcta = SALIDA / "texto_recuperado_clave_correcta.txt"
+    ruta_perturbada = SALIDA / "texto_recuperado_clave_perturbada.txt"
+
+    meta_correcta = (
+        f"=== Texto recuperado con CLAVE CORRECTA ===\n"
+        f"Clave: x0_k={x0_k}, r_k={r_k}, n_k={n_k}, x0_p={x0_p}, r_p={r_p}, n_p={n_p}\n"
+        f"Similitud con texto original: {similitud_correcto:.2f}%\n"
+        f"---\n"
+    )
+    ruta_correcta.write_text(meta_correcta + texto_rec_correcto, encoding="utf-8")
+
+    meta_perturbada = (
+        f"=== Texto recuperado con CLAVE PERTURBADA (Δx0_k={DELTA_X0}) ===\n"
+        f"Clave correcta: x0_k={x0_k}, r_k={r_k}, n_k={n_k}, x0_p={x0_p}, r_p={r_p}, n_p={n_p}\n"
+        f"Clave perturbada: x0_k={x0_k_perturbado}, r_k={r_k}, n_k={n_k}, x0_p={x0_p}, r_p={r_p}, n_p={n_p}\n"
+        f"Similitud con texto original: {similitud_perturbado:.2f}%\n"
+        f"Bits keystream distintos: {bits_dif}/{total_bits} ({pct_bits_dif:.2f}%)\n"
+        f"---\n"
+    )
+    ruta_perturbada.write_text(meta_perturbada + texto_rec_perturbado, encoding="utf-8")
+    print(f"  Archivos guardados: {ruta_correcta.name}, {ruta_perturbada.name}")
+
+    # ============================================================
+    # Figura
+    # ============================================================
     n_show = min(96, len(texto_bytes))
     x = np.arange(n_show)
 
@@ -826,13 +978,13 @@ def generar_6_fallo_perturbacion(datos):
         ax.set_facecolor("white")
 
     axes[0].bar(x, cifrado_correcto[:n_show], color=COLORES["original"], width=1.0, edgecolor="#2f4f6f")
-    axes[0].set_title(f"Panel 1 — Bytes cifrados con clave CORRECTA  (x₀={X0}, r={R}, n={N_WARMUP})",
+    axes[0].set_title(f"Panel 1 — Bytes cifrados con clave CORRECTA  (x0_k={x0_k}, r_k={r_k}, n_k={n_k})",
                       loc="left", fontsize=11, fontweight="bold")
     axes[0].set_ylabel("Valor del byte")
     axes[0].set_xlim(-1, n_show)
 
     axes[1].bar(x, cifrado_perturbado[:n_show], color=COLORES["modificado"], width=1.0, edgecolor="#8a4d00")
-    axes[1].set_title(f"Panel 2 — Bytes cifrados con clave PERTURBADA  (solo Δx₀={DELTA_X0})",
+    axes[1].set_title(f"Panel 2 — Bytes cifrados con clave PERTURBADA  (solo Δx0_k={DELTA_X0})",
                       loc="left", fontsize=11, fontweight="bold")
     axes[1].set_ylabel("Valor del byte")
     axes[1].set_xlim(-1, n_show)
@@ -847,14 +999,16 @@ def generar_6_fallo_perturbacion(datos):
 
     resumen = (
         f"Distancia de Hamming: {bits_dif}/{total_bits} bits  ({pct_bits_dif:.2f}%)\n"
-        f"Clave correcta:    x₀={X0},  r={R},  n_warmup={N_WARMUP}  →  texto legible: {rec_correcto[:60]!r}\n"
-        f"Clave perturbada:  x₀+{DELTA_X0}  →  recuperado con clave correcta: {rec_perturbado_con_clave_correcta[:60]!r}"
+        f"Texto recuperado (correcto):  {texto_rec_correcto[:60]!r}\n"
+        f"Texto recuperado (perturbado): {texto_rec_perturbado[:60]!r}\n"
+        f"Similitud: correcto={similitud_correcto:.2f}%, perturbado={similitud_perturbado:.2f}%\n"
+        f"Nota: la semilla de posiciones (x0_p={x0_p:.6f}) no se perturbó; el fallo es puramente del keystream."
     )
     fig.text(0.01, 0.01, resumen, ha="left", va="bottom", fontsize=9,
              family="monospace", color="#1a1a1a")
 
     fig.suptitle(
-        "Efecto Avalancha (Exp 5.1) — Solo Δx₀=1e-15 → keystreams casi ortogonales",
+        "Efecto Avalancha (Exp 5.1) — Solo Δx0_k=1e-15 → keystreams casi ortogonales",
         fontsize=13, fontweight="bold", color=COLORES["texto"], y=0.995,
     )
     fig.tight_layout(rect=[0, 0.10, 1, 0.98])
@@ -865,17 +1019,27 @@ def generar_6_fallo_perturbacion(datos):
         "bits_dif": int(bits_dif),
         "total_bits": int(total_bits),
         "porcentaje_bits_dif": float(pct_bits_dif),
+        "texto_recuperado_correcto": texto_rec_correcto,
+        "texto_recuperado_perturbado": texto_rec_perturbado,
+        "similitud_correcto": float(similitud_correcto),
+        "similitud_perturbado": float(similitud_perturbado),
+        "clave_correcta": {"x0_k": float(x0_k), "r_k": float(r_k), "n_k": int(n_k),
+                           "x0_p": float(x0_p), "r_p": float(r_p), "n_p": int(n_p)},
+        "clave_perturbada": {"x0_k": float(x0_k_perturbado), "r_k": float(r_k), "n_k": int(n_k),
+                             "x0_p": float(x0_p), "r_p": float(r_p), "n_p": int(n_p)},
     }
 
 
 
 def comparar_estegoaudios_claves(datos):
-    """Exp 5.2 — Compara dos estegoaudios generados con claves que difieren solo en x0.
+    """Exp 5.2 — Compara dos estegoaudios generados con claves maestras que difieren solo en x0.
 
-    Oculta el MISMO texto comprimido+cifrado en el audio con dos claves
-    que difieren en Δx0=1e-15. Muestra que los dos estegoaudios son distintos.
+    Oculta el MISMO texto comprimido+cifrado en el audio con dos claves maestras
+    que difieren en Δx0=1e-15. Como las semillas se derivan de la clave maestra,
+    ambas semillas (keystream y posiciones) cambian. Muestra que los dos estegoaudios
+    resultantes son completamente distintos.
     """
-    print("\n--- Exp 5.2: Comparación de dos estegoaudios con claves casi idénticas")
+    print("\n--- Exp 5.2: Comparación de dos estegoaudios con claves maestras casi idénticas")
 
     from src.esteganografiado.esteganografiar import insertar_lsb_caotico as _insertar
 
@@ -884,19 +1048,25 @@ def comparar_estegoaudios_claves(datos):
     DELTA_X0 = 1e-15
     x0_b = X0 + DELTA_X0
 
+    # Derivar semillas para clave A (correcta)
+    x0_k_a, r_k_a, n_k_a, x0_p_a, r_p_a, n_p_a = derivar_semillas(X0, R, N_WARMUP)
+
+    # Derivar semillas para clave B (perturbada solo x0 del master key)
+    x0_k_b, r_k_b, n_k_b, x0_p_b, r_p_b, n_p_b = derivar_semillas(x0_b, R, N_WARMUP)
+
     # Clave A (correcta)
-    llave_a = generar_llave(X0, R, N_WARMUP, len(texto_bytes))
+    llave_a = generar_llave(x0_k_a, r_k_a, n_k_a, len(texto_bytes))
     cifrado_a = xor_encriptado(texto_bytes, llave_a)
     bits_a = "".join(np.unpackbits(cifrado_a).astype(str).tolist())
 
-    # Clave B (perturbada solo x0)
-    llave_b = generar_llave(x0_b, R, N_WARMUP, len(texto_bytes))
+    # Clave B (perturbada)
+    llave_b = generar_llave(x0_k_b, r_k_b, n_k_b, len(texto_bytes))
     cifrado_b = xor_encriptado(texto_bytes, llave_b)
     bits_b = "".join(np.unpackbits(cifrado_b).astype(str).tolist())
 
-    # Insertar con posiciones caóticas de CADA clave
-    estego_a, pos_a = _insertar(audio_orig.copy(), bits_a, X0, R, N_WARMUP)
-    estego_b, pos_b = _insertar(audio_orig.copy(), bits_b, x0_b, R, N_WARMUP)
+    # Insertar con posiciones caóticas de CADA clave (usando semillas derivadas)
+    estego_a, pos_a = _insertar(audio_orig.copy(), bits_a, x0_p_a, r_p_a, n_p_a)
+    estego_b, pos_b = _insertar(audio_orig.copy(), bits_b, x0_p_b, r_p_b, n_p_b)
 
     # Comparar los dos estegoaudios
     n = min(len(estego_a), len(estego_b))
@@ -923,9 +1093,9 @@ def comparar_estegoaudios_claves(datos):
     zoom = 50_000
     xz = np.arange(zoom)
     axes[0].plot(xz, estego_a[:zoom], color=COLORES["original"], linewidth=0.4,
-                 alpha=0.8, label=f"Estegoaudio A (x₀={X0})")
+                 alpha=0.8, label=f"Estegoaudio A (x0_maestra={X0})")
     axes[0].plot(xz, estego_b[:zoom], color=COLORES["modificado"], linewidth=0.4,
-                 alpha=0.6, label=f"Estegoaudio B (x₀+{DELTA_X0})")
+                 alpha=0.6, label=f"Estegoaudio B (x0_maestra+{DELTA_X0})")
     axes[0].set_title(f"Panel 1 — Superposición (primeras {zoom:,} muestras)", **FONT_TITLE)
     axes[0].set_ylabel("Amplitud", **FONT_LABEL)
     axes[0].legend(fontsize=9)
@@ -948,7 +1118,7 @@ def comparar_estegoaudios_claves(datos):
     axes[2].grid(alpha=0.15, color=COLORES["grid"])
 
     fig.suptitle(
-        f"Exp 5.2 — Dos estegoaudios con Δx₀={DELTA_X0}: MSE={mse_entre:.4e}, {n_distintos} muestras distintas",
+        f"Exp 5.2 — Dos estegoaudios con Δx0_maestra={DELTA_X0}: MSE={mse_entre:.4e}, {n_distintos} muestras distintas",
         fontsize=13, fontweight="bold", color=COLORES["texto"],
     )
     fig.tight_layout()
@@ -1095,71 +1265,258 @@ def inyectar_valores_en_readme(res_mse: dict) -> None:
 
 def _panel_ataques_con_texto(datos, tipo: str, nombre_archivo: str,
                               audio_at=None, titulo: str = None):
-    """Genera panel con imagen atacada + texto recuperado para 5/10/25%."""
+    """Genera panel con forma de onda + texto recuperado + métricas para 5/10/25%.
+
+    Item 7 (Sal y Pimienta): forma de onda superponiendo original vs atacado,
+    marcando corrompidos en rojo, semilla distinta por nivel.
+    Item 8 (Oclusión): señal completa con axvspan para múltiples segmentos.
+    """
     audio = datos["audio_modificado"]
     texto_ref = datos["texto_comprimido"]
     niveles = [0.05, 0.10, 0.25]
+    n_bits = len(datos["mensaje_bits"])
+    bits_ref, _ = extraer_lsb_caotico(audio, n_bits, datos["x0_p"], datos["r_p"], datos["n_p"])
 
-    fig, axes = plt.subplots(3, 2, figsize=(20, 12), facecolor="white")
+    fig, axes = plt.subplots(3, 1, figsize=(18, 14), facecolor="white")
+    for ax in axes:
+        ax.set_facecolor("white")
+
+    resultados_por_nivel = {}
+
+    for i, p in enumerate(niveles):
+        seed = int(p * 10000)
+        if audio_at is not None:
+            audio_atacado = audio_at
+            titulo_panel = titulo or nombre_archivo
+            n_corrompidos = 0
+            tam_bloque = 0
+            bloques = []
+        elif tipo == "sal_pimienta":
+            audio_atacado, n_corrompidos, indices_corrompidos = ataque_sal_y_pimienta(audio, p, seed=seed)
+            titulo_panel = f"Sal y Pimienta {int(p * 100)}%"
+            tam_bloque = 0
+            bloques = []
+        else:
+            audio_atacado, n_corrompidos, tam_bloque, bloques = ataque_oclusion(audio, p, seed=seed)
+            titulo_panel = f"Oclusión {int(p * 100)}%"
+
+        # Recuperar texto
+        texto_rec = _recuperar_texto_desde_audio(audio_atacado, datos)
+        similitud = _similitud_textual(texto_ref, texto_rec)
+        print(f"  [{tipo} {int(p*100)}%] Texto recuperado: {texto_rec[:80]!r}...")
+        print(f"  [{tipo} {int(p*100)}%] Similitud: {similitud:.2f}%")
+
+        # Calcular métricas
+        try:
+            bits_ext, _ = extraer_lsb_caotico(audio_atacado, n_bits, datos["x0_p"], datos["r_p"], datos["n_p"])
+            correctos = sum(1 for a, b in zip(bits_ref, bits_ext) if a == b)
+            ber = 1.0 - correctos / n_bits
+            w  = np.array([int(b) for b in bits_ref], dtype=np.float64) * 2 - 1
+            w2 = np.array([int(b) for b in bits_ext], dtype=np.float64) * 2 - 1
+            nc = float(np.dot(w, w2) / (np.linalg.norm(w) * np.linalg.norm(w2) + 1e-12))
+        except Exception:
+            ber, nc = 1.0, 0.0
+        n = min(len(audio), len(audio_atacado))
+        mse = float(np.mean((audio[:n].astype(np.float64) - audio_atacado[:n].astype(np.float64))**2))
+        psnr = float(10 * np.log10(32767.0**2 / mse)) if mse > 0 else float("inf")
+
+        resultados_por_nivel[f"{int(p*100)}%"] = {
+            "texto": texto_rec,
+            "similitud": similitud,
+            "ber": ber,
+            "nc": nc,
+            "mse": mse,
+            "psnr": psnr,
+            "n_corrompidos": n_corrompidos,
+            "tam_bloque": tam_bloque,
+        }
+
+        ax = axes[i]
+
+        if tipo == "sal_pimienta":
+            # Item 7: forma de onda zoom superponiendo original vs atacado
+            zoom = min(8000, len(audio))
+            x = np.arange(zoom)
+            ax.plot(x, audio[:zoom], color=COLORES["original"], linewidth=0.5,
+                    alpha=0.7, label="Original")
+            ax.plot(x, audio_atacado[:zoom], color=COLORES["modificado"], linewidth=0.5,
+                    alpha=0.7, label="Atacado")
+            # Marcar corrompidos en rojo
+            mask = np.zeros(zoom, dtype=bool)
+            for idx in indices_corrompidos:
+                if idx < zoom:
+                    mask[idx] = True
+            ax.scatter(x[mask], audio_atacado[:zoom][mask], color="red", s=2, zorder=5,
+                       label=f"Corrompidos ({n_corrompidos})")
+            ax.set_title(f"{titulo_panel} — n_afectados={n_corrompidos} ({p*100:.0f}% del audio)",
+                         **FONT_TITLE)
+            ax.set_xlabel("Índice de muestra", **FONT_LABEL)
+            ax.set_ylabel("Amplitud", **FONT_LABEL)
+            ax.legend(fontsize=9, loc="upper right")
+            ax.grid(alpha=0.15, color=COLORES["grid"])
+        else:
+            # Item 8: señal completa (o decimada) con axvspan para múltiples segmentos
+            n_show = len(audio)
+            decim = max(1, n_show // 20000)
+            x = np.arange(0, n_show, decim)
+            ax.plot(x, audio[::decim], color=COLORES["original"], linewidth=0.3,
+                    alpha=0.6, label="Original")
+            ax.plot(x, audio_atacado[::decim], color=COLORES["modificado"], linewidth=0.3,
+                    alpha=0.6, label="Atacado")
+            # Resaltar múltiples bloques ocluidos
+            for inicio, fin in bloques:
+                ax.axvspan(inicio, fin, color="red", alpha=0.2, zorder=3)
+            ax.set_title(f"{titulo_panel} — 10 bloques dispersos, tam={tam_bloque} ({p*100:.0f}%)",
+                         **FONT_TITLE)
+            ax.set_xlabel("Índice de muestra", **FONT_LABEL)
+            ax.set_ylabel("Amplitud", **FONT_LABEL)
+            ax.legend(fontsize=9, loc="upper right")
+            ax.grid(alpha=0.15, color=COLORES["grid"])
+
+        # Métricas debajo del panel
+        metricas_texto = (
+            f"BER: {ber*100:.2f}%  |  NC: {nc:.4f}  |  "
+            f"MSE: {mse:.2e}  |  PSNR: {psnr:.2f} dB  |  "
+            f"n_corrompidos: {n_corrompidos}"
+        )
+        ax.text(0.01, 0.02, metricas_texto, transform=ax.transAxes,
+                fontsize=9, family="monospace", color="#1a1a1a",
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#efefef", edgecolor="#888", alpha=0.8))
+
+    fig.suptitle(f"Análisis de Robustez — {tipo.replace('_', ' ').title()}",
+                 fontsize=16, fontweight="bold", color=COLORES["texto"], y=0.995)
+    fig.tight_layout(rect=[0, 0, 1, 0.98])
+    _guardar(fig, nombre_archivo)
+
+    return resultados_por_nivel
+
+
+def generar_7_paneles_ataques(datos):
+    """Genera paneles 5/10/25% para Sal/Pimienta y Oclusión con texto recuperado.
+    Escribe archivos .txt y retorna datos para JSON."""
+    print("\n--- Generando paneles de ataques (5%, 10%, 25%)")
+
+    res_sp = _panel_ataques_con_texto(
+        datos,
+        tipo="sal_pimienta",
+        nombre_archivo="7_sal_pimienta_5_10_25.png",
+    )
+    res_oc = _panel_ataques_con_texto(
+        datos,
+        tipo="oclusion",
+        nombre_archivo="7_oclusion_5_10_25.png",
+    )
+
+    # Item 6: escribir archivos .txt
+    def _escribir_txt(res, nombre_archivo, tipo_label):
+        ruta = SALIDA / nombre_archivo
+        lineas = []
+        for nivel in ["5%", "10%", "25%"]:
+            d = res[nivel]
+            lineas.append(f"Nivel: {nivel}")
+            lineas.append(f"Texto recuperado: \"{d['texto']}\"")
+            lineas.append(f"Similitud: {d['similitud']:.2f}%")
+            lineas.append(f"BER: {d['ber']*100:.2f}%")
+            lineas.append(f"NC: {d['nc']:.4f}")
+            lineas.append(f"MSE: {d['mse']:.2e}")
+            lineas.append(f"PSNR: {d['psnr']:.2f} dB")
+            if tipo_label == "sal_pimienta":
+                lineas.append(f"n_corrompidos: {d['n_corrompidos']}")
+            else:
+                lineas.append(f"tam_bloque: {d['tam_bloque']}")
+            lineas.append("---")
+        ruta.write_text("\n".join(lineas), encoding="utf-8")
+        print(f"  [OK] {nombre_archivo}")
+
+    _escribir_txt(res_sp, "textos_recuperados_sal_pimienta.txt", "sal_pimienta")
+    _escribir_txt(res_oc, "textos_recuperados_oclusion.txt", "oclusion")
+
+    return {"sal_pimienta": res_sp, "oclusion": res_oc}
+
+
+def generar_7_panel_gaussiano(datos):
+    """Genera figura 7_gaussiano_30_20_10.png con 3 paneles de SNR.
+
+    Cada panel muestra:
+      - Forma de onda original vs atacada (superpuestas).
+      - Texto recuperado y métricas (BER, NC, MSE, PSNR).
+    """
+    print("\n--- Generando panel gaussiano combinado (SNR = 30, 20, 10 dB)")
+
+    audio = datos["audio_modificado"]
+    snr_niveles = [30, 20, 10]
+    n_bits = len(datos["mensaje_bits"])
+    bits_ref, _ = extraer_lsb_caotico(
+        audio, n_bits, datos["x0_p"], datos["r_p"], datos["n_p"]
+    )
+
+    fig, axes = plt.subplots(3, 2, figsize=(20, 14), facecolor="white")
     for row in axes:
         for ax in row:
             ax.set_facecolor("white")
 
-    for i, p in enumerate(niveles):
-        if audio_at is not None:
-            # Modo externo (gaussiano, etc.)
-            audio_atacado = audio_at
-            titulo_panel = titulo or nombre_archivo
-        elif tipo == "sal_pimienta":
-            audio_atacado = ataque_sal_y_pimienta(audio, p)
-            titulo_panel = f"Sal y Pimienta {int(p * 100)}%"
-        else:
-            audio_atacado = ataque_oclusion(audio, p)
-            titulo_panel = f"Oclusión {int(p * 100)}%"
+    textos_recuperados = []
 
-        # "Imagen atacada": mapa de intensidad en color
-        ax_img = axes[i][0]
-        if tipo == "oclusion":
-            idx_ataque = np.where((audio_atacado == 0) & (audio != 0))[0]
-            if len(idx_ataque) > 0:
-                centro = int(idx_ataque[len(idx_ataque) // 2])
-                ini = max(0, centro - 6000)
-                fin = min(len(audio_atacado), centro + 6000)
-                muestra = audio_atacado[ini:fin]
-            else:
-                muestra = audio_atacado[:12000]
-        else:
-            muestra = audio_atacado[:12000]
+    for i, snr in enumerate(snr_niveles):
+        audio_at = ataque_gaussiano(audio, snr)
+        r_gau = _evaluar(audio_at, bits_ref, n_bits, audio, datos)
+        texto_rec = _recuperar_texto_desde_audio(audio_at, datos)
+        similitud = _similitud_textual(datos["texto_comprimido"], texto_rec)
+        textos_recuperados.append(texto_rec)
 
-        filas = 120
-        cols = max(1, len(muestra) // filas)
-        muestra = muestra[: filas * cols].reshape(filas, cols)
-        im = ax_img.imshow(
-            muestra,
-            cmap="viridis",
-            aspect="auto",
-            interpolation="nearest",
-            vmin=-32768,
-            vmax=32767,
+        # --- Panel izquierdo: RUIDO/DIFERENCIA (atacado - original) ---
+        ax_wav = axes[i][0]
+        n_show = min(12000, len(audio))
+        x = np.arange(n_show)
+        ruido = audio_at[:n_show].astype(np.float64) - audio[:n_show].astype(np.float64)
+        ax_wav.plot(
+            x,
+            ruido,
+            color=COLORES["modificado"],
+            linewidth=0.5,
+            alpha=0.8,
+            label=f"Ruido añadido (SNR={snr} dB)",
         )
-        ax_img.set_title(f"{titulo_panel} — Mapa de amplitud", loc="left")
-        ax_img.set_xlabel("Ventana temporal")
-        ax_img.set_ylabel("Bloques de muestras")
-        ax_img.grid(alpha=0.3, color="#b0b0b0")
-        fig.colorbar(im, ax=ax_img, fraction=0.04, pad=0.02, label="Amplitud")
+        ax_wav.axhline(y=0, color=COLORES["original"], linewidth=0.8, alpha=0.5, linestyle="--")
+        sigma_ruido = np.sqrt(np.mean(ruido**2))
+        ax_wav.set_title(
+            f"SNR = {snr} dB — Ruido gaussiano añadido (σ={sigma_ruido:.1f}, primeras {n_show:,} muestras)",
+            loc="left",
+            fontsize=11,
+            fontweight="bold",
+        )
+        ax_wav.set_ylabel("Diferencia (atacado - original)", **FONT_LABEL)
+        ax_wav.legend(fontsize=9)
+        ax_wav.grid(alpha=0.2, color=COLORES["grid"])
 
-        texto_rec = _recuperar_texto_desde_audio(audio_atacado, datos)
-        similitud = _similitud_textual(texto_ref, texto_rec)
-        vista = _texto_para_plot(texto_rec, max_len=320)
-
+        # --- Panel derecho: texto recuperado + métricas ---
         ax_txt = axes[i][1]
         ax_txt.axis("off")
         ax_txt.set_title(
-            f"Texto recuperado — similitud {similitud:.2f}%", loc="left", fontsize=11
+            f"Texto recuperado — similitud {similitud:.2f}%",
+            loc="left",
+            fontsize=11,
+            fontweight="bold",
+        )
+
+        metricas_texto = (
+            f"BER: {r_gau['ber']*100:.4f}% | NC: {r_gau['nc']:.6f} | "
+            f"MSE: {r_gau['mse']:.4e} | PSNR: {r_gau['psnr_db']:.2f} dB"
         )
         ax_txt.text(
             0.0,
             0.95,
+            metricas_texto,
+            ha="left",
+            va="top",
+            fontsize=10,
+            fontweight="bold",
+            color=COLORES["alerta"],
+        )
+        vista = _texto_para_plot(texto_rec, max_len=400)
+        ax_txt.text(
+            0.0,
+            0.85,
             vista if vista else "<sin texto recuperado legible>",
             ha="left",
             va="top",
@@ -1169,23 +1526,29 @@ def _panel_ataques_con_texto(datos, tipo: str, nombre_archivo: str,
             color="#1a1a1a",
         )
 
+        print(
+            f"  SNR={snr}dB: BER={r_gau['ber']*100:.2f}%, "
+            f"NC={r_gau['nc']:.4f}, PSNR={r_gau['psnr_db']:.2f} dB"
+        )
+        print(f"    Texto recuperado: {texto_rec[:80]!r}")
+
+    # Persistir textos recuperados
+    ruta_txt = SALIDA / "textos_recuperados_gaussiano.txt"
+    contenido_txt = ""
+    for snr, texto in zip(snr_niveles, textos_recuperados):
+        contenido_txt += f"=== SNR = {snr} dB ===\n{texto}\n\n"
+    ruta_txt.write_text(contenido_txt, encoding="utf-8")
+    print(f"  Archivo guardado: {ruta_txt.name}")
+
+    fig.suptitle(
+        "Análisis de Robustez — Ataque Gaussiano (SNR = 30, 20, 10 dB)",
+        fontsize=16,
+        fontweight="bold",
+        color=COLORES["texto"],
+        y=1.02,
+    )
     fig.tight_layout(pad=2.0)
-    _guardar(fig, nombre_archivo)
-
-
-def generar_7_paneles_ataques(datos):
-    """Genera paneles 5/10/25% para Sal/Pimienta y Oclusión con texto recuperado."""
-    print("\n--- Generando paneles de ataques (5%, 10%, 25%)")
-    _panel_ataques_con_texto(
-        datos,
-        tipo="sal_pimienta",
-        nombre_archivo="7_sal_pimienta_5_10_25.png",
-    )
-    _panel_ataques_con_texto(
-        datos,
-        tipo="oclusion",
-        nombre_archivo="7_oclusion_5_10_25.png",
-    )
+    _guardar(fig, "7_gaussiano_30_20_10.png")
 
 
 def analisis_robustez(datos):
@@ -1195,8 +1558,8 @@ def analisis_robustez(datos):
     audio = datos["audio_modificado"]
     n_bits = len(datos["mensaje_bits"])
 
-    # Extraer bits de referencia (del audio sin atacar)
-    bits_ref, _ = extraer_lsb_caotico(audio, n_bits, X0, R, N_WARMUP)
+    # Extraer bits de referencia (del audio sin atacar) usando semilla de posiciones
+    bits_ref, _ = extraer_lsb_caotico(audio, n_bits, datos["x0_p"], datos["r_p"], datos["n_p"])
 
     proporciones = [0.01, 0.05, 0.10, 0.25]
     resultados_sp = []
@@ -1204,14 +1567,14 @@ def analisis_robustez(datos):
 
     for p in proporciones:
         # Sal y pimienta
-        audio_sp = ataque_sal_y_pimienta(audio, p)
-        pct_sp = _extraer_y_comparar_caotico(audio_sp, n_bits, bits_ref)
+        audio_sp, _, _ = ataque_sal_y_pimienta(audio, p)
+        pct_sp = _extraer_y_comparar_caotico(audio_sp, n_bits, bits_ref, datos["x0_p"], datos["r_p"], datos["n_p"])
         resultados_sp.append(pct_sp)
         print(f"  Sal y Pimienta {p * 100:.0f}%: {pct_sp:.2f}% bits correctos")
 
         # Oclusión
-        audio_oc = ataque_oclusion(audio, p)
-        pct_oc = _extraer_y_comparar_caotico(audio_oc, n_bits, bits_ref)
+        audio_oc, _, _, _ = ataque_oclusion(audio, p)
+        pct_oc = _extraer_y_comparar_caotico(audio_oc, n_bits, bits_ref, datos["x0_p"], datos["r_p"], datos["n_p"])
         resultados_oc.append(pct_oc)
         print(f"  Oclusión       {p * 100:.0f}%: {pct_oc:.2f}% bits correctos")
 
@@ -1313,15 +1676,16 @@ def analisis_robustez(datos):
 
 
 def analisis_seguridad_clave(datos):
-    """Análisis del espacio de claves y componentes."""
-    print("\n--- Análisis de Seguridad de la Clave")
+    """Análisis del espacio de claves y componentes (versión legacy, actualizada a 117 bits)."""
+    print("\n--- Análisis de Seguridad de la Clave (legacy)")
 
     long_llave_bytes = len(datos["llave"])
     long_llave_bits = long_llave_bytes * 8
 
     espacio_x0 = 2**52
-    espacio_r = 2**48
-    espacio_total = espacio_x0 * espacio_r  # ~2^100
+    espacio_r = 2**52
+    espacio_n = 10000 - 100  # 9900
+    espacio_total = espacio_x0 * espacio_r * espacio_n  # ~2^117
 
     velocidad = 1e9
     segundos = espacio_total / velocidad
@@ -1330,7 +1694,7 @@ def analisis_seguridad_clave(datos):
     print(
         f"  Longitud de la llave:     {long_llave_bytes} bytes ({long_llave_bits} bits)"
     )
-    print(f"  Espacio de claves:        ~2^100 ({espacio_total:.2e})")
+    print(f"  Espacio de claves:        ~2^117 ({espacio_total:.2e})")
     print(f"  Fuerza bruta a {velocidad:.0e} claves/s: {anios:.2e} anos")
 
     fig, ax = plt.subplots(figsize=(12, 7), facecolor="white")
@@ -1348,13 +1712,14 @@ def analisis_seguridad_clave(datos):
         f"  Componentes (Secretos del Receptor)\n"
         f"  {'_' * 45}\n"
         f"  x0 (punto inicial):       {X0}  (float64, 52 bits mantisa)\n"
-        f"  r  (parametro de caos):   {R}  (float64, regimen caotico [3.57, 4])\n"
-        f"  n  (calentamiento):       {N_WARMUP} iteraciones (entero fijo)\n\n"
+        f"  r  (parametro de caos):   {R}  (float64, 52 bits mantisa)\n"
+        f"  n  (calentamiento):       {N_WARMUP} iteraciones (rango [100,10000], ~13 bits)\n\n"
         f"  Espacio de Claves\n"
         f"  {'_' * 45}\n"
         f"  x0 in (0, 1):    ~2^52 valores posibles\n"
-        f"  r  in [3.57, 4]:  ~2^48 valores posibles\n"
-        f"  Espacio total:   ~2^100 = {espacio_total:.2e} combinaciones\n\n"
+        f"  r  in [3.57, 4]:  ~2^52 valores posibles\n"
+        f"  n  in [100,10000]: ~9900 valores posibles (~2^13.27)\n"
+        f"  Espacio total:   ~2^117 = {espacio_total:.2e} combinaciones\n\n"
         f"  Resistencia a Fuerza Bruta\n"
         f"  {'_' * 45}\n"
         f"  Velocidad supuesta:  10^9 claves/segundo\n"
@@ -1379,11 +1744,11 @@ def analisis_seguridad_clave(datos):
         ),
     )
 
-    _guardar(fig, "seguridad_clave.png")
+    _guardar(fig, "seguridad_clave_legacy.png")
 
     return {
         "long_bytes": long_llave_bytes,
-        "espacio_claves": "2^100",
+        "espacio_claves": "2^117",
         "anios_bruta": anios,
     }
 
@@ -1692,39 +2057,43 @@ def ataque_gaussiano(audio, snr_db):
     return atacado
 
 
+def _evaluar(audio_at, bits_ref, n_bits, audio_orig, datos):
+    """Evaluar audio atacado: BER, NC, MSE, PSNR."""
+    try:
+        bits_ext, _ = extraer_lsb_caotico(audio_at, n_bits, datos["x0_p"], datos["r_p"], datos["n_p"])
+        correctos = sum(1 for a, b in zip(bits_ref, bits_ext) if a == b)
+        ber = 1.0 - correctos / n_bits
+        # NC
+        w  = np.array([int(b) for b in bits_ref], dtype=np.float64) * 2 - 1
+        w2 = np.array([int(b) for b in bits_ext], dtype=np.float64) * 2 - 1
+        nc = float(np.dot(w, w2) / (np.linalg.norm(w) * np.linalg.norm(w2) + 1e-12))
+    except Exception:
+        ber, nc = 1.0, 0.0
+    n = min(len(audio_orig), len(audio_at))
+    mse = float(np.mean((audio_orig[:n].astype(np.float64) - audio_at[:n].astype(np.float64))**2))
+    psnr = float(10 * np.log10(32767.0**2 / mse)) if mse > 0 else float("inf")
+    return {"ber": ber, "nc": nc, "mse": mse, "psnr_db": psnr}
+
+
 def analisis_robustez_completo(datos):
     """§4.7 — Robustez: sal y pimienta + oclusión + gaussiano, con BER, NC, MSE, PSNR."""
     print("\n--- Análisis de Robustez Completo (3 ataques)")
 
     audio = datos["audio_modificado"]
     n_bits = len(datos["mensaje_bits"])
-    bits_ref, _ = extraer_lsb_caotico(audio, n_bits, X0, R, N_WARMUP)
+    bits_ref, _ = extraer_lsb_caotico(audio, n_bits, datos["x0_p"], datos["r_p"], datos["n_p"])
 
-    snr_niveles  = [20, 10, 5]
+    snr_niveles  = [30, 20, 10]
     proporciones = [0.05, 0.10, 0.25]
-
-    def _evaluar(audio_at, bits_ref, n_bits, audio_orig):
-        try:
-            bits_ext, _ = extraer_lsb_caotico(audio_at, n_bits, X0, R, N_WARMUP)
-            correctos = sum(1 for a, b in zip(bits_ref, bits_ext) if a == b)
-            ber = 1.0 - correctos / n_bits
-            # NC
-            w  = np.array([int(b) for b in bits_ref], dtype=np.float64) * 2 - 1
-            w2 = np.array([int(b) for b in bits_ext], dtype=np.float64) * 2 - 1
-            nc = float(np.dot(w, w2) / (np.linalg.norm(w) * np.linalg.norm(w2) + 1e-12))
-        except Exception:
-            ber, nc = 1.0, 0.0
-        n = min(len(audio_orig), len(audio_at))
-        mse = float(np.mean((audio_orig[:n].astype(np.float64) - audio_at[:n].astype(np.float64))**2))
-        psnr = float(10 * np.log10(32767.0**2 / mse)) if mse > 0 else float("inf")
-        return {"ber": ber, "nc": nc, "mse": mse, "psnr_db": psnr}
 
     resultados = {}
     filas_tabla = []
 
     for p in proporciones:
-        r_sp = _evaluar(ataque_sal_y_pimienta(audio, p), bits_ref, n_bits, audio)
-        r_oc = _evaluar(ataque_oclusion(audio, p), bits_ref, n_bits, audio)
+        audio_sp, _, _ = ataque_sal_y_pimienta(audio, p, seed=int(p*10000))
+        audio_oc, _, _, _ = ataque_oclusion(audio, p, seed=int(p*10000))
+        r_sp = _evaluar(audio_sp, bits_ref, n_bits, audio, datos)
+        r_oc = _evaluar(audio_oc, bits_ref, n_bits, audio, datos)
         resultados[f"sal_pimienta_{int(p*100)}"] = r_sp
         resultados[f"oclusion_{int(p*100)}"] = r_oc
         filas_tabla.append(["Sal y pimienta", f"{int(p*100)}%",
@@ -1737,15 +2106,18 @@ def analisis_robustez_completo(datos):
         print(f"  OC {int(p*100)}%: BER={r_oc['ber']*100:.2f}%, PSNR={r_oc['psnr_db']:.2f} dB")
 
     for snr in snr_niveles:
-        r_gau = _evaluar(ataque_gaussiano(audio, snr), bits_ref, n_bits, audio)
-        resultados[f"gaussiano_snr{snr}dB"] = r_gau
+        audio_at = ataque_gaussiano(audio, snr)
+        r_gau = _evaluar(audio_at, bits_ref, n_bits, audio, datos)
+        texto_rec = _recuperar_texto_desde_audio(audio_at, datos)
+        resultados[f"gaussiano_snr{snr}dB"] = {
+            **r_gau,
+            "texto_recuperado": texto_rec,
+        }
         filas_tabla.append(["Gaussiano", f"SNR={snr} dB",
                             f"{r_gau['ber']*100:.4f}%", f"{r_gau['nc']:.6f}",
                             f"{r_gau['mse']:.4e}", f"{r_gau['psnr_db']:.2f}"])
         print(f"  Gauss SNR={snr}dB: BER={r_gau['ber']*100:.2f}%, PSNR={r_gau['psnr_db']:.2f} dB")
-        # Panel visual gaussiano
-        _panel_ataques_con_texto(datos, tipo="_gaussiano_snr", nombre_archivo=f"7_gaussiano_snr{snr}dB.png",
-                                 audio_at=ataque_gaussiano(audio, snr), titulo=f"Gaussiano SNR={snr} dB")
+        print(f"    Texto recuperado: {texto_rec[:80]!r}")
 
     # Figura tabla de robustez
     fig, ax = plt.subplots(figsize=(16, 6), facecolor="white")
@@ -1775,19 +2147,21 @@ def analisis_seguridad_clave_mejorado(datos):
     print("\n--- Análisis de Seguridad de la Clave (justificado)")
 
     long_llave_bytes = len(datos["llave"])
-    # b ≈ 52 bits mantisa float64 de x0 + 48 bits efectivos de r
+    # b = 52 bits mantisa float64 de x0 + 52 bits mantisa float64 de r + ~13 bits de N
     b_x0 = 52   # mantisa float64
-    b_r  = 48   # precisión efectiva del parámetro r en [3.57, 4]
-    b_total = b_x0 + b_r  # ~100
+    b_r  = 52   # mantisa float64 (unificado, ver Item 1)
+    b_n  = 13   # N_warmup ∈ [100, 10000] → 9900 valores ≈ 2^13.27
+    b_total = b_x0 + b_r + b_n  # 117 bits
 
-    espacio = 2**b_total
+    # Espacio total: 2^52 * 2^52 * 9900
+    espacio = (2**b_x0) * (2**b_r) * (10000 - 100)
     R_conserv = 1e9
     R_agresivo = 1e12
     anios_conserv = espacio / R_conserv / (365.25 * 24 * 3600)
     anios_agresiv = espacio / R_agresivo / (365.25 * 24 * 3600)
 
-    print(f"  b_x0={b_x0} bits, b_r={b_r} bits, b_total={b_total}")
-    print(f"  Espacio: ~2^{b_total} = {espacio:.3e}")
+    print(f"  b_x0={b_x0} bits, b_r={b_r} bits, b_n={b_n} bits, b_total={b_total}")
+    print(f"  Espacio: ~2^{b_total} = {espacio:.4e}")
     print(f"  R=1e9:  {anios_conserv:.3e} años")
     print(f"  R=1e12: {anios_agresiv:.3e} años")
 
@@ -1797,25 +2171,36 @@ def analisis_seguridad_clave_mejorado(datos):
     info = (
         f"ANÁLISIS DE SEGURIDAD DE LA CLAVE CRIPTOGRÁFICA\n"
         f"{'='*52}\n\n"
-        f"  Componentes secretos de la clave\n"
+        f"  Clave maestra: (x0, r, n_warmup)\n"
         f"  {'_'*48}\n"
         f"  x0  (punto inicial):   {X0}\n"
         f"       ↳ Precisión float64: ~{b_x0} bits de mantisa efectivos\n"
         f"  r   (parámetro caos):  {R}  (dominio caótico: [3.57, 4])\n"
-        f"       ↳ Precisión efectiva: ~{b_r} bits  (rango 0.43, resolución ~2^-48)\n"
-        f"  n_warmup:              {N_WARMUP}  ← fijo, NO es secreto\n\n"
+        f"       ↳ Precisión float64: ~{b_r} bits de mantisa efectivos\n"
+        f"  n_warmup:              {N_WARMUP}  (rango [100, 10000], ~{b_n} bits)\n\n"
         f"  Espacio de claves (cota basada en precisión float64)\n"
         f"  {'_'*48}\n"
-        f"  b = b_x0 + b_r = {b_x0} + {b_r} = {b_total} bits\n"
+        f"  b = b_x0 + b_r + b_n = {b_x0} + {b_r} + {b_n} = {b_total} bits\n"
         f"  N_claves = 2^{b_total} ≈ {espacio:.4e}\n\n"
+        f"  Derivación interna de semillas independientes\n"
+        f"  {'_'*48}\n"
+        f"  A partir de la clave maestra se derivan dos semillas:\n"
+        f"    - Semilla de cifrado (keystream):  (x0_k, r_k, n_k) = (x0, r, n)\n"
+        f"    - Semilla de posiciones (LSB):     (x0_p, r_p, n_p) derivadas\n"
+        f"      de forma determinista de la clave maestra.\n"
+        f"  Esto elimina el acoplamiento criptográfico (reutilización de la\n"
+        f"  misma secuencia para cifrado y esteganografía) y aumenta la\n"
+        f"  robustez del esquema sin aumentar el tamaño de la clave que el\n"
+        f"  usuario debe manejar.\n\n"
         f"  Resistencia a fuerza bruta\n"
         f"  {'_'*48}\n"
-        f"  R = 10^9  claves/s (conservador): T ≈ {anios_conserv:.4e} años\n"
-        f"  R = 10^12 claves/s (agresivo):    T ≈ {anios_agresiv:.4e} años\n"
-        f"  Edad del universo:                   ≈ 1.38×10^10 años\n\n"
+        f"  Fórmula: T_ataque = 2^b / R   (segundos → años)\n\n"
+        f"  R = 10^9  claves/s (CPU/GPU modesto):  T ≈ {anios_conserv:.4e} años\n"
+        f"  R = 10^12 claves/s (clúster/ASIC agresivo): T ≈ {anios_agresiv:.4e} años\n"
+        f"  Edad del universo:                        ≈ 1.38×10^10 años\n\n"
         f"  NOTA: estas son cotas teóricas. La seguridad real depende\n"
         f"  de la precisión efectiva con que el atacante puede discretizar\n"
-        f"  el espacio continuo de (x0, r)."
+        f"  el espacio continuo de (x0, r, n_warmup)."
     )
     ax.text(0.04, 0.96, info, transform=ax.transAxes, fontsize=11,
             color=COLORES["texto"], va="top", fontfamily="monospace",
@@ -1824,7 +2209,7 @@ def analisis_seguridad_clave_mejorado(datos):
     _guardar(fig, "seguridad_clave.png")
 
     return {
-        "b_x0": b_x0, "b_r": b_r, "b_total": b_total,
+        "b_x0": b_x0, "b_r": b_r, "b_n": b_n, "b_total": b_total,
         "espacio_claves": f"2^{b_total}",
         "anios_R1e9": anios_conserv,
         "anios_R1e12": anios_agresiv,
@@ -1863,7 +2248,8 @@ def main():
 
     # Robustez con 3 ataques
     res_rob = analisis_robustez_completo(datos)               # §4.7
-    generar_7_paneles_ataques(datos)                          # Paneles sp + oclusión
+    res_paneles = generar_7_paneles_ataques(datos)           # Paneles sp + oclusión (Items 6-9)
+    generar_7_panel_gaussiano(datos)                          # Panel gaussiano 30/20/10 dB
 
     # Seguridad de clave (justificada)
     res_seg = analisis_seguridad_clave_mejorado(datos)        # §4.6
@@ -1880,6 +2266,10 @@ def main():
     print(f"\nArchivos generados en: {SALIDA}")
     for archivo in sorted(SALIDA.glob("*.png")):
         print(f"  {archivo.name}")
+
+    # Mergear robustez de paneles con métricas cuantitativas
+    res_rob["sal_pimienta"] = res_paneles["sal_pimienta"]
+    res_rob["oclusion"] = res_paneles["oclusion"]
 
     resumen = {
         "histogramas_audio": res_hist_audio,

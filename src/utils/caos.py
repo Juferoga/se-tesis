@@ -117,3 +117,32 @@ def generar_posiciones_caoticas(x0, r, n_warmup, n_posiciones, total_muestras):
       posiciones.append(pos)
 
   return np.array(posiciones, dtype=np.int64)
+
+
+def derivar_semillas(x0, r, n_warmup):
+    """Deriva dos semillas independientes de la clave maestra (x0, r, n_warmup).
+
+    Semilla de keystream (cifrado): usa la clave maestra directamente.
+    Semilla de posiciones (LSB): derivada determinista de la clave maestra.
+
+    Args:
+        x0 (float): condición inicial maestra
+        r (float): parámetro de caos maestro
+        n_warmup (int): calentamiento maestro
+
+    Returns:
+        tuple: (x0_k, r_k, n_k, x0_p, r_p, n_p)
+    """
+    # Semilla para keystream (cifrado) — usa la clave maestra directamente
+    x0_k = x0
+    r_k = r
+    n_k = n_warmup
+
+    # Semilla para posiciones — derivada determinista de la clave maestra
+    # Debe ser diferente a (x0_k, r_k, n_k) pero reproducible si se conoce la clave maestra
+    x0_p = (x0 * r) % 1.0
+    # Asegurar que r_p esté en régimen caótico (3.57, 4]
+    r_p = 3.57 + (r * x0) % (4.0 - 3.57)
+    n_p = n_warmup + 1000
+
+    return x0_k, r_k, n_k, x0_p, r_p, n_p

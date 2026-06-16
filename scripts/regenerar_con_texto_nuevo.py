@@ -38,17 +38,13 @@ SALIDA.mkdir(parents=True, exist_ok=True)
 
 X0 = ChaosMod.X0.value
 R = ChaosMod.R.value
-# Generar N_warmup como parte de la clave (componente secreto, rango [100, 10000])
-# Usamos semilla para reproducibilidad en demostraciones; en producción sería aleatorio
-rng = np.random.default_rng(42)
-N_WARMUP = int(rng.integers(100, 10001))
+N_WARMUP = ChaosMod.N_WARMUP.value
 
 
 def main() -> None:
     print("=" * 60)
     print("REGENERACIÓN CON TEXTO NUEVO (sin LLMLingua)")
     print("=" * 60)
-    print(f"\n[0] Parámetro secreto N_warmup: {N_WARMUP}")
 
     # 1. Leer texto literario
     ruta_texto = DATA_DIR / "data_to_hide.txt"

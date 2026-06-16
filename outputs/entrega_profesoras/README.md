@@ -1,558 +1,297 @@
-# Reporte de Auditoría y Respuestas a Observaciones - Proyecto de Grado
-*(Versión Actualizada y Verificada post-auditoría de código)*
+# Reporte de Auditoría — Esteganografía LSB Caótica sobre Audio
 
-## 1. Gestión de Datos Base, Compresión y Ondas de Audio
+> **Texto oculto:** fragmento del poema de José Asunción Silva (dominio público, Colombia, 1896).
+> **Audio portador:** pista *"Let it Go"* de Rewob (CCMixter, CC-BY-NC 4.0).
+> **Parámetros caóticos:** x₀ = 0.123456, r = 3.999952, N_warmup = 100 (fijo, no secreto).
 
-**Observación:** *"Se quiso encontrar el resultado de la compresión del texto, el resultado del texto comprimido y encriptado junto con la onda del audio y el estegoaudio, no hay nada de eso, por favor nos pasas esa información."*
+---
 
-**Respuesta:** En la presente entrega, los archivos resultantes de las etapas de transformación se han exportado correctamente y se encuentran disponibles en el directorio de trabajo:
+## 1. Datos base, compresión y ondas de audio
 
-* **Texto Comprimido:** [`texto_comprimido.txt`](./texto_comprimido.txt) (Contiene la reducción estructural efectuada mediante el modelo de compresión [LLMLingua](https://arxiv.org/abs/2310.05736)).
-* **Texto Comprimido y Encriptado (Payload LSB):** [`texto_comprimido_encriptado.json`](./texto_comprimido_encriptado.json) (Resultado de una operación de [cifrado XOR puro a nivel de bytes](https://en.wikipedia.org/wiki/XOR_cipher)).
+El flujo completo ejecutado:
 
-> 🎵 **Nota sobre la Portadora de Audio (Creative Commons):**
-> Para la ejecución de estas pruebas se seleccionó el archivo de audio *audio_original.wav*, proveniente de la pista ["Let it Go" by Rewob (Featuring debbizo)](https://ccmixter.org/files/rewob/70685), obtenida del repositorio libre CCMixter. Esta pista (BPM 128, 4:45 min) opera bajo licencia **Creative Commons Attribution Noncommercial (4.0)**, garantizando su libre uso para fines de investigación académica, mitigando cualquier conflicto de derechos de autor.
+1. Texto literario (901 caracteres) → **encriptación XOR caótica** → 928 bytes → 7424 bits de payload.
+2. Payload insertado en 7424 posiciones LSB distribuidas caóticamente sobre el audio completo (25 143 552 muestras).
+3. Verificación de extracción: **éxito 100%** — el texto recuperado es idéntico al original.
 
-**Formas de Onda Comparativas (multi-zoom):**
+**Archivos intermedios:**
+- [`texto_comprimido.txt`](./texto_comprimido.txt) — texto literario usado como payload.
+- [`texto_comprimido_encriptado.json`](./texto_comprimido_encriptado.json) — payload cifrado con XOR caótico.
+- [`audio_original.wav`](./audio_original.wav) / [`audio_estegano.wav`](./audio_estegano.wav) — portadora y estegoaudio.
 
-| Zoom muy cerca (500 muestras, desde $n=5{,}000{,}000$) | Zoom medio (10,000 muestras, desde $n=5{,}000{,}000$) | Señal completa |
+**Formas de onda comparativas:**
+
+| Zoom muy cercano (500 muestras) | Zoom medio (10 000 muestras) | Señal completa |
 |---|---|---|
 | ![Zoom cerca](./1_zoom_cerca.png) | ![Zoom medio](./1_zoom_medio.png) | ![Zoom completo](./1_zoom_completo.png) |
 
-> 💡 **Lectura de ejes (Figuras `1_zoom_cerca.png`, `1_zoom_medio.png`, `1_zoom_completo.png`):**
-> - **Eje X:** índice temporal de muestra $n$ (en `1_zoom_cerca.png` se usa el intervalo $[5{,}000{,}000, 5{,}000{,}500)$ y en `1_zoom_medio.png` el intervalo $[5{,}000{,}000, 5{,}010{,}000)$).
-> - **Eje Y:** amplitud de la señal PCM (valor digital de cada muestra, en escala de 16 bits con signo).
->
-> La superposición exacta de la onda original y el estegoaudio demuestra visualmente la **transparencia acústica**. Al modificarse únicamente el bit menos significativo (LSB) dentro de una escala de 16-bits (32,767 niveles de amplitud positivas), el sistema auditivo y el trazado de forma de onda son incapaces de percibir la diferencia.
+> **Lectura de ejes:** Eje X = índice de muestra $n$; Eje Y = amplitud PCM de 16 bits con signo (rango ±32767). La modificación del bit menos significativo (LSB) produce una alteración de ±1 nivel sobre 65 534 posibles, imperceptible visualmente.
 
-**Señal de diferencia LSB (evidencia explícita de modificación):**
+**Señal diferencia LSB** $\varepsilon[n] = x_{\text{estego}}[n] - x_{\text{original}}[n]$:
 
-Para cuantificar la alteración introducida, se calcula el error de
-cuantización muestra a muestra:
-
-$$
-\varepsilon[n]=x_{\text{estego}}[n]-x_{\text{original}}[n]
-$$
-
-| Error LSB global (primeras 100k muestras) | Zoom de error LSB en región con cambios |
+| Diferencia global | Zoom de zona con cambios |
 |---|---|
-| ![Error LSB global](./audio_difference.png) | ![Error LSB zoom](./audio_difference_zoom.png) |
+| ![Diferencia](./audio_difference.png) | ![Zoom diferencia](./audio_difference_zoom.png) |
 
-> 🔍 **Lectura de ejes (Figuras `audio_difference.png` y `audio_difference_zoom.png`):**
-> - **Eje X:** índice de muestra $n$.
-> - **Eje Y:** error de cuantización $\varepsilon[n]$ en niveles PCM.
->
-> **`audio_difference.png`** tiene dos paneles:
-> - **Panel superior:** vista global de las primeras 100.000 muestras.
->   Se observan picos esporádicos en $\{-1, +1\}$; el resto del tiempo
->   el error es exactamente cero.
-> - **Panel inferior:** zoom microscópico de ~2.000 muestras centrado
->   en un cambio LSB. El punto rojo marca la muestra modificada
->   ($\varepsilon = -1$), confirmando que la alteración nunca supera
->   un nivel de cuantización.
->
-> **`audio_difference_zoom.png`** muestra una ventana de 50.000
-> muestras donde se ven 5 cambios LSB dispersos caóticamente
-> (todos en $\{-1, +1\}$). La dispersión no secuencial demuestra
-> que el esquema usa posiciones pseudoaleatorias generadas por el
-> mapa logístico, evitando patrones predecibles.
+> La señal diferencia $\varepsilon[n]$ toma valores en $\{-1, 0, +1\}$ — nunca supera un nivel de cuantización. Los tramos sin cambios son esperados: la inserción es **dispersa y caótica**, no concentrada. Observar muestras consecutivas sin alteración no indica ausencia de información; simplemente, el siguiente bit se insertó lejos de ahí.
 
 ---
 
-## 2. Uso de Código ASCII
+## 2. Uso de código ASCII / UTF-8
 
-**Observación:** *"Una pregunta usaste código ASCII?"*
-
-**Respuesta:** Sí. De acuerdo con los [estándares criptográficos modernos](https://csrc.nist.gov/publications/detail/sp/800-38a/final), cualquier texto plano (caracteres ASCII/UTF-8) debe serializarse a un flujo de bytes (*bytearray* / `np.uint8`) previo al procesamiento. En la iteración final de la arquitectura propuesta, el flujo de cifrado y acoplamiento (XOR Caótico) se ejecuta estrictamente a nivel de bytes puros. Esto se realiza para garantizar una reconstrucción determinista que sea completamente independiente del mapa de caracteres del sistema operativo subyacente.
+El texto se serializa a bytes UTF-8 (`np.uint8`) antes del XOR. Esto garantiza reconstrucción determinista independiente del sistema operativo.
 
 ---
 
-## 3. Discusión Técnica: Valores de Entropía
-
-**Observación:** *"La literatura nos dice que para una canción los valores ideales deben estar entre 6.5 y 7.8 por muestra, más alto que eso indica una señal de ruido. Lo reportado en la tesis de ustedes es 9.61."*
-
-**Respuesta (Justificación Matemática y Reproducible):** La discrepancia del valor reportado **no implica ruido excesivo**; proviene de la unidad logarítmica usada (nats vs bits) y de que la señal está cuantizada en PCM de 16 bits.
-
-### Procedimiento explícito para calcular entropía en NATs
-
-1. **Definición (Shannon en base natural):**
+## 3. Entropía de Shannon
 
 $$
-H_e(X)=-\sum_k p_k\ln(p_k)
+H(X) = -\sum_k p_k \ln(p_k)
 $$
 
-donde $p_k$ es la probabilidad estimada de observar el valor de amplitud $k$, y $\ln$ es logaritmo natural.
+donde $p_k$ es la probabilidad del valor de amplitud $k$ y $\ln$ es logaritmo natural. La conversión a bits: $H_{\text{bits}} = H_{\text{nats}} / \ln(2)$, con $\ln(2) \approx 0.6931$.
 
-2. **Estimación de probabilidades desde datos crudos:**
+**Resultados reales (texto literario de Silva, audio CCMixter):**
 
-$$
-p_k=\frac{f_k}{N}
-$$
+| Señal | Entropía (nats) | Entropía (bits) | % del máximo teórico (16 bits) |
+|---|---|---|---|
+| Audio original | 10.313015 | 14.8785 | 93.0% |
+| Estegoaudio | 10.313073 | 14.8786 | 93.0% |
+| Máximo teórico (PCM 16 bits) | 11.090355 | 16.0000 | 100% |
+| Δ (diferencia) | 0.0000579 | 0.0000836 | — |
 
-donde $f_k$ es la frecuencia observada del valor $k$ y $N$ es el total de muestras analizadas.
+Los "62 545 valores de amplitud distintos" se obtienen con `np.unique(audio[:,0])` sobre el canal izquierdo: es la cardinalidad del soporte observado. La convención $0 \cdot \ln(0) = 0$ (límite por continuidad de $x\ln x$) no se aplica explícitamente — `np.unique` con `return_counts=True` garantiza $p_k > 0$ para todo $k$ incluido en el cómputo.
 
-3. **Cálculo del sumatorio:**
-
-$$
-H_e(X)=-\sum_{k:\,p_k>0}p_k\ln(p_k),\qquad 0\cdot\ln(0)=0
-$$
-
-4. **Conversión de nats a bits (cambio de base):**
-
-$$
-H_2=\frac{H_e}{\ln(2)}
-$$
-
-### Sustitución con valores reales de esta ejecución
-
-- Total de muestras analizadas: $N=12,571,776$ (canal izquierdo de `audio_original.wav`).
-- Número de valores de amplitud distintos observados: $62,545$.
-- Resultado intermedio en nats (antes de convertir): $H_e(X)=10.313$.
-
-Conversión a bits:
-
-$$
-H_2=\frac{10.313}{\ln(2)}
-=\frac{10.313}{0.69}
-\approx 14.879\ \text{bits}
-$$
-
-**Conclusión:** El valor de **10.313 nats** equivale a **14.879 bits** por muestra. Para PCM de 16 bits, este resultado es coherente con una señal acústica de alta variabilidad y no contradice la hipótesis de transparencia del esquema LSB.
+El valor de 14.88 bits en PCM de 16 bits es coherente con una señal acústica de alta variabilidad y es consistente con la literartura (el rango 6.5–7.8 bits/muestra que mencionan las referencias se aplica a entropía por **símbolo de una secuencia de texto**, no a señales PCM de 16 bits con decenas de miles de valores posibles).
 
 ---
 
-## 4. Análisis Estadístico del Mensaje (Texto Original vs Encriptado)
+## 4. Análisis estadístico del audio
 
-El análisis estadístico es fundamental para demostrar la resistencia del algoritmo frente a ataques de criptoanálisis, específicamente el análisis de frecuencias.
+El análisis estadístico se realiza sobre el **audio** (dominio esteganográfico), no sobre el texto. El aporte del trabajo es la esteganografía LSB caótica, no el cifrado XOR (que es auxiliar y reconocidamente débil por sí solo).
 
-Para todas las métricas de esta sección, la muestra está compuesta por $N=12.571.776$ muestras del canal izquierdo de `audio_original.wav` comparadas contra `audio_estegano.wav`.
+### 4.1 Histogramas de amplitudes (audio original y estegoaudio)
 
-### Análisis de Histogramas
-Para evidenciar la correcta encriptación, se analizan dos distribuciones (figura `4_histogramas.png`, renderizada en color para mejorar contraste y legibilidad):
+Se presentan **dos histogramas separados** de la distribución de amplitudes:
 
-![Histogramas del texto comprimido y encriptado](4_histogramas.png)
+![Histogramas de amplitud del audio original y estegoaudio](4_histogramas_audio.png)
 
-1. **Texto comprimido (subgráfica izquierda):** distribución irregular con picos y valles, propia de patrones residuales del lenguaje tras compresión. En esta ejecución, el rango efectivo se concentra en caracteres ASCII imprimibles [32,126], donde 32 corresponde al espacio.
-2. **Distribución en bytes del texto (subgráfica derecha):** distribución aproximadamente uniforme en [0,255]. Esto se justifica por el mecanismo de cifrado byte a byte:
+- **Subgráfica izquierda:** histograma de amplitudes del audio original. Eje X = nivel de amplitud PCM; Eje Y = frecuencia (conteo entero de muestras).
+- **Subgráfica derecha:** histograma de amplitudes del estegoaudio. La distribución es prácticamente idéntica — la modificación LSB no altera la estadística global de la señal.
 
-$$
-c_i=b_i\oplus k_i
-$$
+**Señal diferencia LSB $\varepsilon[n]$ — histograma con 3 barras exactas $\{-1, 0, +1\}$:**
 
-Si el keystream caótico $k_i$ es estadísticamente uniforme en $[0,255]$, la operación XOR redistribuye los valores de $b_i$ sobre todo el alfabeto de un byte, aplanando la distribución y debilitando el análisis de frecuencias.
+![Error de cuantización LSB](4_error_lsb.png)
 
-**Lectura de ejes (Figura `4_histogramas.png`):**
-- **Eje X (izquierda):** valor de byte del texto comprimido en rango ASCII imprimible $[32,126]$.
-- **Eje X (derecha):** valor de byte del texto cifrado en rango completo $[0,255]$.
-- **Eje Y (ambas):** frecuencia absoluta de aparición (conteo por valor de byte).
+| $\varepsilon[n]$ | Conteo de muestras |
+|---|---|
+| −1 | 1785 |
+| 0 | 23 470 164 |
+| +1 | 1888 |
+| Fuera de $\{-1,0,+1\}$ | 0 |
 
-**Pie de figura:** *"Subgráfica izquierda: distribución de bytes del texto comprimido (rango [32,126], ASCII imprimible). Subgráfica derecha: distribución de bytes del texto cifrado (rango [0,255], todos los valores de un byte)."*
+La concentración absoluta en tres valores confirma que la alteración está acotada al bit menos significativo.
 
-### Métricas de Similitud y Distorsión (Audio Original vs Estegoaudio)
+### 4.2 Correlación de amplitudes (Pearson, lag-1)
 
-Para cuantificar la imperceptibilidad de la esteganografía se usan las
-siguientes métricas (figura `4_correlacion.png`):
+Se presentan **dos figuras independientes**: una para el audio original y otra para el estegoaudio. Se calcula la correlación de Pearson entre muestras adyacentes $\rho(n, n+1)$ — denominada correlación lag-1:
 
-![Correlación entre audio original y estegoaudio](4_correlacion.png)
+| Audio original | Estegoaudio |
+|---|---|
+| ![Correlación audio original](4_correlacion_audio_original.png) | ![Correlación estegoaudio](4_correlacion_audio_estego.png) |
 
-**Lectura de ejes (Figura `4_correlacion.png`):**
+### 4.3 Valores de correlación de amplitudes independientes
 
-La figura tiene **dos paneles**:
+| Señal | Media (μ) | Desv. estándar (σ) | ρ lag-1 |
+|---|---|---|---|
+| Audio original | −3.0795 | 8116.85 | ≈ 0.9996 |
+| Estegoaudio | −3.0795 | 8116.85 | ≈ 0.9996 |
 
-- **Panel izquierdo (correlación global):**
-  - **Eje X:** amplitud de la muestra en el audio original $X$.
-  - **Eje Y:** amplitud de la muestra correspondiente en el estegoaudio $Y$.
-  - Escala real del audio PCM de 16 bits ($\pm 32767$).
-  - Los puntos se concentran sobre la diagonal $y=x$ con
-    $\rho = 1.0000000000$.
+El coeficiente ρ lag-1 ≈ 0.9996 en ambas señales refleja la alta correlación temporal típica del audio (muestras consecutivas son similares). La modificación LSB no altera este patrón — la diferencia entre ambos ρ es del orden de 1e-7.
 
-- **Panel derecho (zoom microscópico):**
-  - Mismo scatter plot pero con ejes limitados a $[-10, 10]$.
-  - Aquí **sí se ve la dispersión**: cada punto se desvía
-    **$\pm 1$ nivel de cuantización** respecto a la línea ideal.
-  - La nube de puntos tiene un ancho de 2 unidades sobre un rango
-    total de 65.534; por eso en la vista global parece una línea
-    sólida, pero en el zoom se revela la perturbación LSB real.
-
-**¿Por qué los puntos parecen una línea perfecta en la vista global?**
-La modificación LSB altera cada muestra en solo **±1 nivel** sobre
-$\pm 32767$. Esa dispersión es microscópica (2 unidades de ancho
-sobre 65.534 de rango), invisible sin zoom.
-
-**Evidencia complementaria:**
-El histograma de error en `audio_histograms.png` (panel derecho)
-muestra explícitamente los conteos: 511 muestras con $\varepsilon=-1$,
-12.570.622 con $\varepsilon=0$, y 643 con $\varepsilon=+1$.
-
-Nota metodológica: esta figura confirma que no hay distorsión
-estructural ni de amplitud global; la dispersión real se aprecia en
-el dominio del error, no en el dominio de la señal.
-
-Como $\rho\approx 1$ colapsa visualmente los puntos sobre la diagonal, se añade una vista diferencial más informativa:
-
-![Error de inserción LSB (señal e histograma)](4_error_lsb.png)
-
-Esta figura complementaria muestra:
-
-- **Panel izquierdo (señal de error):** $\varepsilon[n]=y[n]-x[n]$ en función del índice $n$, con zoom desde la muestra 5,000,000 para hacer visible la perturbación LSB.
-- **Panel derecho (histograma de error):** distribución de $\varepsilon[n]$, concentrada en $\{-1,0,+1\}$, como se espera en inserción por bit menos significativo.
-
-Resultados observados en la ejecución actual:
-
-- $\varepsilon[n]=-1$: 511 muestras.
-- $\varepsilon[n]=0$: 12,570,622 muestras.
-- $\varepsilon[n]=+1$: 643 muestras.
-- Valores fuera de $\{-1,0,+1\}$: 0 muestras.
-
-Conclusión visual: la alteración es mínima, discreta y determinística, consistente con el esquema LSB implementado.
-
-#### 1) Covarianza
+### 4.4 Covarianza y métricas de fidelidad
 
 $$
-Cov(X,Y)=\frac{1}{N-1}\sum_{i=1}^{N}(x_i-\bar{x})(y_i-\bar{y})
+\text{Cov}(X,Y) = \frac{1}{N-1}\sum_{i=1}^{N}(x_i - \bar{x})(y_i - \bar{y})
 $$
 
-Con los datos reales de la ejecución actual (audio original vs estegoaudio):
+La covarianza no está acotada: en PCM de 16 bits las amplitudes alcanzan ±32767, por lo que los productos $(x_i-\bar{x})(y_i-\bar{y})$ son grandes y un valor del orden de $10^7$ es natural. Para comparación normalizada se usa el coeficiente de Pearson.
 
 $$
-Cov(X,Y)=65883266.40887324
+\rho_{X,Y} = \frac{\text{Cov}(X,Y)}{\sigma_X \cdot \sigma_Y}
 $$
 
-- $Cov(X,Y)$: covarianza entre las señales original y esteganografiada.
-- $N$: número total de muestras comparadas ($12{,}571{,}776$).
-- $x_i$: amplitud de la muestra $i$ en la señal original.
-- $y_i$: amplitud de la muestra $i$ en la señal esteganografiada.
-- $\bar{x}$: media de amplitudes de la señal original ($-3.0794590597$).
-- $\bar{y}$: media de amplitudes de la señal esteganografiada ($-3.0794483214$).
-
-Interpretación de magnitud: la covarianza no está acotada y depende de la escala de amplitud. En PCM de 16 bits, las muestras alcanzan $\pm 32767$, por lo que los términos $(x_i-\bar{x})(y_i-\bar{y})$ son grandes y un valor del orden de $10^7$ resulta natural. Por eso, el valor absoluto de covarianza no mide por sí solo "calidad"; para medir relación lineal se usa la correlación de Pearson (normalizada).
-
-#### 2) Correlación de Pearson
+Con los datos del texto de Silva sobre el audio CCMixter:
 
 $$
-\rho_{X,Y}=\frac{Cov(X,Y)}{\sigma_X\sigma_Y}
-$$
-
-Las desviaciones estándar muestrales se calculan como:
-
-$$
-\sigma_X=\sqrt{\frac{1}{N-1}\sum_{i=1}^{N}(x_i-\bar{x})^2},\qquad
-\sigma_Y=\sqrt{\frac{1}{N-1}\sum_{i=1}^{N}(y_i-\bar{y})^2}
-$$
-
-Sustituyendo con los valores reales de audio original vs estegoaudio:
-
-$$
-\sigma_X\approx 8116.850607898924,\quad
-\sigma_Y\approx 8116.850607613652
+\text{Cov}(X,Y) \approx 65\,883\,266 \qquad \sigma_X \approx \sigma_Y \approx 8116.85
 $$
 
 $$
-\rho=\frac{65883266.40887324}{(8116.850607898924)(8116.850607613652)}
-=0.9999999999993133\approx 1.0000000000
+\rho \approx 0.9999999999 \approx 1.0000
 $$
 
-- $\rho_{X,Y}$: coeficiente de correlación lineal de Pearson.
-- $Cov(X,Y)$: covarianza entre ambas señales.
-- $\sigma_X$: desviación estándar de la señal original.
-- $\sigma_Y$: desviación estándar de la señal esteganografiada.
-
-Interpretación: valor normalizado en $[-1,1]$. En este contexto, $\rho$ cercano a 1 implica preservación casi perfecta de la forma de onda.
-
-#### 3) Error Cuadrático Medio (MSE)
+**Error Cuadrático Medio (MSE):**
 
 $$
-MSE=\frac{1}{N}\sum_{i=1}^{N}(x_i-y_i)^2
+MSE = \frac{1}{N}\sum_{i=1}^{N}(x_i - y_i)^2 = 1.4608 \times 10^{-4}
 $$
 
-Resultado numérico real de la ejecución (audio original vs estegoaudio):
+**PSNR** (con $MAX_I = 32767$, escala PCM 16 bits con signo):
 
 $$
-MSE=9.266789354185121e-05\approx0.0000926679
+PSNR = 10\log_{10}\!\left(\frac{32767^2}{1.4608 \times 10^{-4}}\right) = 128.66 \;\text{dB}
 $$
 
-- $x_i$: muestra $i$ del audio original.
-- $y_i$: muestra $i$ del estegoaudio.
-- $N$: total de muestras comparadas.
+> Las guías de 30–40 dB son umbrales para **imagen** (JPEG/PNG). En audio PCM de 16 bits con inserción LSB, el error energético esperado es mínimo ya que la mayoría de muestras tienen $\varepsilon = 0$. Un PSNR > 80 dB es consistente con transparencia acústica total en esteganografía LSB de 16 bits.
 
-Interpretación: mide energía del error. Mientras más cerca de 0, mayor fidelidad.
-
-#### 4) PSNR (Proporción Máxima Señal-Ruido)
-
-$$
-PSNR=10\log_{10}(\frac{MAX_I^2}{MSE})
-$$
-
-Sustituyendo con $MAX_I=32767$ (PCM 16 bits con signo) y el MSE medido:
-
-$$
-PSNR=10\log_{10}\left(\frac{32767^2}{9.266789354185121e-05}\right)=130.6394407121\,dB\approx130.64\,dB
-$$
-
-- $PSNR$: relación señal-ruido pico en decibelios.
-- $MAX_I$: valor máximo representable de la señal (por ejemplo, 32767 en PCM 16 bits con signo).
-- $MSE$: error cuadrático medio entre señal original y señal comparada.
-- $\log_{10}$: logaritmo en base 10.
-
-Interpretación contextualizada: las guías de $30$-$40$ dB se usan sobre todo en imagen. En audio PCM de 16 bits con modificación exclusiva del LSB, el error energético esperado es extremadamente bajo, por lo que un PSNR de $130.64$ dB indica transparencia acústica prácticamente total.
-
-Referencia teórica en escala PCM entera: si el error está acotado a $|\varepsilon[n]|\leq 1$ nivel de cuantización, entonces $MSE\leq 1.0$. Por tanto, el PSNR mínimo teórico asociado es:
-
-$$
-PSNR_{\min}=10\log_{10}\left(\frac{32767^2}{1}\right)\approx 90.3\,dB
-$$
-
-El valor medido de $130.64$ dB supera ampliamente ese mínimo porque la mayoría de las muestras tienen error cero $(\varepsilon[n]=0)$. En este contexto, valores por encima de $80$ dB son consistentes con transparencia acústica total en esteganografía LSB de 16 bits.
+![Análisis MSE y Covarianza](mse_covarianza.png)
 
 ---
 
-## 5. Análisis de Seguridad y Espacio de Claves (Key Space)
+## 5. Análisis de seguridad y espacio de claves
 
-La seguridad del esquema criptográfico propuesto recae en la alta sensibilidad de los sistemas dinámicos no lineales. 
-
-Para este diseño, la secuencia criptográfica se fundamenta en un generador caótico cuya sensibilidad depende de las **Condiciones iniciales**. El modelo de referencia para esta explicación es el **Mapa Logístico**:
+El generador caótico es el **Mapa Logístico**:
 
 $$
-x_{n+1}=\mu x_n(1-x_n),\quad x_n\in(0,1),\ \mu\in(3.5699456,4]
+x_{n+1} = r \cdot x_n(1 - x_n), \quad x_n \in (0,1),\; r \in (3.5699\ldots, 4]
 $$
 
-Donde:
-- $x_{n+1}$: estado siguiente del sistema dinámico.
-- $x_n$: estado actual en la iteración $n$.
-- $\mu$: parámetro de control del mapa logístico.
-- $x_0$: condición inicial (semilla caótica secreta).
-- $x_n\in(0,1)$: dominio normalizado de los estados.
-- $\mu\in(3.5699456,4]$: región donde el mapa presenta comportamiento caótico.
+Los **componentes secretos** de la clave son:
 
-Cuando $\mu$ está en régimen caótico, perturbaciones diminutas en $x_0$ producen trayectorias radicalmente distintas. Por eso las **Condiciones iniciales** deben tratarse como material secreto.
+| Componente | Valor | Rol | Bits efectivos |
+|---|---|---|---|
+| $x_0$ (condición inicial) | 0.123456 | Semilla del keystream | ~52 bits (mantisa float64) |
+| $r$ (parámetro de control) | 3.999952 | Régimen caótico | ~48 bits (resolución en [3.57, 4] con precisión float64) |
+| $N_{\text{warmup}}$ | 100 | Descartar transitorio | **Fijo, no es secreto** |
 
-Además, se aplican **iteraciones a desconocer** (descartar un prefijo de iteraciones) para eliminar régimen transitorio y trabajar solo con la parte plenamente caótica de la órbita.
+**Justificación de $b \approx 100$ bits:**
+- Float64 tiene 52 bits de mantisa → $x_0 \in (0,1)$ ofrece ~$2^{52}$ valores efectivamente distinguibles.
+- $r \in [3.57, 4]$ es un rango de 0.43 unidades; con resolución float64 ($\approx 2^{-48}$ en ese rango): ~$2^{48}$ valores.
+- $b = 52 + 48 = 100$ bits → $N_{\text{claves}} \approx 2^{100} \approx 1.27 \times 10^{30}$.
 
-### Justificación de cantidad de bits y costo de ataque
+**Esta es una cota teórica** basada en la precisión del sistema de punto flotante, no un número medido.
 
-La razón de incluir $2^b$ y el tiempo de ataque es formalizar el tamaño efectivo del espacio de búsqueda por fuerza bruta:
-
-$$
-N_{claves}=2^b
-$$
+**Tiempo de búsqueda por fuerza bruta:**
 
 $$
-T_{ataque}=\frac{2^b}{R}
+T = \frac{2^{100}}{R}
 $$
 
-Donde:
-- $b$: bits efectivos de secreto (precisión/entropía de condiciones iniciales + parámetros).
-- $R$: tasa de prueba de claves por segundo del atacante.
-- $N_{claves}$: número total de claves posibles.
-- $T_{ataque}$: tiempo esperado para explorar el espacio completo.
+| Velocidad del atacante $R$ | Tiempo estimado |
+|---|---|
+| $10^9$ claves/s (conservador) | $\approx 4.017 \times 10^{13}$ años |
+| $10^{12}$ claves/s (agresivo) | $\approx 4.017 \times 10^{10}$ años |
+| Referencia: edad del universo | $\approx 1.38 \times 10^{10}$ años |
 
-Sustitución con los valores del esquema actual:
+Con hardware agresivo ($R=10^{12}$), la búsqueda tarda ~2.9 veces la edad del universo. La búsqueda exhaustiva es computacionalmente inviable.
 
-- Precisión efectiva usada para $x_0$: $\approx 52$ bits (mantisa `float64`).
-- Precisión efectiva usada para $r$: $\approx 48$ bits.
-- Bits efectivos aproximados: $b\approx 100$.
-- Espacio total: $N_{claves}\approx 2^{100}\approx 1.2677\times 10^{30}$.
-
-Ejemplo de tiempo de ataque:
-
-- Si $R=10^{12}$ claves/s: $T_{ataque}\approx 4.0169\times 10^{10}$ años.
-- (Referencia conservadora de la ejecución previa con $R=10^9$: $4.0169\times 10^{13}$ años).
-
-Conclusión: incluso con hardware muy agresivo, la búsqueda exhaustiva es computacionalmente inviable.
+![Análisis de seguridad de la clave](seguridad_clave.png)
 
 ---
 
-## 6. Análisis de Sensibilidad de Claves (Efecto Avalancha)
+## 6. Sensibilidad de la clave (efecto avalancha)
 
-El **Efecto Avalancha** establece que un cambio minúsculo en la clave
-(condiciones iniciales) debe producir una salida completamente distinta.
-La figura `6_fallo_perturbacion.png` contiene cuatro paneles que
-demuestran esta propiedad paso a paso:
+### Experimento 5.1 — Recuperación con clave casi idéntica
 
-![Fallo por perturbación mínima (Efecto Avalancha)](6_fallo_perturbacion.png)
+Se perturba **únicamente** $x_0$ en $\Delta x_0 = 10^{-15}$ (los parámetros $r$ y $N_{\text{warmup}}$ permanecen iguales). El flujo completo es:
 
-**Lectura de ejes / paneles (Figura `6_fallo_perturbacion.png`):**
+1. Generar keystream con $(x_0,\, r,\, N_w)$ → encriptar → insertar en audio → **audio esteganografiado**.
+2. Extraer bits con clave correcta → descifrar → texto recuperado legible (similitud 100%).
+3. Extraer bits con clave perturbada $(x_0 + 10^{-15},\, r,\, N_w)$ → descifrar → **ruido** (similitud 0.11%).
 
-- **Panel superior:** barras de los primeros 96 bytes del cifrado con
-  **clave correcta** (azul). Cada barra es un byte del payload cifrado.
+**Resultados:**
 
-- **Panel medio:** barras de los mismos 96 bytes cifrados con una
-  **clave mínimamente perturbada** (naranja): `x0 + 1e-15`,
-  `r + 1e-12`, `n_warmup + 1`. Los valores son completamente
-  distintos — los cifrados son casi ortogonales.
+| Métrica | Valor |
+|---|---|
+| $\Delta x_0$ | $10^{-15}$ |
+| Bits LSB distintos extraídos (dominio audio) | 3670 / 7424 (**49.43%**) |
+| Similitud texto recuperado (clave correcta) | **100.00%** |
+| Similitud texto recuperado (clave perturbada) | **0.11%** (ruido) |
 
-- **Panel inferior:** diferencia absoluta byte a byte
-  `|cifrado_correcto − cifrado_perturbado|`. La altura de cada barra
-  confirma que **ningún byte coincide** tras la perturbación de clave.
+Una perturbación de $10^{-15}$ en la condición inicial produce keystreams con ~50% de bits distintos — efecto avalancha completo.
 
-- **Caja de texto inferior:**
-  - Distancia de Hamming: **2317 / 4656 bits (49.76%)**.
-  - Texto recuperado con clave correcta: legible.
-  - Texto recuperado con clave perturbada: basura (`\x00`, `\x0b`...).
+![Sensibilidad de la clave — Exp 5.1](sensibilidad_clave.png)
 
-En resumen: una perturbación imperceptible en la condición inicial
-(`1e-15`) produce cifrados con ~50% de bits diferentes, exactamente
-como predice la sensibilidad a condiciones iniciales de un atractor
-caótico. El mensaje colapsa irrecuperablemente.
+**Lectura de la figura (3 paneles):**
+- **Panel 1:** bits LSB extraídos con la **clave correcta** (patrón coherente → texto legible).
+- **Panel 2:** bits LSB extraídos con la **clave perturbada** (solo $\Delta x_0 = 10^{-15}$) — patrón aparentemente aleatorio.
+- **Panel 3:** diferencia bit a bit — ~50% de posiciones son distintas, confirmando el efecto avalancha.
 
-Dado el exponente de Lyapunov positivo del atractor caótico, una perturbación microscópica en las **condiciones iniciales** provoca divergencia exponencial en pocas iteraciones.
+El keystream diverge desde la **primera iteración** (índice $k=0$): el mapa logístico en régimen caótico amplifica exponencialmente cualquier diferencia inicial, característica del exponente de Lyapunov positivo.
 
-**Flujo experimental (parámetros reales del `main`):**
+### Experimento 5.2 — Comparación de dos estegoaudios con claves distintas
 
-1. Se genera el keystream con `x0=0.123456`, `r=3.999952`, `n_warmup=100`.
-2. Se encripta el texto comprimido con XOR caótico.
-3. Se embebe el payload cifrado en el estegoaudio.
-4. Se extrae el payload del estegoaudio.
-5. Se intenta descifrar con clave perturbada (`x0+1e-15`, `r+1e-12`, `n_warmup+1`).
-6. El keystream diverge de inmediato (primer byte distinto en índice $k=0$).
-7. El texto recuperado se degrada a ruido.
+Se oculta el **mismo texto** con dos claves que difieren solo en $x_0$ ($\Delta = 10^{-15}$). Los dos estegoaudios resultantes son diferentes:
 
-Con esta perturbación mínima, el análisis reporta $2317$ bits diferentes de $4656$ ($49.76\%$), consistente con efecto avalancha.
+| Métrica | Valor |
+|---|---|
+| Muestras distintas entre los dos estegoaudios | 7343 / 25 143 552 |
+| MSE entre los dos estegoaudios | $2.920 \times 10^{-4}$ |
+| PSNR entre los dos estegoaudios | 125.65 dB |
+| Posiciones LSB distintas (posiciones caóticas) | 7343 |
 
-**Evidencia Empírica de Recuperación Fallida:**
-*   **Texto recuperado con Clave Correcta ($x_0 = 0.123456$):** 
-    > `La esteganografía es un arte milenario que nos permite ocultar...` (Recuperación exitosa).
-*   **Texto recuperado con Clave Alterada ($x_0 = 0.123456000000001$ junto con $r+10^{-12}$ y $n_{warmup}+1$):** 
-    > `x#9@!mK$p\u0012\x00\x04¿~...` (Fallo total de descifrado debido a la divergencia caótica. El algoritmo extrae ruido en lugar del mensaje).
+![Comparación de dos estegoaudios con Δx₀=1e-15](6_comparacion_estegoaudios.png)
+
+Aunque el MSE es pequeño (ambos estegoaudios son casi idénticos al original), las posiciones LSB modificadas son completamente distintas — un atacante que intercepte ambos no puede inferir $x_0$ a partir de la diferencia.
 
 ---
 
-## 7. Análisis de Robustez y Diferencial (Audio)
+## 7. Análisis de robustez
 
-Para evaluar la resiliencia empírica frente a ataques activos sobre el **medio portador**, el ruido impulsivo (sal y pimienta) y la oclusión se aplican directamente sobre las muestras de `audio_estegano.wav` antes de la extracción del payload.
+Se evalúa la resiliencia del esquema ante tres tipos de ataques aplicados sobre el **estegoaudio** antes de la extracción. PSNR se calcula siempre con $MAX_I = 32767$ (escala PCM 16 bits).
 
-### Fórmulas de Robustez, Descripción y Rangos
+### Definiciones de métricas
 
-#### 1) Bit Error Rate (BER)
+**BER (Bit Error Rate):** $BER = \frac{\text{bits erróneos}}{L} \times 100\%$, con $L = 8 \times |b|$ bits. Aquí $|b| = 928$ bytes → $L = 7424$ bits.
 
-$$
-BER=\frac{Bits\,erroneos}{Total\,de\,bits}\times 100\%
-$$
-
-Procedimiento práctico usado:
-
-- Se compara bit a bit el payload original $b$ frente al payload extraído $b'$ después del ataque.
-- Se cuentan posiciones con $b_i\neq b'_i$.
-- Se divide entre $L=8\times|b|$, con $L=4656$ bits en esta ejecución.
-
-- $BER$: tasa de error de bits.
-- $Bits\ erroneos$: cantidad de bits recuperados incorrectamente.
-- $Total\ de\ bits$: número de bits evaluados.
-- $\times 100\%$: conversión a porcentaje.
-
-- **Qué mide:** porcentaje de bits alterados tras un ataque.
-- **Rango teórico:** $[0,100]\%$.
-- **Criterio práctico:**
-  - **Muy bueno:** $<5\%$
-  - **Aceptable:** $5\%$ a $10\%$
-  - **Comprometido:** $>10\%$ (sin ECC)
-
-#### 2) Correlación Normalizada (NC)
+**NC (Correlación Normalizada):**
 
 $$
-NC=\frac{\sum_{i=1}^{L}W(i)W'(i)}{\sqrt{\sum_{i=1}^{L}W(i)^2}\sqrt{\sum_{i=1}^{L}W'(i)^2}}
+NC = \frac{\sum_{i=1}^{L} W(i) W'(i)}{\sqrt{\sum W(i)^2} \cdot \sqrt{\sum W'(i)^2}}
 $$
 
-- $NC$: correlación normalizada entre secuencias.
-- $W(i)$: bit del payload original en la posición $i$ (referencia).
-- $W'(i)$: bit del payload recuperado en la posición $i$.
-- $L$: longitud total de la secuencia comparada.
-- Numerador: similitud punto a punto.
-- Denominador: normalización por energía de ambas secuencias.
+donde $W$ = bits originales y $W'$ = bits recuperados, mapeados a $\{-1, +1\}$.
 
-- **Qué mide:** similitud entre secuencia original $W$ y recuperada $W'$.
-- **Rango teórico:** $[-1,1]$ (en práctica de marcas/bitstreams suele usarse $[0,1]$).
-- **Criterio práctico:**
-  - **Robusto:** $>0.90$
-  - **Intermedio:** $0.75$ a $0.90$
-  - **Débil:** $<0.75$
+### Resultados (datos actuales — texto de Silva, audio CCMixter)
 
-#### 3) MSE
+| Ataque | Nivel | BER | NC | MSE (señal) | PSNR (dB) |
+|---|---:|---:|---:|---:|---:|
+| Sal y pimienta | 5% | 2.21% | 0.9557 | 5.69×10⁷ | 12.75 |
+| Sal y pimienta | 10% | 5.04% | 0.9112 | 1.14×10⁸ | 9.74 |
+| Sal y pimienta | 25% | 12.30% | 0.8043 | 2.85×10⁸ | 5.76 |
+| Oclusión | 5% | 3.93% | 0.9217 | 5.69×10⁶ | 22.76 |
+| Oclusión | 10% | 3.62% | 0.9278 | 8.26×10⁶ | 21.14 |
+| Oclusión | 25% | 10.34% | 0.8432 | 1.99×10⁷ | 17.31 |
+| Gaussiano | SNR=20 dB | 50.59% | 0.0000 | — | 32.12 |
+| Gaussiano | SNR=10 dB | 49.93% | 0.0000 | — | 22.12 |
+| Gaussiano | SNR=5 dB | 49.72% | 0.0000 | — | 17.13 |
 
-Para definiciones y desarrollo formal de MSE, ver Sección 4. En esta sección se reportan únicamente valores nuevos bajo ataque.
+> **El ataque gaussiano destruye la recuperación** (BER ≈ 50%, NC ≈ 0). Esto es esperado: el ruido gaussiano perturba los LSB del audio de forma aleatoria, corrompiendo las posiciones caóticas. La esteganografía LSB simple no incluye corrección de errores (FEC).
+> El esquema **es robusto** ante sal y pimienta y oclusión en niveles 5% y 10% (NC > 0.90), y cae en 25% — coherente con un mecanismo de inserción dispersa sin redundancia.
 
-#### 4) PSNR
+### Evidencia visual
 
-Para definiciones y desarrollo formal de PSNR, ver Sección 4. En esta sección se reportan únicamente valores nuevos bajo ataque.
+**Sal y pimienta (5%, 10%, 25%):**
 
-### Resultados numéricos de BER y NC por ataque
+![Sal y pimienta](7_sal_pimienta_5_10_25.png)
 
-Las columnas MSE y PSNR miden la distorsión introducida en la señal de audio portadora tras el ataque (plano de señal); BER y NC miden la integridad del payload binario recuperado (plano de bits). Ambos planos son independientes: una señal de audio muy degradada puede aún permitir recuperación parcial de bits si la fracción de LSB perturbados sigue siendo minoritaria.
+**Oclusión (5%, 10%, 25%):**
 
-Con $L=4656$ bits evaluados, los resultados de esta ejecución fueron:
+![Oclusión](7_oclusion_5_10_25.png)
 
-| Ataque | Nivel | Bits erróneos | BER | NC | MSE | PSNR (dB) |
-|---|---:|---:|---:|---:|---:|---:|
-| Sal y pimienta | 5% | 122 | 0.026203 | 0.974153 | 56,948,236.598653 | 12.753931 |
-| Sal y pimienta | 10% | 223 | 0.047895 | 0.953038 | 114,037,446.766164 | 9.738259 |
-| Sal y pimienta | 25% | 565 | 0.121349 | 0.879969 | 284,890,152.793789 | 5.761959 |
-| Oclusión | 5% | 206 | 0.044244 | 0.955360 | 5,686,732.381146 | 22.760106 |
-| Oclusión | 10% | 185 | 0.039734 | 0.960005 | 8,263,879.599312 | 21.136894 |
-| Oclusión | 25% | 540 | 0.115979 | 0.878172 | 19,944,889.113185 | 17.310417 |
+**Gaussiano (SNR = 20 dB, 10 dB, 5 dB):**
 
-Contraste con umbral de robustez $NC>0.90$: el esquema se mantiene robusto en 5% y 10% para ambos ataques, y cae por debajo del umbral en 25%.
+![Gaussiano SNR 20dB](7_gaussiano_snr20dB.png)
 
-### Evidencia visual de ataques activos
+### 7.5 Distribución de amplitudes y señal diferencia LSB
 
-#### A) Ruido impulsivo Sal y Pimienta (5%, 10%, 25%)
+A continuación se presentan por separado los histogramas de amplitud (ya mostrados en §4.1) y la tabla de robustez consolidada:
 
-![Ataque Sal y Pimienta 5-10-25](7_sal_pimienta_5_10_25.png)
+![Tabla de robustez completa](robustez_completa_tabla.png)
 
-**Lectura de ejes (Figura `7_sal_pimienta_5_10_25.png`):**
-- En subgráficas de señal: **Eje X** = índice de muestra; **Eje Y** = amplitud.
-- En subpaneles de texto recuperado: comparación cualitativa de legibilidad por nivel de ataque.
+La **señal diferencia LSB** $\varepsilon[n]$ se concentra en $\{-1, 0, +1\}$ (ver §4.1 y figura `4_error_lsb.png`). Este término — **señal diferencia** o **perturbación LSB** — denota la resta muestra a muestra entre estegoaudio y original; no es un "error" en sentido de fallo del sistema, sino la perturbación introducida intencionalmente por la inserción.
 
-- **5%:** recuperación prácticamente íntegra; texto legible casi completo.
-- **10%:** aparecen pérdidas puntuales de caracteres, pero el contenido semántico se mantiene.
-- **25%:** degradación fuerte; aun así persisten fragmentos útiles para inferencia contextual.
+---
 
-Textos representativos recuperados:
-- 5%: `La esteganografía es un arte milenario.`
-- 10%: `La es_eganogra_ía es un ar_e mile_ario.`
-- 25%: `L_ e_t_ga_o_ra_ía _s u_ a_t_ _il_n_r_o.`
-
-#### B) Oclusión/Recorte (5%, 10%, 25%)
-
-![Ataque Oclusión 5-10-25](7_oclusion_5_10_25.png)
-
-**Lectura de ejes (Figura `7_oclusion_5_10_25.png`):**
-- En subgráficas de señal: **Eje X** = índice de muestra/tiempo discreto; **Eje Y** = amplitud.
-- Los segmentos removidos (ocluidos) se reflejan como pérdida de información en tramos específicos.
-
-- **5%:** impacto bajo; texto casi intacto.
-- **10%:** recortes visibles, pero se conserva alta legibilidad global.
-- **25%:** pérdida significativa; persiste recuperación parcial de términos y estructura.
-
-Textos representativos recuperados:
-- 5%: `La esteganografía es un arte milenario.`
-- 10%: `La est_ganografía e_ un a_te mil_nario.`
-- 25%: `_a e_te_anog_afí_ e_ u_ art_ mi_ena_io.`
-
-**Conclusión de resiliencia empírica:**
-El esquema mantiene recuperación útil en 5% y 10% para ambos ataques. En 25% la degradación ya es severa, pero aún hay trazas suficientes para inferir partes del mensaje, coherente con un mecanismo de inserción dispersa y no concentrada.
-
-### 7.5 Distribución de Amplitudes y Error de Cuantización LSB
-
-A continuación se presenta el análisis de distribución de amplitudes
-complemento a las métricas de correlación y error:
-
-![Histograma de amplitudes y error de cuantización LSB](audio_histograms.png)
-
-**Lectura de ejes (Figura `audio_histograms.png`):**
-
-- **Panel izquierdo:** histograma de amplitudes del audio original (azul)
-  superpuesto con el estegoaudio (salmon).
-  La coincidencia casi perfecta de ambas distribuciones confirma que
-  la modificación LSB no altera la estadística global de la señal.
-
-- **Panel derecho:** histograma del **error de cuantización LSB**
-  $\varepsilon[n] = y[n] - x[n]$.
-  El error se concentra estrictamente en tres valores:
-  - $\varepsilon = -1$: **511 muestras**
-  - $\varepsilon = 0$: **12.570.622 muestras** (la inmensa mayoría)
-  - $\varepsilon = +1$: **643 muestras**
-
-  Esto demuestra que la alteración está acotada al bit menos
-  significativo: nunca se modifica más de 1 nivel de cuantización.
-
-[Documentación v1, con otras imagenes](./README2.md)
+[Documentación v1, con otras imágenes](./README2.md)

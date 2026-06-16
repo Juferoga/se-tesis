@@ -99,7 +99,7 @@ def insertar_mensaje_segmento_lsb_random(segment_array, message_bits, num_least_
   secuencia_aleatoria = generar_secuencia_aleatoria(
                               ChaosMod.X0.value,
                               ChaosMod.R.value,
-                              ChaosMod.N_WARMUP_DEFAULT.value,
+                              ChaosMod.N_WARMUP.value,
                               0,
                               len(message_bits),
                               'int')

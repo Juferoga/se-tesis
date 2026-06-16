@@ -49,7 +49,7 @@ from src.utils.metricas import (
 )
 
 # Generar llave de encriptación
-from src.utils.caos import generar_llave
+from src.utils.caos import generar_llave, derivar_semillas
 
 # Enums configuraciones
 from src.utils.chaos_mod_enum import ChaosMod
@@ -283,13 +283,15 @@ def cargar_audio(ruta_audio):
     return cargar_archivo_wav(ruta_audio)
 
 
-def convertir_mensaje_a_bits(mensaje):
+def convertir_mensaje_a_bits(mensaje, n_warmup=ChaosMod.N_WARMUP_DEFAULT.value):
     # Codificar a UTF-8 para manejar caracteres Unicode (emojis, acentos, comillas tipográficas, etc.)
     mensaje_en_bytes = np.array(list(mensaje.encode("utf-8")), dtype=np.uint8)
     longitud_de_llave = len(mensaje_en_bytes)
-    llave = generar_llave(
-        ChaosMod.X0.value, ChaosMod.R.value, ChaosMod.N_WARMUP.value, longitud_de_llave
+    # Derivar semillas independientes de la clave maestra
+    x0_k, r_k, n_k, x0_p, r_p, n_p = derivar_semillas(
+        ChaosMod.X0.value, ChaosMod.R.value, n_warmup
     )
+    llave = generar_llave(x0_k, r_k, n_k, longitud_de_llave)
     mensaje_encriptado = xor_encriptado(mensaje_en_bytes, llave)
     # Flujo 100% en bytes/uint8: sin chr()/ord()
     mensaje_bits = "".join(np.unpackbits(mensaje_encriptado).astype(str).tolist())
@@ -302,6 +304,7 @@ def insertar_mensaje_en_audio(
     audio_total=False,
     sequential=True,
     chaotic_full=True,
+    n_warmup=ChaosMod.N_WARMUP_DEFAULT.value,
 ):
     """Insertar mensaje en audio usando posiciones caóticas distribuidas en todo el audio.
 
@@ -311,20 +314,25 @@ def insertar_mensaje_en_audio(
         audio_total: Si usar todo el audio como segmento (legacy)
         sequential: Si usar inserción secuencial o aleatoria (legacy)
         chaotic_full: Si True, usa distribución caótica en todo el audio (nuevo método)
+        n_warmup: Número de iteraciones de calentamiento del mapa logístico
 
     Returns:
         tuple: (audio_modificado, inicio_segmento, fin_segmento)
-               Con chaotic_full=True, inicio=0 y fin=len(audio)
+            Con chaotic_full=True, inicio=0 y fin=len(audio)
     """
     # Nuevo método: distribución caótica en todo el audio
     if chaotic_full:
         try:
+            # Derivar semillas independientes: posiciones LSB usan semilla derivada
+            x0_k, r_k, n_k, x0_p, r_p, n_p = derivar_semillas(
+                ChaosMod.X0.value, ChaosMod.R.value, n_warmup
+            )
             arreglo_audio_modificado, posiciones = insertar_lsb_caotico(
                 arreglo_audio_original,
                 mensaje_bits,
-                ChaosMod.X0.value,
-                ChaosMod.R.value,
-                ChaosMod.N_WARMUP.value,
+                x0_p,
+                r_p,
+                n_p,
             )
             print(
                 f"  Posiciones caóticas generadas: {len(posiciones)} en rango [0, {len(arreglo_audio_original)})"
@@ -383,6 +391,7 @@ def extraer_y_verificar_mensaje(
     llave,
     sequential=True,
     chaotic_full=True,
+    n_warmup=ChaosMod.N_WARMUP_DEFAULT.value,
 ):
     """Extraer y verificar mensaje oculto en el audio.
 
@@ -394,14 +403,19 @@ def extraer_y_verificar_mensaje(
         llave: Clave de encriptación
         sequential: Si usar extracción secuencial (legacy)
         chaotic_full: Si True, usa extracción caótica de todo el audio
+        n_warmup: Número de iteraciones de calentamiento del mapa logístico
     """
     if chaotic_full:
+        # Derivar semillas independientes: posiciones LSB usan semilla derivada
+        x0_k, r_k, n_k, x0_p, r_p, n_p = derivar_semillas(
+            ChaosMod.X0.value, ChaosMod.R.value, n_warmup
+        )
         bits_extraidos, mensaje_extraido = extraer_lsb_caotico(
             arreglo_audio_modificado,
             len(mensaje_bits),
-            ChaosMod.X0.value,
-            ChaosMod.R.value,
-            ChaosMod.N_WARMUP.value,
+            x0_p,
+            r_p,
+            n_p,
         )
     else:
         arreglo_segmento_extraido = arreglo_audio_modificado[
@@ -442,7 +456,7 @@ def ejecutar_ataques(
     sequential=False,
     x0=ChaosMod.X0.value,
     r=ChaosMod.R.value,
-    n_warmup=ChaosMod.N_WARMUP.value,
+    n_warmup=ChaosMod.N_WARMUP_DEFAULT.value,
 ):
     """Ejecutar la batería de ataques sobre el audio esteganografiado y evaluar su robustez
 
@@ -467,6 +481,9 @@ def ejecutar_ataques(
     with TimerContextManager("Inicialización módulo de ataques") as timer:
         attacks = AudioAttacks(ruta_audio_modificado, output_dir)
 
+    # Derivar semillas independientes de la clave maestra
+    x0_k, r_k, n_k, x0_p, r_p, n_p = derivar_semillas(x0, r, n_warmup)
+
     # Ejecutar todos los ataques
     with TimerContextManager("Ejecución de ataques") as timer:
         resultados = attacks.run_all_attacks(
@@ -474,9 +491,9 @@ def ejecutar_ataques(
             fin_segmento,
             mensaje_bits_length,
             sequential,
-            x0,
-            r,
-            n_warmup,
+            x0_p,
+            r_p,
+            n_p,
         )
 
     print("\n--- Resumen de resultados de ataques ---")
@@ -512,6 +529,12 @@ def main():
     sys.stderr = TeeStream(stderr_original, log_file)
 
     try:
+        # Generar N_warmup como parte de la clave (componente secreto)
+        # Usamos semilla para reproducibilidad en demostraciones; en producción sería aleatorio
+        rng = np.random.default_rng(42)
+        n_warmup = int(rng.integers(100, 10001))
+        print(f"\n=== Parámetro secreto N_warmup generado: {n_warmup} ===")
+
         # Parsear argumentos de línea de comandos
         parser = argparse.ArgumentParser(
             description="Esteganografía en audio con evaluación de robustez."
@@ -588,7 +611,7 @@ def main():
         # Convertir mensaje a bits y encriptar con medición de tiempo
         section_markers["Encriptación"] = time.time() - global_start_time
         with TimerContextManager("Encriptación") as timer:
-            mensaje_bits, llave = convertir_mensaje_a_bits(mensaje)
+            mensaje_bits, llave = convertir_mensaje_a_bits(mensaje, n_warmup)
         section_names.append("Encriptación")
         execution_times.append(timer.elapsed)
 
@@ -602,7 +625,7 @@ def main():
         with TimerContextManager("Esteganografía") as timer:
             arreglo_audio_modificado, inicio_segmento, fin_segmento = (
                 insertar_mensaje_en_audio(
-                    arreglo_audio_original, mensaje_bits, False, sequential
+                    arreglo_audio_original, mensaje_bits, False, sequential, n_warmup=n_warmup
                 )
             )
         section_names.append("Esteganografía")
@@ -628,6 +651,7 @@ def main():
                 mensaje_bits,
                 llave,
                 sequential,
+                n_warmup=n_warmup,
             )
         section_names.append("Extracción mensaje")
         execution_times.append(timer.elapsed)
@@ -725,7 +749,7 @@ def main():
                     sequential,
                     ChaosMod.X0.value,
                     ChaosMod.R.value,
-                    ChaosMod.N_WARMUP.value,
+                    n_warmup,
                 )
             section_names.append("Módulo de ataques")
             execution_times.append(timer.elapsed)

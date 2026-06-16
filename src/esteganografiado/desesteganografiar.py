@@ -48,7 +48,7 @@ def extraer_mensaje_segmento_lsb_random(modified_segment_array, message_length, 
   secuencia_aleatoria = generar_secuencia_aleatoria(
     ChaosMod.X0.value,
     ChaosMod.R.value,
-    ChaosMod.N_WARMUP.value,
+    ChaosMod.N_WARMUP_DEFAULT.value,
     0,
     message_length,
     'int'

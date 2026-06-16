@@ -486,15 +486,28 @@ class AudioAttacks:
 
         return output_file, attacked_audio.astype(np.int16)
 
-    def occlusion_attack(self, proportion=0.10):
-        """Aplicar ataque de oclusión sobre todo el audio."""
-        print(f"\n=== Aplicando ataque de oclusión ({proportion * 100:.1f}%) ===")
+    def occlusion_attack(self, proportion=0.10, seed=None):
+        """Aplicar ataque de oclusión distribuida sobre todo el audio.
+
+        En lugar de un solo bloque contiguo, usa múltiples bloques pequeños
+        dispersos para afectar proporcionalmente las posiciones caóticas.
+        Esto garantiza monotonía: a mayor proporción, más posiciones afectadas.
+        """
+        print(f"\n=== Aplicando ataque de oclusión distribuida ({proportion * 100:.1f}%) ===")
         with TimerContextManager("Ataque de oclusión") as timer:
             attacked_audio = np.copy(self.audio)
             n = len(attacked_audio)
-            block_size = int(n * proportion)
-            start = np.random.randint(0, max(1, n - block_size))
-            attacked_audio[start : start + block_size] = 0
+            n_afectados = int(n * proportion)
+
+            # Usar semilla determinista si se proporciona
+            rng = np.random.default_rng(seed)
+
+            # Dividir en 10 bloques dispersos para distribuir el daño
+            n_bloques = 10
+            tam_bloque = max(1, n_afectados // n_bloques)
+            for i in range(n_bloques):
+                inicio = rng.integers(0, max(1, n - tam_bloque))
+                attacked_audio[inicio : inicio + tam_bloque] = 0
 
             output_file = os.path.join(self.output_dir, f"occlusion_{proportion}.wav")
             wav.write(output_file, self.sr, attacked_audio.astype(np.int16))
@@ -505,6 +518,7 @@ class AudioAttacks:
             print(f"Tiempo de ataque: {timer.elapsed:.4f} segundos")
             print(f"MSE: {mse:.4f}, PSNR: {psnr:.4f} dB")
             print(f"Distorsión: {dist:.4f}")
+            print(f"Bloques dispersos: {n_bloques}, tamaño: {tam_bloque} muestras")
 
         return output_file, attacked_audio.astype(np.int16)
 
@@ -515,9 +529,9 @@ class AudioAttacks:
         fin_segmento,
         mensaje_bits_length,
         sequential=False,
-        x0=0.123456,
-        r=3.999952,
-        n_warmup=100,
+        x0_pos=0.123456,
+        r_pos=3.999952,
+        n_pos=100,
     ):
         """Evaluar si el mensaje puede ser recuperado después del ataque
 
@@ -543,11 +557,11 @@ class AudioAttacks:
                 return False, 0, 0
 
             bits_extraidos, _ = extraer_lsb_caotico(
-                attacked_audio, mensaje_bits_length, x0, r, n_warmup
+                attacked_audio, mensaje_bits_length, x0_pos, r_pos, n_pos
             )
 
             bits_originales, _ = extraer_lsb_caotico(
-                self.original_audio, mensaje_bits_length, x0, r, n_warmup
+                self.original_audio, mensaje_bits_length, x0_pos, r_pos, n_pos
             )
 
             # Contar bits correctos
@@ -579,9 +593,9 @@ class AudioAttacks:
         fin_segmento,
         mensaje_bits_length,
         sequential=False,
-        x0=0.123456,
-        r=3.999952,
-        n_warmup=100,
+        x0_pos=0.123456,
+        r_pos=3.999952,
+        n_pos=100,
     ):
         """Ejecutar todos los ataques y evaluar la robustez
 
@@ -609,9 +623,9 @@ class AudioAttacks:
                 fin_segmento,
                 mensaje_bits_length,
                 sequential,
-                x0,
-                r,
-                n_warmup,
+                x0_pos,
+                r_pos,
+                n_pos,
             )
             resultados[f"ruido_{nivel}"] = {
                 "exito": exito,
@@ -630,9 +644,9 @@ class AudioAttacks:
                 fin_segmento,
                 mensaje_bits_length,
                 sequential,
-                x0,
-                r,
-                n_warmup,
+                x0_pos,
+                r_pos,
+                n_pos,
             )
             resultados[f"compresion_{formato}_{calidad}"] = {
                 "exito": exito,
@@ -649,9 +663,9 @@ class AudioAttacks:
                 fin_segmento,
                 mensaje_bits_length,
                 sequential,
-                x0,
-                r,
-                n_warmup,
+                x0_pos,
+                r_pos,
+                n_pos,
             )
             resultados[f"filtrado_{cutoff}"] = {
                 "exito": exito,
@@ -668,9 +682,9 @@ class AudioAttacks:
                 fin_segmento,
                 mensaje_bits_length,
                 sequential,
-                x0,
-                r,
-                n_warmup,
+                x0_pos,
+                r_pos,
+                n_pos,
             )
             resultados[f"remuestreo_{factor}"] = {
                 "exito": exito,
@@ -687,9 +701,9 @@ class AudioAttacks:
                 fin_segmento,
                 mensaje_bits_length,
                 sequential,
-                x0,
-                r,
-                n_warmup,
+                x0_pos,
+                r_pos,
+                n_pos,
             )
             resultados[f"estiramiento_{factor}"] = {
                 "exito": exito,
@@ -706,9 +720,9 @@ class AudioAttacks:
                 fin_segmento,
                 mensaje_bits_length,
                 sequential,
-                x0,
-                r,
-                n_warmup,
+                x0_pos,
+                r_pos,
+                n_pos,
             )
             resultados[f"escalado_{factor}"] = {
                 "exito": exito,
@@ -743,9 +757,9 @@ class AudioAttacks:
                 fin_segmento,
                 mensaje_bits_length,
                 sequential,
-                x0,
-                r,
-                n_warmup,
+                x0_pos,
+                r_pos,
+                n_pos,
             )
             resultados[f"reduccion_bits_{bits}"] = {
                 "exito": exito,
@@ -762,9 +776,9 @@ class AudioAttacks:
                 fin_segmento,
                 mensaje_bits_length,
                 sequential,
-                x0,
-                r,
-                n_warmup,
+                x0_pos,
+                r_pos,
+                n_pos,
             )
             resultados[f"sal_pimienta_{proportion}"] = {
                 "exito": exito,
@@ -780,9 +794,9 @@ class AudioAttacks:
                 fin_segmento,
                 mensaje_bits_length,
                 sequential,
-                x0,
-                r,
-                n_warmup,
+                x0_pos,
+                r_pos,
+                n_pos,
             )
             resultados[f"oclusion_{proportion}"] = {
                 "exito": exito,

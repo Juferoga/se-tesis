@@ -22,7 +22,7 @@ from datetime import datetime
 import numpy as np
 
 from src.encriptado.encriptar import xor_encriptado
-from src.utils.caos import generar_llave
+from src.utils.caos import generar_llave, derivar_semillas
 from src.utils.chaos_mod_enum import ChaosMod
 from src.esteganografiado.esteganografiar import (
     cargar_archivo_wav,
@@ -39,6 +39,11 @@ SALIDA.mkdir(parents=True, exist_ok=True)
 X0 = ChaosMod.X0.value
 R = ChaosMod.R.value
 N_WARMUP = ChaosMod.N_WARMUP.value
+
+# Semillas independientes: keystream (cifrado) usa la clave maestra; las
+# posiciones LSB usan una semilla derivada decorrelada (resuelve el uso de una
+# sola secuencia para cifrado y posiciones).
+X0_K, R_K, N_K, X0_P, R_P, N_P = derivar_semillas(X0, R, N_WARMUP)
 
 
 def main() -> None:
@@ -82,9 +87,9 @@ def main() -> None:
             f"Payload ({len(mensaje_bits)} bits) > capacidad ({len(audio_original)} bits)"
         )
 
-    # 4. Insertar con LSB caótico
+    # 4. Insertar con LSB caótico (posiciones con semilla derivada independiente)
     audio_modificado, posiciones = insertar_lsb_caotico(
-        audio_original, mensaje_bits, X0, R, N_WARMUP
+        audio_original, mensaje_bits, X0_P, R_P, N_P
     )
     print(f"\n[4] Inserción LSB caótica:")
     print(f"    Posiciones generadas: {len(posiciones)}")
@@ -95,8 +100,8 @@ def main() -> None:
     guardar_archivo_wav(str(ruta_audio_mod), audio_modificado, params)
     print(f"\n[5] Audio guardado: {ruta_audio_mod}")
 
-    # 6. Verificar extracción
-    bits_extraidos, _ = extraer_lsb_caotico(audio_modificado, len(mensaje_bits), X0, R, N_WARMUP)
+    # 6. Verificar extracción (posiciones con la misma semilla derivada)
+    bits_extraidos, _ = extraer_lsb_caotico(audio_modificado, len(mensaje_bits), X0_P, R_P, N_P)
     extraccion_ok = mensaje_bits == bits_extraidos
     print(f"\n[6] Verificación extracción: {'✓ OK' if extraccion_ok else '✗ FALLO'}")
 
@@ -153,9 +158,11 @@ def main() -> None:
             "psnr_db": psnr_val,
         },
         "parametros_caoticos": {
-            "x0": X0,
-            "r": R,
-            "n_warmup": N_WARMUP,
+            "clave_maestra": {"x0": X0, "r": R, "n_warmup": N_WARMUP},
+            "semilla_keystream": {"x0": X0_K, "r": R_K, "n_warmup": N_K},
+            "semilla_posiciones": {"x0": X0_P, "r": R_P, "n_warmup": N_P},
+            "n_warmup_secreto": True,
+            "n_warmup_rango": [ChaosMod.N_WARMUP_MIN.value, ChaosMod.N_WARMUP_MAX.value],
         },
     }
     (SALIDA / "resumen_ejecucion.json").write_text(

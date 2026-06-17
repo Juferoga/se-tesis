@@ -117,3 +117,43 @@ def generar_posiciones_caoticas(x0, r, n_warmup, n_posiciones, total_muestras):
       posiciones.append(pos)
 
   return np.array(posiciones, dtype=np.int64)
+
+
+def derivar_semillas(x0, r, n_warmup):
+  """Deriva DOS semillas independientes a partir de la clave maestra.
+
+  Resuelve el acoplamiento criptográfico de usar una sola secuencia para el
+  cifrado y para las posiciones LSB. A partir de la clave maestra
+  ``(x0, r, n_warmup)`` se obtienen:
+
+    - Semilla de keystream (cifrado XOR): la clave maestra tal cual.
+    - Semilla de posiciones (LSB): derivada de forma determinista y decorrelada,
+      de modo que el flujo de cifrado y la elección de posiciones NO comparten la
+      misma órbita del mapa logístico.
+
+  Args:
+      x0 (float): condición inicial maestra, en (0, 1)
+      r (float): parámetro de caos maestro, en [3.57, 4]
+      n_warmup (int): calentamiento maestro (componente secreto)
+
+  Returns:
+      tuple: ``(x0_k, r_k, n_k, x0_p, r_p, n_p)`` — semillas de keystream (_k) y
+             de posiciones (_p).
+  """
+  # Keystream: clave maestra directa
+  x0_k, r_k, n_k = x0, r, n_warmup
+
+  # Posiciones: derivación determinista decorrelada de la maestra.
+  x0_p = (x0 * r) % 1.0
+  if x0_p <= 0.0 or x0_p >= 1.0:
+    x0_p = (x0 + 0.5) % 1.0
+
+  # r_p se mantiene en el régimen FUERTEMENTE caótico [3.99, 3.9999) para máxima
+  # dispersión: a r≈3.63 el mapa logístico concentra los valores en bandas y las
+  # posiciones se agrupan; cerca de 4 la densidad invariante cubre casi todo (0,1),
+  # logrando posiciones LSB repartidas por TODO el audio.
+  r_p = 3.99 + ((r * x0) % 1.0) * 0.0099
+
+  n_p = n_warmup + 1000
+
+  return x0_k, r_k, n_k, x0_p, r_p, n_p

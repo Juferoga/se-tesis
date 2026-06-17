@@ -2,7 +2,8 @@
 
 > **Texto oculto:** fragmento del poema de José Asunción Silva (dominio público, Colombia, 1896).
 > **Audio portador:** pista *"Let it Go"* de Rewob (CCMixter, CC-BY-NC 4.0).
-> **Parámetros caóticos:** x₀ = 0.123456, r = 3.999952, N_warmup = 100 (fijo, no secreto).
+> **Parámetros caóticos (clave maestra):** x₀ = 0.123456, r = 3.999952, N_warmup = 6173 (**componente secreto** de la clave, rango [100, 10000]).
+> **Semillas independientes:** el cifrado (keystream) usa la clave maestra; las posiciones LSB usan una semilla derivada decorrelada (ver §5.1).
 
 ---
 
@@ -85,9 +86,9 @@ Se presentan **dos histogramas separados** de la distribución de amplitudes:
 
 | $\varepsilon[n]$ | Conteo de muestras |
 |---|---|
-| −1 | 1785 |
-| 0 | 23 470 164 |
-| +1 | 1888 |
+| −1 | 1710 |
+| 0 | 25 139 825 |
+| +1 | 2017 |
 | Fuera de $\{-1,0,+1\}$ | 0 |
 
 La concentración absoluta en tres valores confirma que la alteración está acotada al bit menos significativo.
@@ -157,36 +158,100 @@ $$
 x_{n+1} = r \cdot x_n(1 - x_n), \quad x_n \in (0,1),\; r \in (3.5699\ldots, 4]
 $$
 
-Los **componentes secretos** de la clave son:
+Los **componentes secretos** de la clave maestra son:
 
 | Componente | Valor | Rol | Bits efectivos |
 |---|---|---|---|
-| $x_0$ (condición inicial) | 0.123456 | Semilla del keystream | ~52 bits (mantisa float64) |
-| $r$ (parámetro de control) | 3.999952 | Régimen caótico | ~48 bits (resolución en [3.57, 4] con precisión float64) |
-| $N_{\text{warmup}}$ | 100 | Descartar transitorio | **Fijo, no es secreto** |
+| $x_0$ (condición inicial) | 0.123456 | Semilla del keystream | **52 bits** (mantisa float64) |
+| $r$ (parámetro de control) | 3.999952 | Régimen caótico | **52 bits** (mantisa float64) |
+| $N_{\text{warmup}}$ | 6173 | Calentamiento del mapa | **~13.27 bits** (secreto, rango [100, 10000]) |
 
-**Justificación de $b \approx 100$ bits:**
-- Float64 tiene 52 bits de mantisa → $x_0 \in (0,1)$ ofrece ~$2^{52}$ valores efectivamente distinguibles.
-- $r \in [3.57, 4]$ es un rango de 0.43 unidades; con resolución float64 ($\approx 2^{-48}$ en ese rango): ~$2^{48}$ valores.
-- $b = 52 + 48 = 100$ bits → $N_{\text{claves}} \approx 2^{100} \approx 1.27 \times 10^{30}$.
+**Justificación consistente de los bits (por qué $x_0$ y $r$ aportan los mismos 52):**
+- Tanto $x_0$ como $r$ se almacenan como **float64 (IEEE-754)**, cuya mantisa tiene **52 bits**. Por tanto **ambos** aportan $2^{52}$ valores distinguibles: se reporta la **precisión del flotante**, el mismo criterio para los dos parámetros (en la versión previa se mezclaban dos criterios distintos —mantisa para $x_0$ y ancho del régimen para $r$—, lo cual no era coherente).
+- $N_{\text{warmup}}$ es ahora **componente secreto** de la clave: se elige en $[100, 10000]$ → $9900$ valores → $\log_2(9900) \approx 13.27$ bits.
 
-**Esta es una cota teórica** basada en la precisión del sistema de punto flotante, no un número medido.
-
-**Tiempo de búsqueda por fuerza bruta:**
+**Espacio de claves (conteo exacto):**
 
 $$
-T = \frac{2^{100}}{R}
+N_{\text{claves}} = 2^{52}\cdot 2^{52}\cdot 9900 = 2^{104}\cdot 9900 \approx 2.008 \times 10^{35}\quad(b \approx 117.27\text{ bits})
 $$
 
-| Velocidad del atacante $R$ | Tiempo estimado |
-|---|---|
-| $10^9$ claves/s (conservador) | $\approx 4.017 \times 10^{13}$ años |
-| $10^{12}$ claves/s (agresivo) | $\approx 4.017 \times 10^{10}$ años |
-| Referencia: edad del universo | $\approx 1.38 \times 10^{10}$ años |
+> Se usa el **conteo exacto** $9900$ (no $2^{13}=8192$) para que el JSON, la figura y esta tabla sean coherentes.
 
-Con hardware agresivo ($R=10^{12}$), la búsqueda tarda ~2.9 veces la edad del universo. La búsqueda exhaustiva es computacionalmente inviable.
+**Tiempo de búsqueda por fuerza bruta:** $T = N_{\text{claves}} / R$, con $1$ año $= 365.25\cdot24\cdot3600 = 3.1558\times10^{7}$ s.
+
+**Derivación de $R$ a partir del hardware:** cada evaluación de clave requiere ejecutar el mapa logístico $x_{n+1}=r\,x_n(1-x_n)$ un total de:
+
+$$
+\text{iter}_{\text{keystream}} = N_k + L = 6173 + 7424 = 13\,597
+$$
+$$
+\text{iter}_{\text{posiciones}} = N_p + L = 7173 + 7424 = 14\,597
+$$
+$$
+\text{FLOPs/clave} = (13\,597 + 14\,597)\times 3 = 84\,582 \approx 8.5\times10^{4}\;\text{FP64}
+$$
+
+donde $L = 7424$ bits de payload, cada iteración cuesta 3 operaciones FP64 en doble precisión (una resta y dos multiplicaciones), y la semilla de posiciones usa $N_p = N_{\text{warmup}}+1000 = 7173$ iteraciones de calentamiento.
+
+El **NVIDIA H100 SXM** alcanza una tasa pico de **60 TFLOPS** en doble precisión (FP64) [NVIDIA, 2023]:
+
+$$
+R_{\text{conserv}} = \frac{6\times10^{13}\;\text{FP64/s}}{8.5\times10^{4}\;\text{FP64/clave}} \approx 7\times10^{8} \approx 10^{9}\;\text{claves/s}
+$$
+
+Un clúster de ${\sim}1000$ GPU H100 en paralelo (escenario de actor estatal o supercomputadora) escala linealmente:
+
+$$
+R_{\text{agresiv}} = 10^{3} \times R_{\text{conserv}} \approx 10^{12}\;\text{claves/s}
+$$
+
+| Velocidad del atacante $R$ | Origen (derivado) | Tiempo estimado |
+|---|---|---|
+| $10^9$ claves/s | Un GPU NVIDIA H100 SXM (60 TFLOPS FP64, ${\sim}8.5\times10^4$ FLOPs/clave) | $\approx 6.36 \times 10^{18}$ años |
+| $10^{12}$ claves/s | Clúster de ${\sim}1000$ GPU H100 en paralelo | $\approx 6.36 \times 10^{15}$ años |
+| Referencia: edad del universo | — | $\approx 1.38 \times 10^{10}$ años |
+
+> **[NVIDIA, 2023]** NVIDIA Corporation. *NVIDIA H100 Tensor Core GPU Architecture*. Technical Brief TB-10792-001\_v1.0. Santa Clara, CA: NVIDIA, 2023.
+
+Aun con hardware agresivo ($R=10^{12}$), la búsqueda supera en $\sim 4.61\times10^{5}$ veces la edad del universo: es computacionalmente inviable en el modelo clásico.
+
+### 5.2 Seguridad ante ataques cuánticos (Algoritmo de Grover)
+
+El algoritmo de Grover [Grover, 1996] otorga al atacante cuántico una aceleración cuadrática sobre la búsqueda no estructurada, reduciendo el número de evaluaciones de $N_{\text{claves}}$ a $\sqrt{N_{\text{claves}}}$:
+
+$$
+\text{Seguridad cuántica} = \frac{b_{\text{total}}}{2} = \frac{117.27}{2} \approx 58.64 \;\text{bits}
+\quad\Rightarrow\quad
+\sqrt{N_{\text{claves}}} \approx 4.48\times10^{17} \;\text{oracle calls}
+$$
+
+Estimando la velocidad de un computador cuántico tolerante a fallos (cada *oracle call* requiere miles de puertas cuánticas con corrección de errores):
+
+| Escenario cuántico | $R_q$ (oracle calls/s) | Tiempo estimado |
+|---|---|---|
+| Conservador (futuro cercano) | $10^6$ | $\approx 1.42\times10^{4}$ años |
+| Agresivo (futuro lejano) | $10^9$ | $\approx 14.2$ años |
+| Clásico – 1 H100 (referencia) | $10^9$ claves/s | $\approx 6.36\times10^{18}$ años |
+
+> **⚠️ Limitación cuántica:** con 58.64 bits de seguridad cuántica, este esquema **no cumple** el umbral de 128 bits recomendado por NIST para resistencia post-cuántica [NIST, 2024]. Un atacante con hardware cuántico agresivo podría romper el sistema en décadas. Esto es una **limitación conocida** del esquema basado en aritmética flotante de doble precisión (52 bits de mantisa): para alcanzar los 128 bits cuánticos se necesitaría $b_{\text{total}} \geq 256$ bits, lo que requeriría precisión extendida o parámetros adicionales al espacio de la clave.
+
+> **[Grover, 1996]** Grover, L. K. *A fast quantum mechanical algorithm for database search*. Proceedings of the 28th Annual ACM Symposium on Theory of Computing (STOC), pp. 212–219. ACM, 1996. DOI: 10.1145/237814.237866
+>
+> **[NIST, 2024]** NIST. *Post-Quantum Cryptography — Module-Lattice-Based Key-Encapsulation Mechanism Standard*. FIPS 203. National Institute of Standards and Technology, 2024. DOI: 10.6028/NIST.FIPS.203
 
 ![Análisis de seguridad de la clave](seguridad_clave.png)
+
+### 5.1 Separación de secuencias: keystream vs posiciones
+
+En la versión previa **una sola secuencia** caótica $(x_0, r, N_{\text{warmup}})$ generaba **tanto** el keystream del cifrado XOR **como** las posiciones LSB. Reutilizar la misma órbita para cifrar y para ubicar es un **acoplamiento criptográfico** indeseable. Ahora se derivan **dos semillas independientes** de la clave maestra:
+
+| Semilla | Derivación | Uso |
+|---|---|---|
+| Keystream $(x_{0k}, r_k, n_k)$ | clave maestra directa | cifrado XOR del payload |
+| Posiciones $(x_{0p}, r_p, n_p)$ | $x_{0p}=(x_0\,r)\bmod 1$; $r_p=3.99+\big((r\,x_0)\bmod 1\big)\cdot 0.0099$; $n_p=N_{\text{warmup}}+1000$ | índices LSB caóticos |
+
+$r_p$ se mantiene en el régimen fuertemente caótico $[3.99, 3.9999)$ para que las posiciones se distribuyan por **todo** el audio (con $r$ cercano a 4 la densidad invariante cubre casi todo $(0,1)$; con valores menores el mapa concentra los valores en bandas).
 
 ---
 
@@ -194,22 +259,27 @@ Con hardware agresivo ($R=10^{12}$), la búsqueda tarda ~2.9 veces la edad del u
 
 ### Experimento 5.1 — Recuperación con clave casi idéntica
 
-Se perturba **únicamente** $x_0$ en $\Delta x_0 = 10^{-15}$ (los parámetros $r$ y $N_{\text{warmup}}$ permanecen iguales). El flujo completo es:
+Se perturba la clave maestra **únicamente** en $x_0$ ($\Delta x_0 = 10^{-15}$). Como ahora ambas semillas (keystream y posiciones) se **derivan** de la clave maestra, perturbar $x_0$ hace divergir **las dos**. El flujo completo es:
 
-1. Generar keystream con $(x_0,\, r,\, N_w)$ → encriptar → insertar en audio → **audio esteganografiado**.
+1. Generar keystream y posiciones (semillas derivadas) con la clave maestra → encriptar → insertar en audio → **audio esteganografiado**.
 2. Extraer bits con clave correcta → descifrar → texto recuperado legible (similitud 100%).
-3. Extraer bits con clave perturbada $(x_0 + 10^{-15},\, r,\, N_w)$ → descifrar → **ruido** (similitud 0.11%).
+3. Extraer bits con clave perturbada $(x_0 + 10^{-15})$ → descifrar → **ruido** (similitud 0.44%).
 
 **Resultados:**
 
 | Métrica | Valor |
 |---|---|
 | $\Delta x_0$ | $10^{-15}$ |
-| Bits LSB distintos extraídos (dominio audio) | 3670 / 7424 (**49.43%**) |
+| Bits LSB distintos extraídos (dominio audio) | 3764 / 7424 (**50.70%**) |
 | Similitud texto recuperado (clave correcta) | **100.00%** |
-| Similitud texto recuperado (clave perturbada) | **0.11%** (ruido) |
+| Similitud texto recuperado (clave perturbada) | **0.44%** (ruido) |
 
-Una perturbación de $10^{-15}$ en la condición inicial produce keystreams con ~50% de bits distintos — efecto avalancha completo.
+Una perturbación de $10^{-15}$ en la condición inicial produce ~50% de bits distintos — efecto avalancha completo.
+
+> **Textos recuperados persistidos** (siempre disponibles en logs, JSON y archivo):
+> [`texto_recuperado_clave_correcta.txt`](./texto_recuperado_clave_correcta.txt) y
+> [`texto_recuperado_clave_perturbada.txt`](./texto_recuperado_clave_perturbada.txt).
+> El JSON `analisis_completo.json` incluye los campos `texto_recuperado_correcto` y `texto_recuperado_perturbado` bajo `sensibilidad_clave`.
 
 ![Sensibilidad de la clave — Exp 5.1](sensibilidad_clave.png)
 
@@ -226,10 +296,12 @@ Se oculta el **mismo texto** con dos claves que difieren solo en $x_0$ ($\Delta 
 
 | Métrica | Valor |
 |---|---|
-| Muestras distintas entre los dos estegoaudios | 7343 / 25 143 552 |
-| MSE entre los dos estegoaudios | $2.920 \times 10^{-4}$ |
-| PSNR entre los dos estegoaudios | 125.65 dB |
-| Posiciones LSB distintas (posiciones caóticas) | 7343 |
+| Muestras distintas entre los dos estegoaudios | 7381 / 25 143 552 |
+| MSE entre los dos estegoaudios | $2.92 \times 10^{-4}$ |
+| PSNR entre los dos estegoaudios | 125.63 dB |
+| Posiciones LSB distintas (unión simétrica) | 14 848 |
+
+> Con semillas separadas, al cambiar $x_0$ cambian **casi todas** las posiciones de ambas claves (unión simétrica ≈ $2\times$ el payload), reforzando que un atacante no puede inferir $x_0$ a partir de la diferencia.
 
 ![Comparación de dos estegoaudios con Δx₀=1e-15](6_comparacion_estegoaudios.png)
 
@@ -257,32 +329,40 @@ donde $W$ = bits originales y $W'$ = bits recuperados, mapeados a $\{-1, +1\}$.
 
 | Ataque | Nivel | BER | NC | MSE (señal) | PSNR (dB) |
 |---|---:|---:|---:|---:|---:|
-| Sal y pimienta | 5% | 2.21% | 0.9557 | 5.69×10⁷ | 12.75 |
-| Sal y pimienta | 10% | 5.04% | 0.9112 | 1.14×10⁸ | 9.74 |
-| Sal y pimienta | 25% | 12.30% | 0.8043 | 2.85×10⁸ | 5.76 |
-| Oclusión | 5% | 3.93% | 0.9217 | 5.69×10⁶ | 22.76 |
-| Oclusión | 10% | 3.62% | 0.9278 | 8.26×10⁶ | 21.14 |
-| Oclusión | 25% | 10.34% | 0.8432 | 1.99×10⁷ | 17.31 |
-| Gaussiano | SNR=20 dB | 50.59% | 0.0000 | — | 32.12 |
-| Gaussiano | SNR=10 dB | 49.93% | 0.0000 | — | 22.12 |
-| Gaussiano | SNR=5 dB | 49.72% | 0.0000 | — | 17.13 |
+| Sal y pimienta | 5% | 2.45% | 0.9510 | 5.69×10⁷ | 12.75 |
+| Sal y pimienta | 10% | 5.29% | 0.8941 | 1.14×10⁸ | 9.74 |
+| Sal y pimienta | 25% | 12.30% | 0.7540 | 2.85×10⁸ | 5.76 |
+| Oclusión | 5% | 1.81% | 0.9639 | 3.47×10⁶ | 24.91 |
+| Oclusión | 10% | 3.62% | 0.9275 | 6.88×10⁶ | 21.93 |
+| Oclusión | 25% | 9.09% | 0.8182 | 1.84×10⁷ | 17.66 |
+| Gaussiano | SNR=100 dB | 0.00% | 1.0000 | 0 | ∞ (sin cambios) |
+| Gaussiano | SNR=90 dB | 5.01% | 0.8998 | 5.15×10⁻² | 103.19 |
+| Gaussiano | SNR=80 dB | 47.39% | 0.0523 | 7.42×10⁻¹ | 91.60 |
 
-> **El ataque gaussiano destruye la recuperación** (BER ≈ 50%, NC ≈ 0). Esto es esperado: el ruido gaussiano perturba los LSB del audio de forma aleatoria, corrompiendo las posiciones caóticas. La esteganografía LSB simple no incluye corrección de errores (FEC).
-> El esquema **es robusto** ante sal y pimienta y oclusión en niveles 5% y 10% (NC > 0.90), y cae en 25% — coherente con un mecanismo de inserción dispersa sin redundancia.
+> **Degradación monótona (a mayor intensidad, menor recuperación).** En los tres ataques el BER crece y el NC decrece de forma monótona con el nivel. La oclusión se implementa como **recorte real** de un bloque contiguo creciente y anidado (5% ⊂ 10% ⊂ 25%), garantizando la monotonía. Las posiciones LSB se distribuyen por **todo** el audio (no en una banda), por lo que cada incremento de oclusión elimina más posiciones del payload.
+>
+> **Sobre el ruido gaussiano:** la esteganografía LSB es **extremadamente frágil** al ruido aditivo — cualquier ruido por encima de ~0.5 LSB voltea el bit. La transición *recuperable → destruido* ocurre por tanto a **SNR muy alto**: a 100 dB el ruido queda por debajo del paso de cuantización (recuperación perfecta), a 90 dB empieza a corromperse y a 80 dB se destruye (BER ≈ 50%, NC ≈ 0). No hay corrección de errores (FEC), por eso incluso un 5% de BER ya degrada el texto (el cifrado XOR + UTF-8 propaga los errores).
+>
+> *(Nota metodológica: la versión previa reportaba el gaussiano a SNR 20/10/5 dB, donde el LSB ya está completamente destruido en los tres niveles — por eso las figuras y textos salían idénticos. Además se corrigió un sesgo de cuantización: el ruido ahora se **redondea** al entero más cercano, no se trunca.)*
 
 ### Evidencia visual
 
-**Sal y pimienta (5%, 10%, 25%):**
+> Los textos recuperados por nivel se persisten en archivos:
+> [`textos_recuperados_sal_pimienta.txt`](./textos_recuperados_sal_pimienta.txt),
+> [`textos_recuperados_oclusion.txt`](./textos_recuperados_oclusion.txt),
+> [`textos_recuperados_gaussiano.txt`](./textos_recuperados_gaussiano.txt).
+
+**Sal y pimienta (5%, 10%, 25%):** forma de onda con muestras corrompidas + texto recuperado por nivel.
 
 ![Sal y pimienta](7_sal_pimienta_5_10_25.png)
 
-**Oclusión (5%, 10%, 25%):**
+**Oclusión (5%, 10%, 25%):** segmento recortado resaltado, creciente con el nivel.
 
 ![Oclusión](7_oclusion_5_10_25.png)
 
-**Gaussiano (SNR = 20 dB, 10 dB, 5 dB):**
+**Gaussiano (SNR = 100 dB, 90 dB, 80 dB):**
 
-![Gaussiano SNR 20dB](7_gaussiano_snr20dB.png)
+![Gaussiano SNR 100/90/80 dB](7_gaussiano_100_90_80.png)
 
 ### 7.5 Distribución de amplitudes y señal diferencia LSB
 
@@ -291,6 +371,12 @@ A continuación se presentan por separado los histogramas de amplitud (ya mostra
 ![Tabla de robustez completa](robustez_completa_tabla.png)
 
 La **señal diferencia LSB** $\varepsilon[n]$ se concentra en $\{-1, 0, +1\}$ (ver §4.1 y figura `4_error_lsb.png`). Este término — **señal diferencia** o **perturbación LSB** — denota la resta muestra a muestra entre estegoaudio y original; no es un "error" en sentido de fallo del sistema, sino la perturbación introducida intencionalmente por la inserción.
+
+---
+
+## 8. Trabajos relacionados y comparación
+
+> **⚠️ PENDIENTE (Item 11). Ya se puso en el WORD :D**
 
 ---
 

@@ -276,6 +276,8 @@ Se perturba la clave maestra **únicamente** en $x_0$ ($\Delta x_0 = 10^{-15}$).
 
 Una perturbación de $10^{-15}$ en la condición inicial produce ~50% de bits distintos — efecto avalancha completo.
 
+> **Longitud del texto recuperado con clave perturbada:** la extracción recupera **siempre exactamente 7424 bits = 928 bytes**, con clave correcta o perturbada — el tamaño en bytes es idéntico por construcción (el extractor lee un número fijo de posiciones LSB). Lo que puede variar levemente es el **número de caracteres** al decodificar esos 928 bytes como UTF-8: el texto original tiene 901 caracteres en 928 bytes (los caracteres acentuados ocupan 2 bytes), mientras que los 928 bytes pseudoaleatorios del descifrado fallido se decodifican (con reemplazo de secuencias inválidas) en **900 caracteres** en la corrida actual. Es decir, el mensaje errado tiene el **mismo tamaño** que el original (900 vs. 901 caracteres; 928 bytes exactos en ambos casos). Verificable en [`texto_recuperado_clave_correcta.txt`](./texto_recuperado_clave_correcta.txt) y [`texto_recuperado_clave_perturbada.txt`](./texto_recuperado_clave_perturbada.txt).
+
 > **Textos recuperados persistidos** (siempre disponibles en logs, JSON y archivo):
 > [`texto_recuperado_clave_correcta.txt`](./texto_recuperado_clave_correcta.txt) y
 > [`texto_recuperado_clave_perturbada.txt`](./texto_recuperado_clave_perturbada.txt).
@@ -312,6 +314,8 @@ Aunque el MSE es pequeño (ambos estegoaudios son casi idénticos al original), 
 ## 7. Análisis de robustez
 
 Se evalúa la resiliencia del esquema ante tres tipos de ataques aplicados sobre el **estegoaudio** antes de la extracción. PSNR se calcula siempre con $MAX_I = 32767$ (escala PCM 16 bits).
+
+> **Terminología — ataque gaussiano vs. SNR:** no son lo mismo y no se usan como sinónimos. El **ataque** es la adición de **ruido blanco gaussiano** (AWGN): a cada muestra se le suma una variable aleatoria $\eta \sim \mathcal{N}(0, \sigma^2)$. El **SNR** (relación señal-ruido, $SNR_{dB} = 10\log_{10}(P_{señal}/P_{ruido})$) es el **parámetro de intensidad** con el que se dosifica ese ataque: fija la varianza $\sigma^2$ del ruido en relación con la potencia de la señal. Es el análogo del "% de muestras" en sal y pimienta o del "% de duración" en oclusión — cada ataque tiene su parámetro natural de intensidad, y en el gaussiano ese parámetro es el SNR. A mayor SNR, menor ruido (ataque más suave); a menor SNR, mayor ruido (ataque más agresivo).
 
 ### Definiciones de métricas
 
@@ -377,6 +381,39 @@ La **señal diferencia LSB** $\varepsilon[n]$ se concentra en $\{-1, 0, +1\}$ (v
 ## 8. Trabajos relacionados y comparación
 
 > **⚠️ PENDIENTE (Item 11). Ya se puso en el WORD :D**
+
+---
+
+## 9. Desempeño computacional (equipo y tiempos por proceso)
+
+**Equipo de pruebas:**
+
+| Componente | Especificación |
+|---|---|
+| CPU | Intel Core i5-10300H (4 núcleos / 8 hilos, 2.50 GHz base) |
+| RAM | 32 GB |
+| GPU | NVIDIA GeForce GTX 1650 (4 GB VRAM) |
+| SO | GNU/Linux (Ubuntu) |
+| Python | 3.14 (venv del proyecto) |
+
+**Tiempos por etapa — pipeline actual (medidos el 2026-07-06, mediana de 3 ejecuciones,
+mismo caso de estudio: payload de 7424 bits, audio de 25 143 552 muestras a 44.1 kHz):**
+
+| Etapa | Tiempo (s) |
+|---|---|
+| Carga del audio portador | 0.017 |
+| Generación del keystream caótico + encriptación XOR | 0.002 |
+| Inserción LSB caótica | 0.043 |
+| Guardado del estegoaudio | 0.032 |
+| Extracción LSB caótica | 0.007 |
+| Desencriptación y decodificación | 0.001 |
+| **Total del proceso criptoesteganográfico** | **0.102** |
+
+> **Nota:** estos tiempos **reemplazan** a los de la tabla anterior (`proceso.log`, corrida de
+> marzo/2026), que correspondían al pipeline con compresión LLMLingua. Las etapas de
+> compresión (71.19 s) y descompresión (12.23 s) con LLMLingua, medidas en el mismo equipo,
+> están dominadas por la carga del modelo de lenguaje en la GPU y se ejecutan una sola vez
+> por mensaje; no forman parte del bucle criptoesteganográfico.
 
 ---
 

@@ -18,6 +18,7 @@ Uso:
 from __future__ import annotations
 
 import json
+import os
 import re
 import wave
 from math import log
@@ -41,7 +42,7 @@ from src.esteganografiado.desesteganografiar import extraer_lsb_caotico
 # ============================================================
 
 RAIZ = Path(__file__).resolve().parent.parent
-SALIDA = RAIZ / "outputs" / "entrega_profesoras"
+SALIDA = Path(os.environ.get("SALIDA_DIR", RAIZ / "outputs" / "entrega_profesoras"))
 SALIDA.mkdir(parents=True, exist_ok=True)
 
 # Parámetros del sistema caótico (clave maestra)
@@ -158,13 +159,17 @@ def _recuperar_texto_desde_audio(audio_mod: np.ndarray, datos: dict) -> str:
 
 
 def _similitud_textual(a: str, b: str) -> float:
-    """Porcentaje de coincidencia carácter a carácter sobre la longitud máxima."""
+    """Similitud de Ratcliff/Obershelp (difflib) en porcentaje.
+
+    La comparación posicional carácter a carácter no es válida aquí: un byte
+    corrupto dentro de un carácter UTF-8 multibyte cambia la longitud del texto
+    decodificado y desalinea todo lo que sigue, subestimando la similitud.
+    """
+    import difflib
+
     if not a and not b:
         return 100.0
-    max_len = max(len(a), len(b), 1)
-    min_len = min(len(a), len(b))
-    iguales = sum(1 for i in range(min_len) if a[i] == b[i])
-    return iguales / max_len * 100
+    return difflib.SequenceMatcher(None, a, b, autojunk=False).ratio() * 100
 
 
 def _texto_para_plot(texto: str, max_len: int = 320) -> str:
@@ -1690,7 +1695,15 @@ def analisis_correlacion_audio_separada(datos):
     orig = datos["audio_original"].astype(np.float64)
     mod  = datos["audio_modificado"].astype(np.float64)
 
+    n_canales = datos["params"].nchannels
+
     def _stats_lag1(arr, label, color, fname):
+        # El WAV es intercalado (L, R, L, R...): el lag-1 debe calcularse dentro
+        # de un mismo canal; sobre el vector intercalado compara L contra R.
+        canales = arr.reshape(-1, n_canales) if n_canales > 1 else arr.reshape(-1, 1)
+        rho_canales = [float(np.corrcoef(canales[:-1, c], canales[1:, c])[0, 1]) for c in range(canales.shape[1])]
+        arr = canales[:, 0]
+        label = f"{label} (canal izquierdo)" if n_canales > 1 else label
         x_lag = arr[:-1]
         y_lag = arr[1:]
         np.random.seed(42)
@@ -1717,7 +1730,7 @@ def analisis_correlacion_audio_separada(datos):
         ax.grid(alpha=0.15, color=COLORES["grid"])
         fig.tight_layout()
         _guardar(fig, fname)
-        return {"media": media, "sigma": sigma, "rho_lag1": r}
+        return {"media": media, "sigma": sigma, "rho_lag1": r, "rho_lag1_por_canal_completo": rho_canales}
 
     res_orig = _stats_lag1(orig, "Audio Original",  COLORES["original"],
                            "4_correlacion_audio_original.png")

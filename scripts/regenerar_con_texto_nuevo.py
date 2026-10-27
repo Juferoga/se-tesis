@@ -14,6 +14,7 @@ Uso:
 from __future__ import annotations
 
 import json
+import os
 import wave
 import shutil
 from pathlib import Path
@@ -33,7 +34,7 @@ from src.esteganografiado.desesteganografiar import extraer_lsb_caotico
 
 RAIZ = Path(__file__).resolve().parent.parent
 DATA_DIR = RAIZ / "data"
-SALIDA = RAIZ / "outputs" / "entrega_profesoras"
+SALIDA = Path(os.environ.get("SALIDA_DIR", RAIZ / "outputs" / "entrega_profesoras"))
 SALIDA.mkdir(parents=True, exist_ok=True)
 
 X0 = ChaosMod.X0.value
@@ -52,7 +53,7 @@ def main() -> None:
     print("=" * 60)
 
     # 1. Leer texto literario
-    ruta_texto = DATA_DIR / "data_to_hide.txt"
+    ruta_texto = Path(os.environ.get("TEXTO_A_OCULTAR", DATA_DIR / "data_to_hide.txt"))
     texto_original = ruta_texto.read_text(encoding="utf-8").strip()
     print(f"\n[1] Texto leído: {len(texto_original)} caracteres")
     print(f"    Primeros 80 chars: {texto_original[:80]!r}")

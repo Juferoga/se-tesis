@@ -1,0 +1,88 @@
+{
+  "eps": {
+    "-1": 1046,
+    "0": 25141253,
+    "1": 1253
+  },
+  "rho_lag1": {
+    "Audio original": 0.9869158610988168,
+    "Estegoaudio": 0.9869158611373945
+  },
+  "fig5_rango_tramas": [
+    1903339,
+    1903839,
+    0
+  ],
+  "pct_bits_distintos": 50.635964912280706,
+  "fig8_muestras_distintas": 4561,
+  "fig8_hist": {
+    "-1": 2241,
+    "0": 25138991,
+    "1": 2320
+  },
+  "ataques": {
+    "fig9_sal_pimienta_0": {
+      "nivel": "5 %",
+      "muestras_afectadas": 1257168,
+      "ber_pct": 2.280701754385965,
+      "similitud_pct": 82.9443447037702,
+      "texto": "Oh dceña r�qUm �n daJ vuanika ai$a\n 1uIun lo� más, elos\u0002 Han #On Car\n queivinab dejasobenkiasjos 0or e~osios -Os al\u0002 {eráado la\nDIma,$, muy\ncMn q}e uieneav de r\nsi entre\"en ` aQuéi q�ieNú\ntras dei�e yy sintieres0sus dabios0ani`arce en |u boc�\n{ recorrer tu cuerpo$ y �n su ,asci~ia lmca\nbesar todos sus pli%gues de\"tibio A2oma llenos\ny las`vígidas�puntas 2osadas de 4us0senos;\ns) en los locoS, erdientes y profujd�s abrazoS\nagon�zaR Soñaras de pl`ser en sus brazs,\u000bpor$aquEl fe quien eves todas las alegrías,\n¡oh dudce niõa pálida!,�di, �te\u0000zepIstirías�.."
+    },
+    "fig9_sal_pimienta_1": {
+      "nivel": "10 %",
+      "muestras_afectadas": 2514329,
+      "ber_pct": 5.0438596491228065,
+      "similitud_pct": 66.6069829901522,
+      "texto": "Oi d�eña r(qUh��� dd\n0tuenaka �i$a\n 1uiun0l~� mùs&\u0002enos\n i!n #on CAv\n quemvinar(eejasocenk)asjos 1r e~�sigs %oq\u0000al\u0002 {er�#ato la\nDYma,$, muyjcmn u}e%tmeneav de\"r�si entre ej ` qquëh q�ieNú\ntra3 dmi�a yy\u0002sintkgraw0q�s dabios0an�`�rCe`en tu fk#�\ns r%#orrgr tu cuerpo$\u0000y en su ,asci~ia\"leca\nb%sar$|dow sus pnieg�us da tir�o ApgMa l��noq*{ lac`rígidqs$quntas0\"waDas\u0000ed |ew wenos;\n3y`en los �oco{, er`ientms`y$profund�s abrIzos\u000bagon�zaR so��ar!s de p��cer$en sus brAz�w,\u000bpoz iqwEl ~E quief uv�s toLas las aleorías<\nʡsh dulce n�ñi pñliea�,�`i, �?te\u0010zgpMr$irías;..�"
+    },
+    "fig9_sal_pimienta_2": {
+      "nivel": "25 %",
+      "muestras_afectadas": 6285789,
+      "ber_pct": 12.214912280701755,
+      "similitud_pct": 15.398388540734109,
+      "texto": "KH%d�e�3a$V(�Ui ��lu\n2|u�.`ja AI\"`\u000e$1Uiu.�l�� más.\u0002uJoc� idn 3�n \u0003A2\u000e quekvinav(deha\"oseNkIasjog10�s$c~�3k?s$\u0005oS an\u0002 {aráed+!lw\n\f\\}!-4,�mu��CmN\u0000u}e 4iane�v4fd p\nci\"q�t�e�en\u0000  bqUŸx ���qNø\nRRauh%ui�e�yi\u00063io<{�sas0s}r\"EapinS\u00101\u001ce`iRjg`eJ tu f\u0002c�\b[\u0000r%cmr�yr tu gWaRQO$ X�ef0{u\b,A2cq�ma2Mmck\nr%sar&to�gw�Su;�`liEg5ws\"�e vy2yO(Aboia�,lmfnr\b�`haehrëGmlkc(q5k�As\u00002oSadAs1gE t=_\"wmlgQ?\nSi(e� liQ loc�s, mr�hgot-r`}�pro�u~d�q abZ\u0001zob\u000bp�o.�zaR\nsmÑ!b�qaDt pl��es`el st� �Ra{os*\u000bPo� 1pvEl vEbp5I!j\u0000'v-b(tod@s las cl\u0007opí!r\u0000\nJ�[x0d�hce!�i��ibp�!mj`q+,�qih\"ƿte�{fpMSd}vípS;>.."
+    },
+    "fig10_oclusion_0": {
+      "nivel": "5 %",
+      "muestras_afectadas": 1257120,
+      "ber_pct": 1.8640350877192982,
+      "similitud_pct": 85.45780969479354,
+      "texto": "O` tceña p que un de\b t�encia cida\u001a s�ien los más, enos\u000e han con car\n sUeivinar dejacoc%nciasjos por enos)os -mw al\nare2áado la\nDi�e,,, muyJcon que tieneav`De r\nsy entre en`a c�uÉN�qwienòJt�as deile yY siltieras sus l�bios an�darse en\"tu boca\ny recgrver tu�cuerpo, y en\u0000Su lasciviq loca\nbe#ar todos cus pliegues de tibio ar/ma llelos\ny las rígadis puntas\"rosalaq de tus senos;\u001a�i eo los �oa�s, ardie�tes y pronundos!abrazos\naGonizar soñaras dE placgr en sws brazos,\nror aquel $e suien eres toDas�la{ alegrías<\n¡oh dulcu\u0000niña!rálida!, di, ¿te0reshspirías?..."
+    },
+    "fig10_oclusion_1": {
+      "nivel": "10 %",
+      "muestras_afectadas": 2514231,
+      "ber_pct": 3.8157894736842106,
+      "similitud_pct": 73.18385650224215,
+      "texto": "O` tkeña � que un de\b t�encaa cida\u001a s�ie� lo{ mác, enos\u000e han con sar\u0002 s�ukvinar dejacoc%~cias*O3�por enos)os -mw il\nare2áado\u0000la\nDi�e,,, muyJcon que tieoeAv`�e`r\ns} eotre en`a ��uÉN�qw�en²Jt�as dEile yY silti%ras sus l�bi�s`cn�davse en\"tu!boca\by recgrveR tu�auerpo, y en\u0000[u lasciviq loca\nb�'ar |odos cus pliegues de(tyb�o qr/ma lledo{\ny las Ríga�is 2untis\"rocalaq de tus smnos;\u001a�i eo lo3 �oa�s, ardhe�tes y pronujdos!!brazms\naOonizar soñara30dE placgz en rws brizos,\nror0aqueL!$e s�ie. ereS toDas�l!{ alegsías8\nB�oh lulcu\bniña!rǡlida!, di, ½te0reshsparías?*.\u000e"
+    },
+    "fig10_oclusion_2": {
+      "nivel": "25 %",
+      "muestras_afectadas": 6285567,
+      "ber_pct": 8.991228070175438,
+      "similitud_pct": 40.39320822162645,
+      "texto": "O \"tke�1q � que(uj da\b t�Encaa cida\u001e$s�ie� ,�{!mˡ�, �&oq\u000e hin!kon\u0000sezB`s�ukvi/cr �mjagog%~bm`s*O;�qOr %Nos9os -Mv il\narg\"�ad�\u0000,@\nDi�e,,- muyJCn$yum tieoeAf`�e`�\ns�0�otre en`a ��}ˀN�yW�en°Zp�as dEile\"yQ shl�i%r�c\u0001Suc\"l�bi�s`cn�Davse\u0000en\"tu!boCa\by`rukgrwDR(uu�audbpo- y en\u0000[u l`ccivi�$loci\u0002��'ar�|o$os cus`p��egues!te(Tyb�O qr?�a lledo;\ny laS Råga�ksh2tndis\"rocpn!q�dE t}�\"qmn�cs\u001e�I eo`lo3 �oA�s,\"ardhm��gs � qsnujlks!#\"raz-s�aOonizar(�f��Ar�30dE\u0000phacg�\u0000en`rvs(\"riZ�R<\br�c0aqueL1%d(s�ie/ m2gS 4oL%s�l!{ al�gsýa�8\u000eB oh`lulc�\biña!rG�lifa!, dm,�½de4rmsh3pabC�`s?**\u000e"
+    },
+    "fig11_gaussiano_0": {
+      "nivel": "SNR = 100 dB",
+      "muestras_afectadas": 0,
+      "ber_pct": 0.0,
+      "similitud_pct": 100.0,
+      "texto": "Oh dceña p que un de\n tuencia cida\n quien los más, enos\n han con car\n queivinar dejasocenciasjos por enosios -os al\n seráado la\nDime,,, muy\ncon que tieneav de r\nsi entre en a aquél quienú\ntras deile yy sintieras sus labios anidarse en tu boca\ny recorrer tu cuerpo, y en su lascivia loca\nbesar todos sus pliegues de tibio aroma llenos\ny las rígidas puntas rosadas de tus senos;\nsi en los locos, ardientes y profundos abrazos\nagonizar soñaras de placer en sus brazos,\npor aquel de quien eres todas las alegrías,\n¡oh dulce niña pálida!, di, ¿te resistirías?..."
+    },
+    "fig11_gaussiano_1": {
+      "nivel": "SNR = 90 dB",
+      "muestras_afectadas": 1293657,
+      "ber_pct": 5.350877192982456,
+      "similitud_pct": 63.9212175470009,
+      "texto": "Oh0dcMña p qee(un!$�\u0002 tud.cia\u0006bida: quidn$low más, u~os\n ha~ cgn cCr\n`que�vh�qr dejc{oceNcias�mb por enesior )os al� c�rA��dk la\nDiee,,, |�y�coj �ue |ialeav\"da!rJsi entre en$a a`uél(swm�nÚ\npras\u0000deile yy siNtieras sUs\"lqbiow `oI$`r�5�dn&vu bo�a\ny re3iXrmr tw �umRpo( { dN(su la3cqvia lmca\nbeSAr to$/3\"�}S pli�fwes dd t`cio aroma llenos\nY0mas\"rìgydcs puntAs!2osadas d$ dus xe.os+\nr�\u0000en loU n�cos, �R$kan4es y pro�}ndos0a2�`jm3\nago.MzqR�soñcrqS $� plaC�r En suc bpajks,�por aq��n de0qdiu.!eres\"4odqs l!s e,eg2ías,\n¡m� dul#d niÕa x��l�da!, \u0010i, �?te rd3isuyrïas?..-"
+    },
+    "fig11_gaussiano_2": {
+      "nivel": "SNR = 80 dB",
+      "muestras_afectadas": 13528262,
+      "ber_pct": 47.39035087719298,
+      "similitud_pct": 2.909090909090909,
+      "texto": "�& �e\"\u0000Y@nv�x\u0014sV��\u001e~B�ڔ��^^O[q�]\u00014\u0007� ͗ �\u0012#��:t`�$\u0013}�m\f˵�� N��/aó�Ί��2f3�9GI�� �H\u0010ef\u001a8�rd\u0004\u000e9��9��U{�َIB���\u0015h��\r�\u0002��C\u0015�\u0019a\u001du�~&0\u0019\"̄�\u001c�K\u0005qaom���b�wR��n�i�dQV�Ū{'��\"\u0002����\u001d)��ؖc~\u001fe�\\)�\u001a���������uTj\u0017λ,j�F坷�\u0018��؅!\\К\n\u000ew\tsa�f{���(�.= |c\u0018�L!_1HY=�W'%�i�BTe?1\u0013��@u�=�W5�<\u0001\u000bR��\u0010LJ�&%M~ݪQ,oᬔ\u0013��OXd6��\u0000��w\u00191x\u000b9�W]\u0019Я\f��o\u000f�\u0004�V�\u0014��<�tT�6�L5g���͙�_�\u0016�w�<{Rv�_�kԮR�G&��FM��yTH�);U��{\u0019==r��3oN�$�)�'\u0014>�Fw��]r���.�di�}�`�G��L`$%\u0000r�f�,,Q���0��1$�C\u0016��:r.w���d9�y�ևv��oΑ�Ô�r\u000e\u001d��C\u0002��\u0000*��\"K+�\u0016�H��x9<I|[��7\nrNY�Z3{�\f\u0012K�t \r��m\u0002\u000b㻇��r��ic��b�o)%F��m^��EY���f���\u0004�E��."
+    }
+  }
+}

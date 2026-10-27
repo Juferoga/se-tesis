@@ -1,0 +1,37 @@
+{
+  "fecha_hora": "2026-10-27T12:14:11",
+  "texto_fuente": "José Asunción Silva — poema (dominio público, 1896)",
+  "metodo": "LSB caótico (mapa logístico)",
+  "bits_insertados": 4560,
+  "bytes_payload": 570,
+  "muestras_audio": 25143552,
+  "sample_rate": 44100,
+  "muestras_modificadas": 2299,
+  "extraccion_verificada": true,
+  "metricas": {
+    "mse": 9.143497306983516e-05,
+    "psnr_db": 130.69761020968392
+  },
+  "parametros_caoticos": {
+    "clave_maestra": {
+      "x0": 0.123456,
+      "r": 3.999952,
+      "n_warmup": 6173
+    },
+    "semilla_keystream": {
+      "x0": 0.123456,
+      "r": 3.999952,
+      "n_warmup": 6173
+    },
+    "semilla_posiciones": {
+      "x0": 0.49381807411199996,
+      "r": 3.994888798933709,
+      "n_warmup": 7173
+    },
+    "n_warmup_secreto": true,
+    "n_warmup_rango": [
+      100,
+      10000
+    ]
+  }
+}

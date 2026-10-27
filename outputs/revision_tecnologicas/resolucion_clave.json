@@ -1,0 +1,62 @@
+{
+  "x0": {
+    "tabla": [
+      {
+        "ulps": 1,
+        "frac_independiente": 0.6066666666666667
+      },
+      {
+        "ulps": 2,
+        "frac_independiente": 0.7733333333333333
+      },
+      {
+        "ulps": 4,
+        "frac_independiente": 0.8966666666666666
+      },
+      {
+        "ulps": 8,
+        "frac_independiente": 0.95
+      },
+      {
+        "ulps": 16,
+        "frac_independiente": 0.9733333333333334
+      },
+      {
+        "ulps": 32,
+        "frac_independiente": 0.9766666666666667
+      },
+      {
+        "ulps": 64,
+        "frac_independiente": 0.9966666666666667
+      }
+    ],
+    "ulps_efectivos": 64,
+    "bits_perdidos": 6.0
+  },
+  "r": {
+    "tabla": [
+      {
+        "ulps": 1,
+        "frac_independiente": 0.6466666666666666
+      },
+      {
+        "ulps": 2,
+        "frac_independiente": 0.88
+      },
+      {
+        "ulps": 4,
+        "frac_independiente": 0.91
+      },
+      {
+        "ulps": 8,
+        "frac_independiente": 0.9833333333333333
+      },
+      {
+        "ulps": 16,
+        "frac_independiente": 0.9933333333333333
+      }
+    ],
+    "ulps_efectivos": 16,
+    "bits_perdidos": 4.0
+  }
+}

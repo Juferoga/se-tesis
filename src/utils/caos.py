@@ -106,8 +106,17 @@ def generar_posiciones_caoticas(x0, r, n_warmup, n_posiciones, total_muestras):
   for _ in range(n_warmup):
     x = mapa_logistico(x, r)
 
-  # Generar posiciones únicas
+  # Generar posiciones únicas. Si r cae en una ventana periódica la órbita se
+  # vuelve un ciclo y nunca aparecen índices nuevos: se corta con un límite.
+  max_iteraciones = 20 * n_posiciones + 10000
+  iteraciones = 0
   while len(posiciones) < n_posiciones:
+    iteraciones += 1
+    if iteraciones > max_iteraciones:
+      raise ValueError(
+        f"La órbita (x0={x0}, r={r}) no genera {n_posiciones} posiciones distintas: "
+        "r está en una ventana periódica del mapa logístico (clave no válida)."
+      )
     x = mapa_logistico(x, r)
     pos = int(x * total_muestras)
     # Asegurar que esté en rango válido
@@ -157,3 +166,30 @@ def derivar_semillas(x0, r, n_warmup):
   n_p = n_warmup + 1000
 
   return x0_k, r_k, n_k, x0_p, r_p, n_p
+
+def exponente_lyapunov(r, x0=0.3, n_transitorio=20000, n_iter=4000):
+  """Exponente de Lyapunov del mapa logístico para uno o varios valores de r.
+
+  λ = (1/n) Σ ln|r(1 − 2x_k)|. Un valor positivo indica comportamiento caótico;
+  un valor menor o igual a cero indica que la órbita converge a un ciclo. El
+  transitorio es largo porque, cerca del borde de una ventana periódica, la órbita
+  puede parecer caótica durante miles de iteraciones antes de caer en el ciclo.
+  """
+  r = np.atleast_1d(np.asarray(r, dtype=np.float64))
+  x = np.full_like(r, x0)
+  for _ in range(n_transitorio):
+    x = r * x * (1 - x)
+  acum = np.zeros_like(r)
+  for _ in range(n_iter):
+    x = r * x * (1 - x)
+    acum += np.log(np.abs(r * (1 - 2 * x)) + 1e-300)
+  return acum / n_iter
+
+
+def clave_valida(x0, r, n_warmup, umbral=0.0):
+  """Una clave es válida si el mapa es caótico tanto para el flujo de cifrado (r)
+  como para la selección de posiciones (r_p derivado), es decir, si ambos
+  exponentes de Lyapunov son positivos."""
+  _, r_k, _, _, r_p, _ = derivar_semillas(x0, r, n_warmup)
+  lam = exponente_lyapunov([r_k, r_p])
+  return bool(np.all(lam > umbral))

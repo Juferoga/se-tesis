@@ -14,6 +14,7 @@ Uso:
 from __future__ import annotations
 
 import json
+import os
 import wave
 import shutil
 from pathlib import Path
@@ -22,7 +23,7 @@ from datetime import datetime
 import numpy as np
 
 from src.encriptado.encriptar import xor_encriptado
-from src.utils.caos import generar_llave
+from src.utils.caos import generar_llave, derivar_semillas
 from src.utils.chaos_mod_enum import ChaosMod
 from src.esteganografiado.esteganografiar import (
     cargar_archivo_wav,
@@ -33,12 +34,17 @@ from src.esteganografiado.desesteganografiar import extraer_lsb_caotico
 
 RAIZ = Path(__file__).resolve().parent.parent
 DATA_DIR = RAIZ / "data"
-SALIDA = RAIZ / "outputs" / "entrega_profesoras"
+SALIDA = Path(os.environ.get("SALIDA_DIR", RAIZ / "outputs" / "entrega_profesoras"))
 SALIDA.mkdir(parents=True, exist_ok=True)
 
 X0 = ChaosMod.X0.value
 R = ChaosMod.R.value
 N_WARMUP = ChaosMod.N_WARMUP.value
+
+# Semillas independientes: keystream (cifrado) usa la clave maestra; las
+# posiciones LSB usan una semilla derivada decorrelada (resuelve el uso de una
+# sola secuencia para cifrado y posiciones).
+X0_K, R_K, N_K, X0_P, R_P, N_P = derivar_semillas(X0, R, N_WARMUP)
 
 
 def main() -> None:
@@ -47,7 +53,7 @@ def main() -> None:
     print("=" * 60)
 
     # 1. Leer texto literario
-    ruta_texto = DATA_DIR / "data_to_hide.txt"
+    ruta_texto = Path(os.environ.get("TEXTO_A_OCULTAR", DATA_DIR / "data_to_hide.txt"))
     texto_original = ruta_texto.read_text(encoding="utf-8").strip()
     print(f"\n[1] Texto leído: {len(texto_original)} caracteres")
     print(f"    Primeros 80 chars: {texto_original[:80]!r}")
@@ -57,7 +63,14 @@ def main() -> None:
     texto_comprimido = texto_original
 
     # 2. Encriptar con XOR caótico
-    texto_bytes = np.array(list(texto_comprimido.encode("utf-8")), dtype=np.uint8)
+    # PAYLOAD_BIN: salida binaria de la compresión neuronal sin pérdida (se oculta tal cual)
+    if os.environ.get("PAYLOAD_BIN"):
+        payload = Path(os.environ["PAYLOAD_BIN"]).read_bytes()
+        texto_bytes = np.frombuffer(payload, dtype=np.uint8).copy()
+        shutil.copy(os.environ["PAYLOAD_BIN"], SALIDA / "payload_comprimido.bin")
+        (SALIDA / "texto_original.txt").write_text(texto_original, encoding="utf-8")
+    else:
+        texto_bytes = np.array(list(texto_comprimido.encode("utf-8")), dtype=np.uint8)
     llave = generar_llave(X0, R, N_WARMUP, len(texto_bytes))
     texto_encriptado = xor_encriptado(texto_bytes, llave)
 
@@ -82,9 +95,9 @@ def main() -> None:
             f"Payload ({len(mensaje_bits)} bits) > capacidad ({len(audio_original)} bits)"
         )
 
-    # 4. Insertar con LSB caótico
+    # 4. Insertar con LSB caótico (posiciones con semilla derivada independiente)
     audio_modificado, posiciones = insertar_lsb_caotico(
-        audio_original, mensaje_bits, X0, R, N_WARMUP
+        audio_original, mensaje_bits, X0_P, R_P, N_P
     )
     print(f"\n[4] Inserción LSB caótica:")
     print(f"    Posiciones generadas: {len(posiciones)}")
@@ -95,8 +108,8 @@ def main() -> None:
     guardar_archivo_wav(str(ruta_audio_mod), audio_modificado, params)
     print(f"\n[5] Audio guardado: {ruta_audio_mod}")
 
-    # 6. Verificar extracción
-    bits_extraidos, _ = extraer_lsb_caotico(audio_modificado, len(mensaje_bits), X0, R, N_WARMUP)
+    # 6. Verificar extracción (posiciones con la misma semilla derivada)
+    bits_extraidos, _ = extraer_lsb_caotico(audio_modificado, len(mensaje_bits), X0_P, R_P, N_P)
     extraccion_ok = mensaje_bits == bits_extraidos
     print(f"\n[6] Verificación extracción: {'✓ OK' if extraccion_ok else '✗ FALLO'}")
 
@@ -105,7 +118,7 @@ def main() -> None:
         n_bytes = len(bits_extraidos) // 8
         bits_arr = np.array([int(b) for b in bits_extraidos[:n_bytes * 8]], dtype=np.uint8)
         bytes_rec = np.packbits(bits_arr)
-        texto_desencriptado = bytes(xor_encriptado(bytes_rec, llave).tolist()).decode("utf-8")
+        texto_desencriptado = bytes(xor_encriptado(bytes_rec, llave).tolist()).decode("utf-8", errors="replace")
         print(f"    Texto recuperado (primeros 80): {texto_desencriptado[:80]!r}")
     else:
         texto_desencriptado = None
@@ -153,9 +166,11 @@ def main() -> None:
             "psnr_db": psnr_val,
         },
         "parametros_caoticos": {
-            "x0": X0,
-            "r": R,
-            "n_warmup": N_WARMUP,
+            "clave_maestra": {"x0": X0, "r": R, "n_warmup": N_WARMUP},
+            "semilla_keystream": {"x0": X0_K, "r": R_K, "n_warmup": N_K},
+            "semilla_posiciones": {"x0": X0_P, "r": R_P, "n_warmup": N_P},
+            "n_warmup_secreto": True,
+            "n_warmup_rango": [ChaosMod.N_WARMUP_MIN.value, ChaosMod.N_WARMUP_MAX.value],
         },
     }
     (SALIDA / "resumen_ejecucion.json").write_text(

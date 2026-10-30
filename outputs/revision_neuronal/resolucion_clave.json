@@ -1,0 +1,22 @@
+{
+  "x0": {
+    "tabla": [
+      {
+        "ulps": 1,
+        "frac_independiente": 1.0
+      }
+    ],
+    "ulps_efectivos": 1,
+    "bits_perdidos": 0.0
+  },
+  "r": {
+    "tabla": [
+      {
+        "ulps": 1,
+        "frac_independiente": 1.0
+      }
+    ],
+    "ulps_efectivos": 1,
+    "bits_perdidos": 0.0
+  }
+}

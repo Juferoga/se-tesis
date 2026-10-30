@@ -2,6 +2,33 @@
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Juferoga/se-tesis)
 
+## Artículo para la Revista TecnoLógicas (manuscrito 4098)
+
+La versión del modelo descrita en el artículo comprime el texto **sin pérdida** con una red neuronal (modelo de lenguaje
+Qwen2.5-1.5B) y codificación aritmética (`src/compresion/llm_aritmetico.py`), cifra el mensaje con XOR y un flujo de clave
+de dos órbitas del mapa logístico, cuyos parámetros se derivan de la clave K = (x0, r, N) con SHA-512 (`src/utils/caos.py`),
+y lo oculta con LSB en posiciones elegidas por otra órbita del mapa logístico.
+
+| Qué | Cómo reproducirlo |
+|---|---|
+| Resultados de la sección 3 (métricas, ataques, figuras) | `./scripts/seccion3_neuronal.sh` → `outputs/revision_neuronal/` |
+| Espacio de clave y resolución efectiva (tablas 7 y 8) | `SALIDA_DIR=outputs/revision_neuronal python -m scripts.espacio_clave` y `... scripts.resolucion_clave` |
+| Demostración: emisor y receptor en procesos separados | `./demo_recuperacion.sh` (con pausas) o `./demo_recuperacion.sh --seguido` |
+| Casos de estudio adicionales (rama `articulo-v5`) | `scripts/casos_estudio_colab.py` en Google Colab con GPU |
+| Robustez con Reed-Solomon (rama `articulo-v6`) | `SALIDA_DIR=outputs/revision_neuronal python -m scripts.reed_solomon` |
+
+Requisito: emisor y receptor deben ejecutar la red con la misma configuración (pesos, float32 y tipo de dispositivo).
+
+### Pendiente: archivar el código con un DOI (Zenodo)
+
+- [ ] Crear una versión (tag), por ejemplo `v1.0-tecnologicas`, con el código exacto del artículo.
+- [ ] Archivar la versión en Zenodo para obtener un DOI permanente:
+  1. Entrar a https://zenodo.org con la cuenta de GitHub.
+  2. En la sección *GitHub* de Zenodo, activar el repositorio `Juferoga/se-tesis`.
+  3. Publicar la versión (release) en GitHub; Zenodo la archiva y asigna el DOI automáticamente.
+  4. Agregar el distintivo del DOI a este README y un archivo `CITATION.cff`.
+- [ ] En el apartado 2.8 del artículo, citar el DOI de Zenodo además del enlace a GitHub.
+
 ## Descripción
 
 Este proyecto permite la manipulación y procesamiento de señales de audio, incluyendo compresión, encriptación y esteganografía. Además, proporciona herramientas para la visualización y análisis de señales de audio.

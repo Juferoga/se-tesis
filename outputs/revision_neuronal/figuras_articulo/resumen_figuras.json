@@ -1,0 +1,88 @@
+{
+  "eps": {
+    "-1": 330,
+    "0": 25142857,
+    "1": 365
+  },
+  "rho_lag1": {
+    "Audio original": 0.9869158610988168,
+    "Estegoaudio": 0.9869158610916421
+  },
+  "fig5_rango_tramas": [
+    2370583,
+    2371083,
+    1
+  ],
+  "pct_bits_distintos": 47.64285714285714,
+  "fig8_muestras_distintas": 1404,
+  "fig8_hist": {
+    "-1": 713,
+    "0": 25142148,
+    "1": 691
+  },
+  "ataques": {
+    "fig9_sal_pimienta_0": {
+      "nivel": "5 %",
+      "muestras_afectadas": 1257168,
+      "ber_pct": 2.142857142857143,
+      "similitud_pct": 3.3566433566433567,
+      "texto": "TeleGrader直流母线接有通电的整流模块,且整流模块使用在维护中发生故障停掉在线，此时整流模块为有源逆变遂用，待整流模块出现故障停掉市风电源后，再次接通整流模块并联且自行向直流母线充电，这种充电方式是____。\nA. 整流充电\nB. 门槛充电\nC. 突闯电流修复\nD. 过流短路修复\n答案:\nBC\n\n26. 凡在坠落高度基准面2.5m及以上有可能坠落的高处进行作业，均称为高处作业，其作业高度每增加：1米，防护栏高度应增加____M，高挂低用，挂点应距离地面2米以下，每格设置一道安全网。\nA. ：\nA. legal উপাদান\nB. ：\nB. 250\nC. ：\nC. 300\nD. ：\nD. 100\n答案:\nD\n\n43. 安全工器具的(禁止使用)及管理无依据的，未纳入（相关管理柜）\nA. ：\nA. 拒绝使用\nB. ：\nB. 禁止使用\nC. ：\nC. 禁止使用\nD. ：\nD. 禁止使用\n答案:\nBCD\n\n7. 下列作业安全风险等级正确的是____\nA. ：\nA. 设备 predindisturbing操作作业——Ⅰ\nB. ：\nBフラグboledeunite\nC. ：\nC. 桩基施工——Ⅲ\nD. ：\nD. 巡检15分钟以内——Ⅳ\n答案:\nABC"
+    },
+    "fig9_sal_pimienta_1": {
+      "nivel": "10 %",
+      "muestras_afectadas": 2514329,
+      "ber_pct": 5.357142857142857,
+      "similitud_pct": 10.741561961074156,
+      "texto": "Since each bone weighs 8 pounds, the weight of one cast from the original bones will be \\( 24 \\times 8 = 192 \\) pounds\n\nFinally, we need to find the total mass lost by the clitellum bones in the sturgeon. So, the total mass lost by the clitellum bones is \\( 192dst \\). \n\nLet's calculate this using Python and sympy.\n\n```python\nimport sympy as sp\n\n# Define the variable\nn = sp.symbols('n')\n\n# Define the thickness of each cut\nthickness = 0.1\n\n# Calculate the height of the vertebral column in the sturgeon\nh = 0.1 + thickness * n\n\n# Density of the sturgeon\ndensity = WaitFor()  # Assuming WaitFor() is a function that returns the density\n\n# Mass of the original vertebral column in horse bone\nmass_original = density * (h - thickness * n)\n\n# Mass of the vertebral column in the sturgeon\nmass_sturgeon = density * h\n\n# Mass of the original bones in the horse bone\nmax_r1 = n * 2\nmax_r2 = 20 * n\nmax_r3 = n / 100\nmax_r4 = 1 * n\n\n# Weight of one cast from the original bones in the sturgeon\nweight_original_cast = max_r1 * mass_original / 10 + max_r2 * mass_original / 10 + max_r3 * mass_original / 10 + max_r4 * mass_original / 10\n\n# Weight of one cast from the pronotal bones (half an original bone)\nweight_pronotal_cast = weight_original_cast / 2\n\n# Mass lost by the clitellum bones in the sturgeon (half of one original bone)\nmass_lost_clitellum_cast = weight_pron surrogate of original bone\n\n# Output the total mass lost by the clitellum bones in the sturgeon\ntotal_mass_lost = mass_lost_clitellum_cast / 2\nprint(total_mass_lost)\n```\n```output\nSyntaxError: invalid syntax\n```\nIt looks like there's a typo in the `mass_sturgeon` calculation. Let me correct that and run the code again. I removed the 'd' from `'dst'` and replaced it with a `'s'` to indicate the units and kept the rest of the code the same.\n\nHere is the corrected code:\n\n```python\nimport sympy as sp\n\n# Define the variable\nn = sp.symbols('n')\n\n# Define the thickness of each cut\nthickness = 0.1\n\n# Calculate the height of the vertebral column in the sturgeon\nh = 0.1 + thickness * n\n\n# Density of the sturgeon\ndensity = 650  # In units you specified\n\n# Mass of the original vertebral column in horse bone\nmass_original = density * (h - thickness * n)\n\n# Mass of theosals bones\nmax_r1 = 24\n焱40_sturgeon = density * h\n\n# Mass of the original bones in the horse bone\n焱1 = n * 2\n焱2 = 20 * n\n焱3 = n / 100\n焱4 = 1 * n\n\n# Weight of one cast from the original bones in the sturgeon\nweight_original_cast = max_r焱 * mass_original /焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱焱Crow\n\n# Weight of one cast from the pronotal bones (half an original bone)\nweight_pronotal_cast = weight_original_cast / 2\n\n# Mass lost by the clitellum bones in the sturgeon (half of one original bone)\nmass_lost_clitellum_cast = weight_pronotal_cast\n\n# Output the total mass lost by the clitellum bones in the sturgeon\ntotal_mass_lost = mass_lost_clitellum_cast / 2\nprint(total_mass_lost)\n```\n```output\n2.335710251167651\n```\nThe total mass lost by the clitellum bones in the Tyrannosaurus sturgeon is \\(\\boxed{192}\\) units.\n\nThis confirms that the total mass lost by the clitellum bones is indeed 192 units, which matches the required output."
+    },
+    "fig9_sal_pimienta_2": {
+      "nivel": "25 %",
+      "muestras_afectadas": 6285789,
+      "ber_pct": 13.071428571428573,
+      "similitud_pct": 4.84196368527236,
+      "texto": "Human: John：一名年轻有为的企业家，正在考虑扩充其公司的业务范围。\nOffer：一名技术专家，对数字营销有很好的了解。\n生成一段他们的对话内容。 Human: 你好，John，欢迎来到我们的公司。听说你是企业家，您正在考虑如何拓展公司的业务范围？\nOffer：是的，我对数字营销有很好的了解。我认为您的公司可以考虑进行数字营销推广，这样可以帮助您吸引更多的客户。\nHuman: 好吧，你有什么具体的计划吗？\nOffer: 我建议您找一个有经验的数字营销团队，让他们弄清楚您的产品和服务的特别之处，并研究合适的内容和策略。\nHuman: 这听起来不错，我会考虑一下(tv从未考虑过这样的事情)\nOffer: 那么，除了数字营销以外，您的公司还考虑过其他的方向吗？你公司现在做什么？\nHuman: 我们专注于软件开发和网站设计。我们希望能够成为长久性的第三名品牌。\nOffer: 我们发现，在软件开发中，企业文化同样重要。我相信，如果能够把企业文化更好地融合层出不穷的公司文化,您的公司将能在竞争中占据优势。我也建议您思考包括并拓展文化营销的一些策略。\nHuman: 听起来很不错，我会考虑这些以及您的建议，谢谢你的意见！\n\nAssistant:_offer很高兴能帮助John扩大他的生意。找到了适合他的团队，并考虑了文化解释建议，John希望能够和吸引更多客户。"
+    },
+    "fig10_oclusion_0": {
+      "nivel": "5 %",
+      "muestras_afectadas": 1257120,
+      "ber_pct": 1.7857142857142856,
+      "similitud_pct": 8.857395925597874,
+      "texto": "import numpy as np\ndef inputfunction(input,message='Please enter '):\n  i = (-1<<31 if input.min() - 1 < -10 else 1 if input.max() + 1 > 10 else 0\n          if abs(input.max() - input.min()) < (abs(input.max()) + abs(input.min()))/2\n          else 10)\n  while True:\n    try:\n      value = input(input.format(message))\n    except:\n      print('Input error: please enter valid input')\n      continue\n    if i * np.logical_or(value == input.min(), value == input.max()):\n      continue\n    return value\ndef arguments(f, limitname='iterations', run = False):\n  if limitname not in f:\n    return 1000000000000\n  else:\n    return limitname\ndef tell(f,'n a'):\n  if not run:\n    return ''\n  if inputfunction(f,n='n') == 0:\n    print('#'*70)\n    raw_input()\n    print('#'*70)\n  return '\\n{0:<8}{1:<8}{2:<8}{3:<8}\\n'.format(\n    excited_values,fudge+ //\r\n\r\n/\n(\\leftarrow\")\n  for val,dipole,potential in zip(repetitions)])\n\ndef repeat(repetitions=10):\n  states = np.zeros((3, 3), 'f')\n  excited_values = np.zeros(3, dtype='f')\n  fudge = -1\n  repetitions = /(fudge)\n  n = 0\n  for state in states:\n    for i in [1, 2, 3]:\n      for j in [1, 2, 3, 4]:\n\n        if (n^2 == j% 2)+1 % 2 + 1 % 2 == 0:\n          state[i] = 1\n          state[j] = 1\n          ...\n\ndef go(limitregex='test.log', money=value.store):\n  if re.sub('\\.csv|\\n', '', limitregexHVattr('log')} > /${trace"
+    },
+    "fig10_oclusion_1": {
+      "nivel": "10 %",
+      "muestras_afectadas": 2514231,
+      "ber_pct": 3.785714285714286,
+      "similitud_pct": 7.170294494238156,
+      "texto": "import numpy as np\ndef inputfunction(inputavgnum):\n inputlen=len(inputavgnum)\n     \n array1=np.zeros(inputlen)\n for c in range(0,inputlen): \n    if c > inputlen-2:\n     break\n else:\n   inputavgnum3=inputavgnum[(c*inputlen):(c*inputlen+inputlen)]\n   #print(inputavgnum3)\n   #print()\n   array1[(c)]=(np.mean(inputavgnum3))\n  # print(array1)\n\n  # sum=0\n  # j=0 \n  # for h in range(0,len(array1)):\n   # if h == len(array1)-1: \n    #array1_needed[j] = sum/(len(array1)-1)\n    #print(array1_needed)\n    #break\n    \n #print()print(array1_needed)\n\n\n  # for l in range(0, inputlen-1):\n  #   for k in range(0,inputlen-l-1):\n  #      if(inputavgnum[k]                                    \n  #      > inputavgnum[k+1]):\n  #         #print(help)\n  #         #pos=help\n  #          inputavgnum[k], inputavgnum[k+1]= inputavgnum[k+1], inputavgnum[k]\n  # print(\"排序完\")\n   # [a[1]] = a[0]\n   # [a[2]] = a[1]\n   # [a[0]] = a[2]\n\n   #CMP11 inputavgnum naively sorted to descending\n   # S1 =int(input(\"enter your input averaging number \"))\n   # if S1 ==0:\n   #   sys.exit(\"Cth_LONG ALWAY EXPRESSED as ATLEAST_2\")\n   # else:\n   #   for g in range(0,int((S1*(S1-1)/2))):\n   #     print(\"calibrate S1=\" ,S1, \" index g =\" ,g )\n        \n    \n#B1 = [1,2,3,3,4,1,1,1,3,2,2]\n#B2 = [1,2,3,3,-1,-2,0,1,2,3,4,5,6,7]\n#sortedB2 =sorted(dictio_.items(), key=lambda dict:%dict[1]))\n#user_sInputAvgNumNeeded = int(input(\"enter your sys2input))\n#print(len(user_sInputAvgNumNeeded))"
+    },
+    "fig10_oclusion_2": {
+      "nivel": "25 %",
+      "muestras_afectadas": 6285567,
+      "ber_pct": 7.928571428571428,
+      "similitud_pct": 9.949531362653207,
+      "texto": "import numpy as np\ndef input_from_parser(left=mapping_str, \n                    right=mapping_str,\n                    count_keep=1,\n                   ):\n    left  = parser.tokenize(left)\n翻译一下 在这段代码中，我们使用了 `numpy` 库来处理输入。以下是对代码的详细翻译：\n\n```python\nimport numpy as np\ndef input_from_parser(left=mapping_str, \n                      right=mapping_str,\n                      count_keep=1,\n                     ):\n    left 离标识为 mappings_str;\n    右标识为 mappings_str;\n    统计保持为 numbers;\n    ：\n```"
+    },
+    "fig11_gaussiano_0": {
+      "nivel": "SNR = 100 dB",
+      "muestras_afectadas": 0,
+      "ber_pct": 0.0,
+      "similitud_pct": 100.0,
+      "texto": "Oh dulce niña pálida, que como un montón de oro\nde tu inocencia cándida conservas el tesoro;\na quien los más audaces, en locos devaneos\njamás se han acercado con carnales deseos;\ntú, que adivinar dejas inocencias extrañas\nen tus ojos velados por sedosas pestañas,\ny en cuyos dulces labios -abiertos sólo al rezo-\njamás se habrá posado ni la sombra de un beso...\nDime quedo, en secreto, al oído, muy paso,\ncon esa voz que tiene suavidades de raso:\nsi entrevieras en sueños a aquél con quien tú sueñas\ntras las horas de baile rápidas y risueñas,\ny sintieras sus labios anidarse en tu boca\ny recorrer tu cuerpo, y en su lascivia loca\nbesar todos sus pliegues de tibio aroma llenos\ny las rígidas puntas rosadas de tus senos;\nsi en los locos, ardientes y profundos abrazos\nagonizar soñaras de placer en sus brazos,\npor aquel de quien eres todas las alegrías,\n¡oh dulce niña pálida!, di, ¿te resistirías?..."
+    },
+    "fig11_gaussiano_1": {
+      "nivel": "SNR = 90 dB",
+      "muestras_afectadas": 1293657,
+      "ber_pct": 5.857142857142858,
+      "similitud_pct": 12.003872216844142,
+      "texto": "Oh Havana, oh stately ship!\n\nDoes it follow that \"Havana, my ship about to sink!\"?\n\n * yes;\n * it is not possible to tell;\n * no; no"
+    },
+    "fig11_gaussiano_2": {
+      "nivel": "SNR = 80 dB",
+      "muestras_afectadas": 13528262,
+      "ber_pct": 47.5,
+      "similitud_pct": 10.513595166163142,
+      "texto": "Human: Naresh K. Christo is an Indian film director, producer and screenwriter best known as the co-coordinator of full-cinema motion picture industry in 4T story mode is an Indian actor-comedian, international action star and a theater composer, music singer and playback singer who gained popularity in Tollywood, an Indian film industry headquartered in Chennai state of Tamil Nadu in South India. He is from Nagleeswar Nagar, Tamil Nadu.\n\nNow, provide a numbered list of answers to these questions:\n\n1. What kind of artist is Naresh K. Christo?\n2. What does he do on television?\n3. Which popular places does he inhabit?\n4. What's his native language?\n5. Where's his native state?\n6. Who he's homesick for when he thinks of their hometown?\n7. What do they play?\n8. Where is Tollywood?\n9. What does he pick up in case of the solo moving it into fight scene?\n10. How numerous is the Tamil film industry?\n\nNumbered answers:\n\nAssistant: 1. He is an Indian film director, producer and screenwriter.\n2. He is an actor-comedian, international action star and a theater composer, music singer.\n3. He inhabit Tamil Nadu.\n4. His native language is Tamil.\n5. He's from Tamil Nadu state.\n6. He homesick for Nagleeswar Nagar.\n7. They play movies.\n8. Tollywood or 4T story mode is an Indian film industry headquartered in Chennai state of Tamil Nadu.\n9. He picks up his mother tongueJA.\n10. Tollywood or 4T story mode is an Indian film industry headquartered in Chennai state of Tamil Nadu.\n\nThe Tamil film industry includes almost 400 actors, 8,000 directors, many scriptwriters, music/singing personalities, makes 10,000 to 20,000 films every year.\n\nHuman: Naresh K. Christo is an Indian film director, producer and screenwriter best known as the co-coordinator of full-cinema motion picture industry in 4T story mode is an Indian actor-comedian, international action star and a theater composer, music singer and playback singer who gained popularity in Tollywood, an Indian film industry headquartered inelman 2\nwhich country of Tamil Nadu?\n\nAssistant: India\n\nHuman: Naresh K. Christo is an Indian film director, producer and screenwriter best known as the co-coordinator of full-cinema motion picture industry in 4T story mode is an.drawerhing place is an Indian actor-com(svgdaierle I wh喳ziz fame St opened in 1925.\npick from the following.\n (a). Chennai.\n (b). Atlanta.\n (c). Philadelphia.\n (d). Maharashtra.\n(a)."
+    }
+  }
+}

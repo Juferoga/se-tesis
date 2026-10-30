@@ -1,132 +1,158 @@
 {
   "histogramas_audio": {
-    "cnt_m1": 1635,
-    "cnt_0": 25139879,
-    "cnt_p1": 2038
+    "cnt_m1": 1710,
+    "cnt_0": 25139825,
+    "cnt_p1": 2017
   },
   "correlacion_audio": {
     "audio_original": {
       "media": -3.0794590597223497,
-      "sigma": 8116.850607898935,
+      "sigma": 8116.850607898924,
       "rho_lag1": 0.2653544868291533
     },
     "estegoaudio": {
-      "media": -3.079443031756213,
-      "sigma": 8116.850611446012,
-      "rho_lag1": 0.2653544954315053
+      "media": -3.0794468498325136,
+      "sigma": 8116.85060676222,
+      "rho_lag1": 0.26535449271229866
     }
   },
   "entropia": {
-    "h_orig_nats": 10.313015078280245,
-    "h_mod_nats": 10.313072950699418,
-    "h_orig_bits": 14.878535710048014,
-    "h_mod_bits": 14.87861920230016
+    "h_orig_nats": 10.313015078280243,
+    "h_mod_nats": 10.313057614661977,
+    "h_orig_bits": 14.878535710048011,
+    "h_mod_bits": 14.878597077074996
   },
   "mse_covarianza": {
-    "mse": 0.00014608119011983668,
-    "psnr_db": 128.66279063892375,
+    "mse": 0.00014822885803883237,
+    "psnr_db": 128.59940599483832,
     "var_orig": 65883266.411233395,
-    "var_mod": 65883266.468815856,
-    "cov_orig_mod": 65883266.43995255,
-    "r_audio": 0.9999999999989061
+    "var_mod": 65883266.39278084,
+    "cov_orig_mod": 65883266.401934184,
+    "r_audio": 0.999999999998893
   },
   "npcr_uaci": {
-    "npcr_total": 0.014608119011983667,
-    "uaci_total": 2.229056078734061e-07,
+    "npcr_total": 0.014822885803883237,
+    "uaci_total": 2.2618273905368488e-07,
     "npcr_cuartiles": [
-      0.020172169787307695,
-      0.009131565818544652,
-      0.009974724334891109,
-      0.019154016107191217
+      0.017515425028253765,
+      0.011088329922518505,
+      0.010292897359927508,
+      0.020394890904833176
     ]
   },
   "fallo_perturbacion": {
     "delta_x0": 1e-15,
-    "bits_dif": 3700,
+    "bits_dif": 3692,
     "total_bits": 7424,
-    "porcentaje_bits_dif": 49.838362068965516
+    "porcentaje_bits_dif": 49.730603448275865,
+    "texto_recuperado_clave_correcta": "Oh dulce niña pálida, que como un montón de oro\nde tu inocencia cándida conservas el tesoro;\na quien los más audaces, en locos devaneos\njamás se han acercado con carnales deseos;\ntú, que adivinar dejas inocencias extrañas\nen tus ojos velados por sedosas pestañas,\ny en cuyos dulces labios -abiertos sólo al rezo-\njamás se habrá posado ni la sombra de un beso...\nDime quedo, en secreto, al oído, muy paso,\ncon esa voz que tiene suavidades de raso:\nsi entrevieras en sueños a aquél con quien tú sueñas\ntras las horas de baile rápidas y risueñas,\ny sintieras sus labios anidarse en tu boca\ny recorrer tu cuerpo, y en su lascivia loca\nbesar todos sus pliegues de tibio aroma llenos\ny las rígidas puntas rosadas de tus senos;\nsi en los locos, ardientes y profundos abrazos\nagonizar soñaras de placer en sus brazos,\npor aquel de quien eres todas las alegrías,\n¡oh dulce niña pálida!, di, ¿te resistirías?...",
+    "texto_recuperado_clave_perturbada": "ǉ�ϣ���7{X��Л�(�!�\u001eI�f�6�;���>\u0006��ky}��u�Aԓ;���M,n\r�\n\u0019�_�/\u0019����.��QfC�0\b#_��>����k�?�� ѳ\u0014]��G:FT�\u0007\u0014t&]��WW�@d��\u0016�]\u001f\u000e4�\u0001�����W\u000f?m\r|*��\u0000\t��B��~\u001bg޲���\u0003`��,b w\u0001��i¸'M^�7,1$R��\u000b�D�\u0001�`_�T\u0000ۏ�ɦU��{�?�����z���\u000b��o\u0012�L)\\AU�L�`b��\tT-��=�+\u000f\u00181��B��r\u0018y\u001a\u0003����,I�\rU\u000fJ+;7�������iȱ(\u0001�l佣$Z�a*Î�AW�\u000b;U�0\u0005�\u001fLE�3\u0019\f\u0019\u0014CϹ��P_\u0004�-�\u0010�\u001dLn\u00030�� �\u0005�n'Ǟ\u0004�ǌ���w\u0011<2��a�\u0004�&��V?���v�&Y'���\u0016�\u0010ʿI��\u0002v�Ȗg�\u0015\u0003�B���W��*�v���\u0015!F\u0016}��j�b\u0011�Nғ\u0010�)sX\\�\u0016/\u001c3���w:��5[�?\nt3�/�\u0006��Ϲ�u�1�쎓��=�G�ʜ��Ł\u0002�΋J��\b��#k�ʔ'����E�:\u0000\u001c��V鵣 x~\u001c�u��L\u0016�\\{�E��ZNά������5�җ��=�\n\u0003\u0018?+�\f΍\fo�>�\u000bSp���E�N�Rp���k�ۢZ\u00032\u0015�t����(\t輪A�c�T�w̔�2;��M�{n\u0018\u0006�?`A��\u0013\u0019=���r\u001fd�\r\u0004�9v��B\u001f��l\u0004\f+�D��=��\"\u0014;j�U\u0007�+a\u001c�(Z/��F\r̯���`QR'5\u0012\u000f�{\u0006Q�D���t��\u0000�\u0005�A3I��\u000e���\"j~R5�t[\u001a�{A���3#��D\u001f�Ka�r��d�K�*^[dT\u001d�h;N���M�d�=�ȷ�t,�C�:ˉ(\u0012\u0004-�S���v��ݑ�����\u0010\u0013@K�r�a�y�;\u001a��\u0012�4��&�L�\u000fU��QZd�\u001e\r�W\u0003d>R\u000b��\u0003�)�5�6���.�%O\u0006M���Ar�lI�f�d=�\u0001�پ��$�ŜM��ȘP\u0007\"�e�8������8��[a�\u001d��F��-?<�r�\u0007�^o�k���\u0017cb��gh�m��(3+d",
+    "archivo": "texto_recuperado_perturbacion_keystream.txt"
   },
   "sensibilidad_clave": {
     "delta_x0": 1e-15,
-    "bits_dif_audio": 3670,
-    "pct_bits_audio": 49.43426724137931,
-    "bits_dif_keystream": 3700,
-    "pct_bits_keystream": 49.838362068965516,
+    "bits_dif_audio": 3764,
+    "pct_bits_audio": 50.70043103448276,
+    "bits_dif_keystream": 3692,
+    "pct_bits_keystream": 49.730603448275865,
     "similitud_texto_correcto": 100.0,
-    "similitud_texto_perturbado": 0.11098779134295228,
-    "texto_correcto_preview": "Oh dulce niña pálida, que como un montón de oro\nde tu inocencia cándida conservas el tesoro;\na quien los más audaces, en",
-    "texto_perturbado_preview": "F�V�\u0003b(�\u0004\u0015Q�2����b<�;Q��4���h�$��M9�Q��\u001cjG7�Ph�F9�.�\r�&-��)@��#eߢ\tc�#:�P\u0014�K�Gr\f\u001b p\u0002��5\u001bӱM�\n���t��L\u001c\u000b���h}�E\f*�H�(���|�`"
+    "similitud_texto_perturbado": 0.4439511653718091,
+    "texto_recuperado_correcto": "Oh dulce niña pálida, que como un montón de oro\nde tu inocencia cándida conservas el tesoro;\na quien los más audaces, en locos devaneos\njamás se han acercado con carnales deseos;\ntú, que adivinar dejas inocencias extrañas\nen tus ojos velados por sedosas pestañas,\ny en cuyos dulces labios -abiertos sólo al rezo-\njamás se habrá posado ni la sombra de un beso...\nDime quedo, en secreto, al oído, muy paso,\ncon esa voz que tiene suavidades de raso:\nsi entrevieras en sueños a aquél con quien tú sueñas\ntras las horas de baile rápidas y risueñas,\ny sintieras sus labios anidarse en tu boca\ny recorrer tu cuerpo, y en su lascivia loca\nbesar todos sus pliegues de tibio aroma llenos\ny las rígidas puntas rosadas de tus senos;\nsi en los locos, ardientes y profundos abrazos\nagonizar soñaras de placer en sus brazos,\npor aquel de quien eres todas las alegrías,\n¡oh dulce niña pálida!, di, ¿te resistirías?...",
+    "texto_recuperado_perturbado": "�)����N��f�(��E»\u0014]~��Gh~\u001d��:u8sc\u001az��-��\r\u0013\u0001h���qJ\bO���X\\�@oD\u00167�CBl��\u001f���\u001b���OC)/%�6\u001d~�D���KIS8i�\u0001�K�{\f\b�)�\u0002l�~���\u0019J�Q٨���Kg4P���Ps�\u00123�@�aT�<�\t>KQ�[�\u0013��\u001d��4��{4�R�&'�(��\u0017�i�&o�mm�u\u0011�\u0002�Y$�F:�+6\u0007\u0000�=��\u0013�@�\b[\"\u000b�\t?��\u0019(�u�;tS�>/�(K��S\u000f5a�\u0006V���c^7��8J�+�'�$3�es�o[���5\u001a����\u0012��`\u0010���FH�$�y<u��B\u000f!S>�)���g�\u001bos��dQ4S�d�\u00164˹�^���]�\u0016�Vy��\u001ev�t=�\u0015�\u001e+�q7B\u0001���\u0003#��l�^K\r5 �9�2���)�I��UY�\u0001M6�@�g1�\u000fe�dL6)��l\n�.t�\u0002\u0003\u0015�\u001b���YG��\u0005\"���_�p7�\u000e+��0\f@!�\u000buԺ\u000e�Y��\f�NY\nO��/�X1:�2IR� �q\u001e��'������/\u0013��N���x�\u0000�n\f����\u0011�*�]ɝ�K\n>�1\u0017\u000bA��x�\u00163_Q��g�P��������W��C�8/\u0018\u0006K�$8�\u0016V��C'��s\u0006b�� |�\u0015q����1[�n�\tC��\u001c_��62\u0012���G���\u0002#Z�Fp1,5\u0018�\u0001P��W�)�\r�;\u0012\f\u0006���vG^Y�:U���\u0017bI_t*�F�{�^<�$gA\u0010�Gy�U�st��*l��7�N�M�O����v\u00158|�L9\u000f��SAE��{[�J�fxĄ\u001eڶ�YpW�\u0010\u0001s+A\u00150��\u0004�rA�\\,Hy]�?s�������<�P��g$�2�\t�X\u000f�B���\u0000X���O^i�#K�w�V/�o\u001c]?X�*��➄�K��ʔΡ��8��\u0007��\u0007\r\u0003\\�{�\u000b�@#\u0005;���swr>f�w=}@�N�\r�*����2_R��N~�e,���[ɵ��벪Z����&a����y|�ʊ'43�ޫ\u001f\u001b\u0006�\u0016}�@�7�X۔�>�(ޠ�e� �L�e0y��\u00154�(��������0���v��Qu\u0014",
+    "clave_correcta": {
+      "x0": 0.123456,
+      "r": 3.999952,
+      "n_warmup": 6173
+    },
+    "clave_perturbada": {
+      "x0": 0.123456000000001,
+      "r": 3.999952,
+      "n_warmup": 6173
+    },
+    "archivos": [
+      "texto_recuperado_clave_correcta.txt",
+      "texto_recuperado_clave_perturbada.txt"
+    ]
   },
   "comparacion_estegoaudios": {
     "delta_x0": 1e-15,
-    "muestras_distintas": 7343,
+    "muestras_distintas": 7381,
     "total_muestras": 25143552,
-    "mse_entre_estegoaudios": 0.00029204306535528474,
-    "psnr_entre_estegoaudios": 125.65426464029856,
-    "posiciones_lsb_distintas": 14840
+    "mse_entre_estegoaudios": 0.00029355438722420763,
+    "psnr_entre_estegoaudios": 125.63184786910453,
+    "posiciones_lsb_distintas": 14848
   },
   "robustez": {
     "sal_pimienta_5": {
-      "ber": 0.022090517241379337,
-      "nc": 0.9558189655172413,
-      "mse": 56948236.565745324,
-      "psnr_db": 12.753930818335705
+      "ber": 0.024515086206896575,
+      "nc": 0.9509698275862069,
+      "mse": 56948236.581487216,
+      "psnr_db": 12.753930817135208
     },
     "oclusion_5": {
-      "ber": 0.03933189655172409,
-      "nc": 0.9213362068965517,
-      "mse": 5686732.399384145,
-      "psnr_db": 22.760105701496055
+      "ber": 0.018049568965517238,
+      "nc": 0.9639008620689655,
+      "mse": 3467420.572574949,
+      "psnr_db": 24.908668407103875
     },
     "sal_pimienta_10": {
-      "ber": 0.05037715517241381,
-      "nc": 0.8992456896551724,
-      "mse": 114037446.75656602,
-      "psnr_db": 9.738258771811182
+      "ber": 0.05293642241379315,
+      "nc": 0.8941271551724138,
+      "mse": 114037446.8405922,
+      "psnr_db": 9.73825876861117
     },
     "oclusion_10": {
       "ber": 0.036233836206896575,
       "nc": 0.9275323275862069,
-      "mse": 8263879.602623965,
-      "psnr_db": 21.136893810100887
+      "mse": 6881278.574040454,
+      "psnr_db": 21.932042225855795
     },
     "sal_pimienta_25": {
       "ber": 0.12297952586206895,
       "nc": 0.7540409482758621,
-      "mse": 284890152.8760928,
-      "psnr_db": 5.761959240143787
+      "mse": 284890152.78078574,
+      "psnr_db": 5.761959241596674
     },
     "oclusion_25": {
-      "ber": 0.10344827586206895,
-      "nc": 0.7931034482758621,
-      "mse": 19944889.12654131,
-      "psnr_db": 17.310417358699354
+      "ber": 0.09092133620689657,
+      "nc": 0.8181573275862069,
+      "mse": 18407262.885873523,
+      "psnr_db": 17.658841474858722
     },
-    "gaussiano_snr20dB": {
-      "ber": 0.505926724137931,
-      "nc": -0.011853448275862068,
-      "mse": 658911.2772697748,
-      "psnr_db": 32.120464217200436
+    "gaussiano_snr100dB": {
+      "ber": 0.0,
+      "nc": 1.0,
+      "mse": 0.0,
+      "psnr_db": null
     },
-    "gaussiano_snr10dB": {
-      "ber": 0.4993265086206896,
-      "nc": 0.0013469827586206897,
-      "mse": 6586860.132916543,
-      "psnr_db": 22.121949206647873
+    "gaussiano_snr90dB": {
+      "ber": 0.05010775862068961,
+      "nc": 0.8997844827586207,
+      "mse": 0.0514508451311891,
+      "psnr_db": 103.19480849408514
     },
-    "gaussiano_snr5dB": {
-      "ber": 0.4971713362068966,
-      "nc": 0.005657327586206897,
-      "mse": 20806113.77290472,
-      "psnr_db": 17.12682393296957
+    "gaussiano_snr80dB": {
+      "ber": 0.4738685344827587,
+      "nc": 0.052262931034482756,
+      "mse": 0.7424174595538451,
+      "psnr_db": 91.60225185577536
     }
   },
   "seguridad_clave": {
     "b_x0": 52,
-    "b_r": 48,
-    "b_total": 100,
-    "espacio_claves": "2^100",
-    "anios_R1e9": 40169423537538.64,
-    "anios_R1e12": 40169423537.53864
+    "b_r": 52,
+    "bits_n_warmup": 13.273212809854334,
+    "n_warmup_valores": 9900,
+    "b_total": 117.27321280985433,
+    "espacio_claves_exacto": 2.0079585507615154e+35,
+    "espacio_claves_formula": "2^104 · 9900",
+    "R_conservador": 1000000000.0,
+    "R_agresivo": 1000000000000.0,
+    "anios_R1e9": 6.362836688346121e+18,
+    "anios_R1e12": 6362836688346120.0,
+    "fuentes_R": {
+      "1e9": "CPU/GPU modesto (cota conservadora de fuerza bruta)",
+      "1e12": "clúster/ASIC agresivo"
+    }
   }
 }

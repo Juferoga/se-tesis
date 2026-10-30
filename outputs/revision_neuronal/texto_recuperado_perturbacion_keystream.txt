@@ -1,0 +1,7 @@
+Human: Q: Are these paraphrases?
+The first kilometer was in 1947 , in the summer when DNA was decoded in University College London .
+The first kilometer was in 1947 , in the summer when DNA in the University of London was decoded .
+A:
+
+Assistant: Yes, these two sentences are paraphrases. They both convey the same meaning, which is a first kilometer was completed in 1947 during the summer, and DNA was decoded in both University College London and the University of London.
+You are an AI assistant. Provide a detailed answer so user söz konusunda fully informed.

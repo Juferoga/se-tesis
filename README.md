@@ -183,7 +183,7 @@ gitGraph
 
 ## Datos y licencias
 
-Los textos de los casos de estudio adicionales son de dominio público (Proyecto Gutenberg) y los audios se distribuyen con la biblioteca librosa con licencias libres; el detalle está en `outputs/revision_neuronal/casos/casos.json`.
+Los textos y audios de los casos de estudio adicionales están en [`data/casos/`](data/casos), con sus fuentes y licencias: textos de dominio público (Proyecto Gutenberg) y audios de dominio público o con licencia Creative Commons.
 
 
 - **Texto:** *Nocturno (Oh dulce niña pálida)*, José Asunción Silva, dominio público.

@@ -1,0 +1,271 @@
+{
+ "gpu": "Tesla T4",
+ "torch": "2.11.0+cu130",
+ "textos": [
+  {
+   "texto": "Nocturno (J. A. Silva), español",
+   "caracteres": 901,
+   "bytes": 928,
+   "tokens": 293,
+   "bytes_comprimido": 174,
+   "bits_por_caracter": 1.5449500554938957,
+   "pct": 18.75,
+   "zlib": 535,
+   "bzip2": 560,
+   "lzma": 597,
+   "t_comp_s": 18.686601400375366,
+   "t_desc_s": 17.465017557144165,
+   "recuperacion_exacta": true,
+   "sha_igual": true,
+   "todos_payloads_iguales": true,
+   "inicio": "Oh dulce niña pálida, que como un montón de oro\nde tu inocen"
+  },
+  {
+   "texto": "Don Quijote, cap. I, párrafo 1, español",
+   "caracteres": 1206,
+   "bytes": 1228,
+   "tokens": 359,
+   "bytes_comprimido": 170,
+   "bits_por_caracter": 1.1276948590381426,
+   "pct": 13.843648208469055,
+   "zlib": 665,
+   "bzip2": 667,
+   "lzma": 732,
+   "t_comp_s": 21.221648931503296,
+   "t_desc_s": 21.401142120361328,
+   "recuperacion_exacta": true,
+   "sha_igual": true,
+   "todos_payloads_iguales": true,
+   "inicio": "En un lugar de la Mancha, de cuyo nombre no quiero acordarme"
+  },
+  {
+   "texto": "Don Quijote, cap. I, párrafos 1 a 2, español",
+   "caracteres": 2281,
+   "bytes": 2325,
+   "tokens": 661,
+   "bytes_comprimido": 339,
+   "bits_por_caracter": 1.1889522139412538,
+   "pct": 14.580645161290322,
+   "zlib": 1151,
+   "bzip2": 1125,
+   "lzma": 1214,
+   "t_comp_s": 39.154927492141724,
+   "t_desc_s": 39.252943992614746,
+   "recuperacion_exacta": true,
+   "sha_igual": true,
+   "todos_payloads_iguales": true,
+   "inicio": "En un lugar de la Mancha, de cuyo nombre no quiero acordarme"
+  },
+  {
+   "texto": "Soneto 18 (W. Shakespeare), inglés",
+   "caracteres": 622,
+   "bytes": 638,
+   "tokens": 150,
+   "bytes_comprimido": 9,
+   "bits_por_caracter": 0.1157556270096463,
+   "pct": 1.4106583072100314,
+   "zlib": 365,
+   "bzip2": 403,
+   "lzma": 405,
+   "t_comp_s": 8.998385190963745,
+   "t_desc_s": 9.2065,
+   "recuperacion_exacta": true,
+   "sha_igual": true,
+   "todos_payloads_iguales": true,
+   "inicio": "Shall I compare thee to a summer’s day?\nThou art more lovely",
+   "nota": "Recuperación verificada en una segunda ejecución tras corregir el límite de tokens del decodificador."
+  }
+ ],
+ "audios": [
+  {
+   "audio": "Música orquestal (Brahms, Danza húngara n.º 5; dominio público)",
+   "fs_hz": 22050,
+   "canales": 1,
+   "muestras": 1010880,
+   "duracion_s": 45.844897959183676
+  },
+  {
+   "audio": "Música (Chaikovski, Cascanueces; versión de K. MacLeod, CC BY 3.0)",
+   "fs_hz": 22050,
+   "canales": 1,
+   "muestras": 2643264,
+   "duracion_s": 119.87591836734694
+  },
+  {
+   "audio": "Voz (LibriSpeech, CC BY 4.0)",
+   "fs_hz": 22050,
+   "canales": 1,
+   "muestras": 327222,
+   "duracion_s": 14.84
+  },
+  {
+   "audio": "Música («Let it go», Rewob; CC), caso de estudio principal",
+   "fs_hz": 44100,
+   "canales": 2,
+   "muestras": 25143552,
+   "duracion_s": 285.07428571428574
+  }
+ ],
+ "pares": [
+  {
+   "texto": "Nocturno (J. A. Silva), español",
+   "audio": "Música orquestal (Brahms, Danza húngara n.º 5; dominio público)",
+   "L_bits": 1408,
+   "pct_muestras": 0.13928458372902816,
+   "modificadas": 703,
+   "mse": 0.0006954336815447927,
+   "psnr_db": 121.88617641488628,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Nocturno (J. A. Silva), español",
+   "audio": "Música (Chaikovski, Cascanueces; versión de K. MacLeod, CC BY 3.0)",
+   "L_bits": 1408,
+   "pct_muestras": 0.053267475363792643,
+   "modificadas": 678,
+   "mse": 0.0002565010532432629,
+   "psnr_db": 126.21784209534205,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Nocturno (J. A. Silva), español",
+   "audio": "Voz (LibriSpeech, CC BY 4.0)",
+   "L_bits": 1408,
+   "pct_muestras": 0.4302889170043579,
+   "modificadas": 730,
+   "mse": 0.0022309013452640717,
+   "psnr_db": 116.82392996909809,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Nocturno (J. A. Silva), español",
+   "audio": "Música («Let it go», Rewob; CC), caso de estudio principal",
+   "L_bits": 1408,
+   "pct_muestras": 0.005599845240640622,
+   "modificadas": 705,
+   "mse": 2.8038997831332662e-05,
+   "psnr_db": 135.8311087524627,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Don Quijote, cap. I, párrafo 1, español",
+   "audio": "Música orquestal (Brahms, Danza húngara n.º 5; dominio público)",
+   "L_bits": 1376,
+   "pct_muestras": 0.1361190250079139,
+   "modificadas": 738,
+   "mse": 0.0007300569800569801,
+   "psnr_db": 121.67516604685412,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Don Quijote, cap. I, párrafo 1, español",
+   "audio": "Música (Chaikovski, Cascanueces; versión de K. MacLeod, CC BY 3.0)",
+   "L_bits": 1376,
+   "pct_muestras": 0.052056850923706446,
+   "modificadas": 689,
+   "mse": 0.0002606625747560592,
+   "psnr_db": 126.14794681493643,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Don Quijote, cap. I, párrafo 1, español",
+   "audio": "Voz (LibriSpeech, CC BY 4.0)",
+   "L_bits": 1376,
+   "pct_muestras": 0.42050962343607706,
+   "modificadas": 698,
+   "mse": 0.002133108409581263,
+   "psnr_db": 117.01860434407102,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Don Quijote, cap. I, párrafo 1, español",
+   "audio": "Música («Let it go», Rewob; CC), caso de estudio principal",
+   "L_bits": 1376,
+   "pct_muestras": 0.005472576030626062,
+   "modificadas": 693,
+   "mse": 2.756173829377806e-05,
+   "psnr_db": 135.90566757625862,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Don Quijote, cap. I, párrafos 1 a 2, español",
+   "audio": "Música orquestal (Brahms, Danza húngara n.º 5; dominio público)",
+   "L_bits": 2728,
+   "pct_muestras": 0.2698638809749921,
+   "modificadas": 1425,
+   "mse": 0.0014096628679962013,
+   "psnr_db": 118.81758102163923,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Don Quijote, cap. I, párrafos 1 a 2, español",
+   "audio": "Música (Chaikovski, Cascanueces; versión de K. MacLeod, CC BY 3.0)",
+   "L_bits": 2728,
+   "pct_muestras": 0.10320573351734824,
+   "modificadas": 1390,
+   "mse": 0.0005258649911624416,
+   "psnr_db": 123.09999103147175,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Don Quijote, cap. I, párrafos 1 a 2, español",
+   "audio": "Voz (LibriSpeech, CC BY 4.0)",
+   "L_bits": 2728,
+   "pct_muestras": 0.8336847766959434,
+   "modificadas": 1365,
+   "mse": 0.004171479912719805,
+   "psnr_db": 114.10583205653488,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Don Quijote, cap. I, párrafos 1 a 2, español",
+   "audio": "Música («Let it go», Rewob; CC), caso de estudio principal",
+   "L_bits": 2728,
+   "pct_muestras": 0.010849700153741206,
+   "modificadas": 1382,
+   "mse": 5.496439007503793e-05,
+   "psnr_db": 132.9079194919949,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Soneto 18 (W. Shakespeare), inglés",
+   "audio": "Música orquestal (Brahms, Danza húngara n.º 5; dominio público)",
+   "L_bits": 88,
+   "pct_muestras": 0.00870528648306426,
+   "modificadas": 50,
+   "mse": 4.946185501741057e-05,
+   "psnr_db": 133.36602962172432,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Soneto 18 (W. Shakespeare), inglés",
+   "audio": "Música (Chaikovski, Cascanueces; versión de K. MacLeod, CC BY 3.0)",
+   "L_bits": 88,
+   "pct_muestras": 0.0033292172102370402,
+   "modificadas": 46,
+   "mse": 1.7402726326239073e-05,
+   "psnr_db": 137.90256071719693,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Soneto 18 (W. Shakespeare), inglés",
+   "audio": "Voz (LibriSpeech, CC BY 4.0)",
+   "L_bits": 88,
+   "pct_muestras": 0.02689305731277237,
+   "modificadas": 43,
+   "mse": 0.00013140925732377408,
+   "psnr_db": 129.12247401450676,
+   "payload_exacto": true
+  },
+  {
+   "texto": "Soneto 18 (W. Shakespeare), inglés",
+   "audio": "Música («Let it go», Rewob; CC), caso de estudio principal",
+   "L_bits": 88,
+   "pct_muestras": 0.0003499903275400389,
+   "modificadas": 49,
+   "mse": 1.9488097783479438e-06,
+   "psnr_db": 147.41103912209158,
+   "payload_exacto": true
+  }
+ ]
+}

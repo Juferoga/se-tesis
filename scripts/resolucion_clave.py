@@ -12,7 +12,7 @@ import numpy as np
 
 from src.utils.caos import clave_valida, derivar_semillas, generar_llave, generar_posiciones_caoticas
 
-SALIDA = Path(os.environ.get("SALIDA_DIR", "outputs/revision_tecnologicas"))
+SALIDA = Path(os.environ.get("SALIDA_DIR", "outputs/revision_neuronal"))
 L_BYTES, M, NPOS = 175, 25143552, 256
 
 

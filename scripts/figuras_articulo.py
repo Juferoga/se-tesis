@@ -6,7 +6,7 @@ Reutiliza la carga de datos, los ataques y la extracción de
 valores de ``analisis_completo.json``.
 
 Uso:
-    SALIDA_DIR=outputs/revision_tecnologicas python -m scripts.figuras_articulo
+    SALIDA_DIR=outputs/revision_neuronal python -m scripts.figuras_articulo
 """
 
 from __future__ import annotations

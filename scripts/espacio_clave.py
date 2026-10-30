@@ -9,7 +9,7 @@
    (ulp) en x0 o r, o de una unidad en N, altera el flujo de clave y las posiciones.
 
 Uso:
-    SALIDA_DIR=outputs/revision_tecnologicas python -m scripts.espacio_clave
+    SALIDA_DIR=outputs/revision_neuronal python -m scripts.espacio_clave
 """
 
 import json
@@ -23,7 +23,7 @@ from src.utils.caos import clave_valida, derivar_parametros, derivar_semillas, e
 from src.utils.chaos_mod_enum import ChaosMod as C
 
 RAIZ = Path(__file__).resolve().parent.parent
-SALIDA = Path(os.environ.get("SALIDA_DIR", RAIZ / "outputs" / "revision_tecnologicas"))
+SALIDA = Path(os.environ.get("SALIDA_DIR", RAIZ / "outputs" / "revision_neuronal"))
 SEG_ANIO = 365.25 * 24 * 3600
 X0_MIN, X0_MAX = 1e-3, 1 - 1e-3
 R_MIN, R_MAX = 3.99, 4.0

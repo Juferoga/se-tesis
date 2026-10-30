@@ -5,7 +5,7 @@ Flujo:
   1. Lee data/data_to_hide.txt (texto literario)
   2. Encripta con XOR caótico (mismos parámetros de ChaosMod)
   3. Inserta en audio_test.wav con LSB caótico
-  4. Guarda audio_test_modificado.wav + intermedios en outputs/entrega_profesoras/
+  4. Guarda audio_test_modificado.wav + intermedios en outputs/revision_neuronal/
 
 Uso:
     python -m scripts.regenerar_con_texto_nuevo
@@ -34,7 +34,7 @@ from src.esteganografiado.desesteganografiar import extraer_lsb_caotico
 
 RAIZ = Path(__file__).resolve().parent.parent
 DATA_DIR = RAIZ / "data"
-SALIDA = Path(os.environ.get("SALIDA_DIR", RAIZ / "outputs" / "entrega_profesoras"))
+SALIDA = Path(os.environ.get("SALIDA_DIR", RAIZ / "outputs" / "revision_neuronal"))
 SALIDA.mkdir(parents=True, exist_ok=True)
 
 X0 = ChaosMod.X0.value
@@ -123,7 +123,7 @@ def main() -> None:
     else:
         texto_desencriptado = None
 
-    # 7. Exportar intermedios a outputs/entrega_profesoras/
+    # 7. Exportar intermedios a outputs/revision_neuronal/
     (SALIDA / "texto_comprimido.txt").write_text(texto_comprimido, encoding="utf-8")
     (SALIDA / "texto_extraido.txt").write_text(texto_desencriptado or "", encoding="utf-8")
     (SALIDA / "texto_descomprimido.txt").write_text(texto_desencriptado or "", encoding="utf-8")

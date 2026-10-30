@@ -42,7 +42,7 @@ from src.esteganografiado.desesteganografiar import extraer_lsb_caotico
 # ============================================================
 
 RAIZ = Path(__file__).resolve().parent.parent
-SALIDA = Path(os.environ.get("SALIDA_DIR", RAIZ / "outputs" / "entrega_profesoras"))
+SALIDA = Path(os.environ.get("SALIDA_DIR", RAIZ / "outputs" / "revision_neuronal"))
 SALIDA.mkdir(parents=True, exist_ok=True)
 
 # Parámetros del sistema caótico (clave maestra)

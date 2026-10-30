@@ -1,0 +1,281 @@
+{
+ "payload_bytes": 175,
+ "configuraciones": [
+  {
+   "nsym": 0,
+   "repeticion": 1,
+   "bytes_codificados": 175,
+   "L_bits": 1400,
+   "pct_muestras": 0.005568027938136983,
+   "modificadas": 695,
+   "mse": 2.7641281550037162e-05,
+   "psnr_db": 135.89315187647557,
+   "ataques": [
+    {
+     "ataque": "Sin ataque",
+     "nivel": "—",
+     "ber_bruta_pct": 0.0,
+     "ber_tras_mayoria_pct": 0.0,
+     "bytes_erroneos": 0,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Sal y pimienta",
+     "nivel": "5 %",
+     "ber_bruta_pct": 2.142857142857143,
+     "ber_tras_mayoria_pct": 2.142857142857143,
+     "bytes_erroneos": 28,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Sal y pimienta",
+     "nivel": "10 %",
+     "ber_bruta_pct": 5.357142857142857,
+     "ber_tras_mayoria_pct": 5.357142857142857,
+     "bytes_erroneos": 61,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Sal y pimienta",
+     "nivel": "25 %",
+     "ber_bruta_pct": 13.071428571428573,
+     "ber_tras_mayoria_pct": 13.071428571428573,
+     "bytes_erroneos": 120,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Oclusión",
+     "nivel": "5 %",
+     "ber_bruta_pct": 1.7857142857142856,
+     "ber_tras_mayoria_pct": 1.7857142857142856,
+     "bytes_erroneos": 24,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Oclusión",
+     "nivel": "10 %",
+     "ber_bruta_pct": 3.785714285714286,
+     "ber_tras_mayoria_pct": 3.785714285714286,
+     "bytes_erroneos": 42,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Oclusión",
+     "nivel": "25 %",
+     "ber_bruta_pct": 7.928571428571428,
+     "ber_tras_mayoria_pct": 7.928571428571428,
+     "bytes_erroneos": 83,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Gaussiano",
+     "nivel": "SNR = 100 dB",
+     "ber_bruta_pct": 0.0,
+     "ber_tras_mayoria_pct": 0.0,
+     "bytes_erroneos": 0,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Gaussiano",
+     "nivel": "SNR = 90 dB",
+     "ber_bruta_pct": 5.857142857142858,
+     "ber_tras_mayoria_pct": 5.857142857142858,
+     "bytes_erroneos": 64,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Gaussiano",
+     "nivel": "SNR = 80 dB",
+     "ber_bruta_pct": 47.5,
+     "ber_tras_mayoria_pct": 47.5,
+     "bytes_erroneos": 174,
+     "recuperacion_exacta": false
+    }
+   ]
+  },
+  {
+   "nsym": 80,
+   "repeticion": 1,
+   "bytes_codificados": 255,
+   "L_bits": 2040,
+   "pct_muestras": 0.008113412138428174,
+   "modificadas": 1032,
+   "mse": 4.104432022969547e-05,
+   "psnr_db": 134.1762029494648,
+   "ataques": [
+    {
+     "ataque": "Sin ataque",
+     "nivel": "—",
+     "ber_bruta_pct": 0.0,
+     "ber_tras_mayoria_pct": 0.0,
+     "bytes_erroneos": 0,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Sal y pimienta",
+     "nivel": "5 %",
+     "ber_bruta_pct": 2.107843137254902,
+     "ber_tras_mayoria_pct": 2.107843137254902,
+     "bytes_erroneos": 39,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Sal y pimienta",
+     "nivel": "10 %",
+     "ber_bruta_pct": 5.147058823529411,
+     "ber_tras_mayoria_pct": 5.147058823529411,
+     "bytes_erroneos": 86,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Sal y pimienta",
+     "nivel": "25 %",
+     "ber_bruta_pct": 13.333333333333334,
+     "ber_tras_mayoria_pct": 13.333333333333334,
+     "bytes_erroneos": 177,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Oclusión",
+     "nivel": "5 %",
+     "ber_bruta_pct": 1.715686274509804,
+     "ber_tras_mayoria_pct": 1.715686274509804,
+     "bytes_erroneos": 34,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Oclusión",
+     "nivel": "10 %",
+     "ber_bruta_pct": 3.5294117647058822,
+     "ber_tras_mayoria_pct": 3.5294117647058822,
+     "bytes_erroneos": 59,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Oclusión",
+     "nivel": "25 %",
+     "ber_bruta_pct": 7.8921568627450975,
+     "ber_tras_mayoria_pct": 7.8921568627450975,
+     "bytes_erroneos": 122,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Gaussiano",
+     "nivel": "SNR = 100 dB",
+     "ber_bruta_pct": 0.0,
+     "ber_tras_mayoria_pct": 0.0,
+     "bytes_erroneos": 0,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Gaussiano",
+     "nivel": "SNR = 90 dB",
+     "ber_bruta_pct": 5.245098039215686,
+     "ber_tras_mayoria_pct": 5.245098039215686,
+     "bytes_erroneos": 85,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Gaussiano",
+     "nivel": "SNR = 80 dB",
+     "ber_bruta_pct": 47.009803921568626,
+     "ber_tras_mayoria_pct": 47.009803921568626,
+     "bytes_erroneos": 253,
+     "recuperacion_exacta": false
+    }
+   ]
+  },
+  {
+   "nsym": 80,
+   "repeticion": 5,
+   "bytes_codificados": 255,
+   "L_bits": 10200,
+   "pct_muestras": 0.040567060692140874,
+   "modificadas": 5033,
+   "mse": 0.00020017060437602452,
+   "psnr_db": 127.29473061840531,
+   "ataques": [
+    {
+     "ataque": "Sin ataque",
+     "nivel": "—",
+     "ber_bruta_pct": 0.0,
+     "ber_tras_mayoria_pct": 0.0,
+     "bytes_erroneos": 0,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Sal y pimienta",
+     "nivel": "5 %",
+     "ber_bruta_pct": 2.803921568627451,
+     "ber_tras_mayoria_pct": 0.0,
+     "bytes_erroneos": 0,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Sal y pimienta",
+     "nivel": "10 %",
+     "ber_bruta_pct": 5.186274509803922,
+     "ber_tras_mayoria_pct": 0.049019607843137254,
+     "bytes_erroneos": 1,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Sal y pimienta",
+     "nivel": "25 %",
+     "ber_bruta_pct": 12.77450980392157,
+     "ber_tras_mayoria_pct": 2.0588235294117645,
+     "bytes_erroneos": 39,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Oclusión",
+     "nivel": "5 %",
+     "ber_bruta_pct": 1.8627450980392157,
+     "ber_tras_mayoria_pct": 0.049019607843137254,
+     "bytes_erroneos": 1,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Oclusión",
+     "nivel": "10 %",
+     "ber_bruta_pct": 3.392156862745098,
+     "ber_tras_mayoria_pct": 0.24509803921568626,
+     "bytes_erroneos": 5,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Oclusión",
+     "nivel": "25 %",
+     "ber_bruta_pct": 8.470588235294118,
+     "ber_tras_mayoria_pct": 0.4411764705882353,
+     "bytes_erroneos": 9,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Gaussiano",
+     "nivel": "SNR = 100 dB",
+     "ber_bruta_pct": 0.0,
+     "ber_tras_mayoria_pct": 0.0,
+     "bytes_erroneos": 0,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Gaussiano",
+     "nivel": "SNR = 90 dB",
+     "ber_bruta_pct": 4.754901960784314,
+     "ber_tras_mayoria_pct": 0.049019607843137254,
+     "bytes_erroneos": 1,
+     "recuperacion_exacta": true
+    },
+    {
+     "ataque": "Gaussiano",
+     "nivel": "SNR = 80 dB",
+     "ber_bruta_pct": 47.38235294117647,
+     "ber_tras_mayoria_pct": 44.90196078431373,
+     "bytes_erroneos": 250,
+     "recuperacion_exacta": false
+    }
+   ]
+  }
+ ]
+}

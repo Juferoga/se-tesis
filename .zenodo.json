@@ -1,0 +1,13 @@
+{
+  "title": "Modelo criptoesteganográfico sobre archivos de audio basado en redes neuronales y atractores caóticos: código, datos y resultados",
+  "upload_type": "software",
+  "version": "v1.0-tecnologicas",
+  "description": "<p>Código, datos y resultados del modelo criptoesteganográfico presentado en el artículo «Modelo criptoesteganográfico, sobre archivos de audio, basado en redes neuronales y atractores caóticos» (Revista TecnoLógicas, en revisión). El modelo comprime el texto sin pérdida con una red neuronal (modelo de lenguaje Qwen2.5-1.5B) y codificación aritmética, lo cifra con un flujo de clave derivado del mapa logístico y lo oculta con LSB en posiciones caóticas de un audio WAV. Incluye los scripts que reproducen los resultados del artículo, la demostración emisor-receptor y los casos de estudio adicionales (4 textos de dominio público y 4 audios con licencias libres).</p>",
+  "creators": [
+    {"name": "Rodríguez-Galindo, Juan Felipe", "affiliation": "Universidad Distrital Francisco José de Caldas"},
+    {"name": "Bohórquez-Rodríguez, Mateo", "affiliation": "Universidad Distrital Francisco José de Caldas"},
+    {"name": "Alvarado-Nieto, Luz Deicy", "affiliation": "Universidad Distrital Francisco José de Caldas"},
+    {"name": "Amaya-Barrera, Isabel", "affiliation": "Universidad Distrital Francisco José de Caldas"}
+  ],
+  "keywords": ["esteganografía", "criptografía", "atractores caóticos", "mapa logístico", "compresión sin pérdida", "redes neuronales", "codificación aritmética", "audio"]
+}

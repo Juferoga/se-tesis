@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "Si usa este software, por favor cítelo como se indica a continuación."
+title: "Modelo criptoesteganográfico sobre archivos de audio basado en redes neuronales y atractores caóticos: código, datos y resultados"
+type: software
+version: v1.0-tecnologicas
+license: GPL-3.0-only
+repository-code: "https://github.com/Juferoga/se-tesis"
+authors:
+  - family-names: Rodríguez-Galindo
+    given-names: Juan Felipe
+    affiliation: Universidad Distrital Francisco José de Caldas
+  - family-names: Bohórquez-Rodríguez
+    given-names: Mateo
+    affiliation: Universidad Distrital Francisco José de Caldas
+  - family-names: Alvarado-Nieto
+    given-names: Luz Deicy
+    affiliation: Universidad Distrital Francisco José de Caldas
+  - family-names: Amaya-Barrera
+    given-names: Isabel
+    affiliation: Universidad Distrital Francisco José de Caldas
+keywords:
+  - esteganografía
+  - criptografía
+  - atractores caóticos
+  - compresión sin pérdida
+  - redes neuronales

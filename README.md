@@ -2,7 +2,7 @@
 
 [![Licencia: GPL v3](https://img.shields.io/badge/licencia-GPLv3-blue.svg)](LICENSE)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23810658.svg)](https://doi.org/10.5281/zenodo.23810658)
+[![DOI](https://zenodo.org/badge/685802323.svg)](https://doi.org/10.5281/zenodo.23810658)
 ![Estado: en revisión](https://img.shields.io/badge/art%C3%ADculo-en%20revisi%C3%B3n-orange.svg)
 
 Código del modelo presentado en el artículo homónimo, en revisión en la Revista TecnoLógicas. El modelo se deriva del trabajo de grado

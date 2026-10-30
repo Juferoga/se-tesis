@@ -29,26 +29,25 @@ El emisor oculta un mensaje de texto en un archivo de audio WAV en tres etapas y
 secreta K = (x<sub>0</sub>, r, N), aplica las etapas en orden inverso y recupera el mensaje de forma exacta, byte a byte.
 
 ```mermaid
-flowchart LR
+flowchart TB
+    K{{"Clave secreta K = (x0, r, N)"}}
     subgraph E["Emisor"]
         direction LR
-        T["Texto"] --> C["1. Compresión sin pérdida<br/>red neuronal + codificación aritmética"]
-        C --> X["2. Cifrado XOR<br/>flujo de clave caótico"]
-        X --> L["3. Inserción LSB<br/>posiciones caóticas"]
+        T["Texto"] --> C["1. Compresión sin pérdida<br/>(red neuronal)"]
+        C --> X["2. Cifrado XOR<br/>(mapa logístico)"]
+        X --> L["3. Inserción LSB<br/>(mapa logístico)"]
         A["Audio WAV"] --> L
     end
     L --> S[("Estegoaudio")]
     subgraph R["Receptor"]
         direction LR
         L2["3. Extracción LSB"] --> X2["2. Descifrado XOR"]
-        X2 --> C2["1. Descompresión<br/>misma red neuronal"]
-        C2 --> T2["Texto recuperado"]
+        X2 --> C2["1. Descompresión<br/>(misma red neuronal)"]
+        C2 --> T2["Texto idéntico<br/>al original"]
     end
     S --> L2
-    K{{"Clave K = (x0, r, N)"}} -.-> X
-    K -.-> L
-    K -.-> L2
-    K -.-> X2
+    K -.-> E
+    K -.-> R
 ```
 
 ### 1. Compresión sin pérdida con una red neuronal
@@ -60,13 +59,14 @@ sin pérdida ([`src/compresion/llm_aritmetico.py`](src/compresion/llm_aritmetico
 
 ```mermaid
 flowchart LR
-    P["Tokens anteriores"] --> N["Red neuronal<br/>Qwen2.5-1.5B"]
-    N --> D["Probabilidad de<br/>cada token posible"]
+    P["Tokens ya<br/>procesados"] --> N["Red neuronal<br/>Qwen2.5-1.5B"]
+    N --> D["Probabilidad de cada<br/>token posible"]
     D --> AC["Codificador<br/>aritmético"]
-    TK["Token actual"] --> AC
+    TK["Token actual<br/>del texto"] --> AC
     AC --> B["Bits del mensaje<br/>comprimido"]
-    TK -.->|"se agrega al contexto"| P
 ```
+
+El token actual se agrega luego a los tokens procesados y el proceso se repite hasta el final del texto.
 
 ### 2 y 3. Cifrado e inserción con el mapa logístico
 

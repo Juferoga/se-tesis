@@ -63,7 +63,14 @@ def main() -> None:
     texto_comprimido = texto_original
 
     # 2. Encriptar con XOR caótico
-    texto_bytes = np.array(list(texto_comprimido.encode("utf-8")), dtype=np.uint8)
+    # PAYLOAD_BIN: salida binaria de la compresión neuronal sin pérdida (se oculta tal cual)
+    if os.environ.get("PAYLOAD_BIN"):
+        payload = Path(os.environ["PAYLOAD_BIN"]).read_bytes()
+        texto_bytes = np.frombuffer(payload, dtype=np.uint8).copy()
+        shutil.copy(os.environ["PAYLOAD_BIN"], SALIDA / "payload_comprimido.bin")
+        (SALIDA / "texto_original.txt").write_text(texto_original, encoding="utf-8")
+    else:
+        texto_bytes = np.array(list(texto_comprimido.encode("utf-8")), dtype=np.uint8)
     llave = generar_llave(X0, R, N_WARMUP, len(texto_bytes))
     texto_encriptado = xor_encriptado(texto_bytes, llave)
 
@@ -111,7 +118,7 @@ def main() -> None:
         n_bytes = len(bits_extraidos) // 8
         bits_arr = np.array([int(b) for b in bits_extraidos[:n_bytes * 8]], dtype=np.uint8)
         bytes_rec = np.packbits(bits_arr)
-        texto_desencriptado = bytes(xor_encriptado(bytes_rec, llave).tolist()).decode("utf-8")
+        texto_desencriptado = bytes(xor_encriptado(bytes_rec, llave).tolist()).decode("utf-8", errors="replace")
         print(f"    Texto recuperado (primeros 80): {texto_desencriptado[:80]!r}")
     else:
         texto_desencriptado = None

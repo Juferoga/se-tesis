@@ -1,0 +1,126 @@
+=== Oclusión 5% | muestras afectadas: 1257120 | similitud: 8.86% ===
+import numpy as np
+def inputfunction(input,message='Please enter '):
+  i = (-1<<31 if input.min() - 1 < -10 else 1 if input.max() + 1 > 10 else 0
+          if abs(input.max() - input.min()) < (abs(input.max()) + abs(input.min()))/2
+          else 10)
+  while True:
+    try:
+      value = input(input.format(message))
+    except:
+      print('Input error: please enter valid input')
+      continue
+    if i * np.logical_or(value == input.min(), value == input.max()):
+      continue
+    return value
+def arguments(f, limitname='iterations', run = False):
+  if limitname not in f:
+    return 1000000000000
+  else:
+    return limitname
+def tell(f,'n a'):
+  if not run:
+    return ''
+  if inputfunction(f,n='n') == 0:
+    print('#'*70)
+    raw_input()
+    print('#'*70)
+  return '\n{0:<8}{1:<8}{2:<8}{3:<8}\n'.format(
+    excited_values,fudge+ //
+
+/
+(\leftarrow")
+  for val,dipole,potential in zip(repetitions)])
+
+def repeat(repetitions=10):
+  states = np.zeros((3, 3), 'f')
+  excited_values = np.zeros(3, dtype='f')
+  fudge = -1
+  repetitions = /(fudge)
+  n = 0
+  for state in states:
+    for i in [1, 2, 3]:
+      for j in [1, 2, 3, 4]:
+
+        if (n^2 == j% 2)+1 % 2 + 1 % 2 == 0:
+          state[i] = 1
+          state[j] = 1
+          ...
+
+def go(limitregex='test.log', money=value.store):
+  if re.sub('\.csv|\n', '', limitregexHVattr('log')} > /${trace
+
+=== Oclusión 10% | muestras afectadas: 2514231 | similitud: 7.17% ===
+import numpy as np
+def inputfunction(inputavgnum):
+ inputlen=len(inputavgnum)
+     
+ array1=np.zeros(inputlen)
+ for c in range(0,inputlen): 
+    if c > inputlen-2:
+     break
+ else:
+   inputavgnum3=inputavgnum[(c*inputlen):(c*inputlen+inputlen)]
+   #print(inputavgnum3)
+   #print()
+   array1[(c)]=(np.mean(inputavgnum3))
+  # print(array1)
+
+  # sum=0
+  # j=0 
+  # for h in range(0,len(array1)):
+   # if h == len(array1)-1: 
+    #array1_needed[j] = sum/(len(array1)-1)
+    #print(array1_needed)
+    #break
+    
+ #print()print(array1_needed)
+
+
+  # for l in range(0, inputlen-1):
+  #   for k in range(0,inputlen-l-1):
+  #      if(inputavgnum[k]                                    
+  #      > inputavgnum[k+1]):
+  #         #print(help)
+  #         #pos=help
+  #          inputavgnum[k], inputavgnum[k+1]= inputavgnum[k+1], inputavgnum[k]
+  # print("排序完")
+   # [a[1]] = a[0]
+   # [a[2]] = a[1]
+   # [a[0]] = a[2]
+
+   #CMP11 inputavgnum naively sorted to descending
+   # S1 =int(input("enter your input averaging number "))
+   # if S1 ==0:
+   #   sys.exit("Cth_LONG ALWAY EXPRESSED as ATLEAST_2")
+   # else:
+   #   for g in range(0,int((S1*(S1-1)/2))):
+   #     print("calibrate S1=" ,S1, " index g =" ,g )
+        
+    
+#B1 = [1,2,3,3,4,1,1,1,3,2,2]
+#B2 = [1,2,3,3,-1,-2,0,1,2,3,4,5,6,7]
+#sortedB2 =sorted(dictio_.items(), key=lambda dict:%dict[1]))
+#user_sInputAvgNumNeeded = int(input("enter your sys2input))
+#print(len(user_sInputAvgNumNeeded))
+
+=== Oclusión 25% | muestras afectadas: 6285567 | similitud: 9.95% ===
+import numpy as np
+def input_from_parser(left=mapping_str, 
+                    right=mapping_str,
+                    count_keep=1,
+                   ):
+    left  = parser.tokenize(left)
+翻译一下 在这段代码中，我们使用了 `numpy` 库来处理输入。以下是对代码的详细翻译：
+
+```python
+import numpy as np
+def input_from_parser(left=mapping_str, 
+                      right=mapping_str,
+                      count_keep=1,
+                     ):
+    left 离标识为 mappings_str;
+    右标识为 mappings_str;
+    统计保持为 numbers;
+    ：
+```

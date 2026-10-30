@@ -86,6 +86,35 @@ def _guardar(fig, nombre: str) -> Path:
 # ============================================================
 
 
+# Con payload_comprimido.bin en SALIDA, el mensaje oculto es la salida binaria de la
+# compresión neuronal sin pérdida (2 bytes de longitud + datos) y los textos recuperados
+# se obtienen descomprimiendo; la referencia para la similitud es el texto original.
+RUTA_PAYLOAD = SALIDA / "payload_comprimido.bin"
+MODO_NEURONAL = RUTA_PAYLOAD.exists()
+
+
+_cache_textos: dict[bytes, str] = {}
+
+
+def _a_texto(b: bytes) -> str:
+    """Convierte los bytes descifrados en texto (descomprimiendo en el modo neuronal)."""
+    if not MODO_NEURONAL:
+        return b.decode("utf-8", errors="replace")
+    if b not in _cache_textos:
+        _cache_textos[b] = _descomprimir_payload(b)
+    return _cache_textos[b]
+
+
+def _descomprimir_payload(b: bytes) -> str:
+    from src.compresion import llm_aritmetico as la
+    n = int.from_bytes(b[:2], "big")
+    datos = b[2 : 2 + n] if n <= len(b) - 2 else b[2:]
+    try:
+        return la.descomprimir(datos)
+    except Exception as e:  # datos corruptos que el tokenizador no puede decodificar
+        return f"[descompresión fallida: {type(e).__name__}]"
+
+
 def cargar_datos():
     """Carga audio y texto comprimido de archivos existentes."""
     ruta_audio_orig = RAIZ / "data" / "audio_test.wav"
@@ -101,10 +130,14 @@ def cargar_datos():
         sample_rate = f.getframerate()
 
     # Texto comprimido
-    texto_comprimido = ruta_texto_comp.read_text(encoding="utf-8")
+    if MODO_NEURONAL:
+        texto_comprimido = (SALIDA / "texto_original.txt").read_text(encoding="utf-8")
+        texto_bytes = np.frombuffer(RUTA_PAYLOAD.read_bytes(), dtype=np.uint8).copy()
+    else:
+        texto_comprimido = ruta_texto_comp.read_text(encoding="utf-8")
+        texto_bytes = np.array(list(texto_comprimido.encode("utf-8")), dtype=np.uint8)
 
     # Re-derivar intermediarios criptográficos
-    texto_bytes = np.array(list(texto_comprimido.encode("utf-8")), dtype=np.uint8)
     llave = generar_llave(X0, R, N_WARMUP, len(texto_bytes))
     texto_encriptado = xor_encriptado(texto_bytes, llave)
 
@@ -155,7 +188,7 @@ def _recuperar_texto_desde_audio(audio_mod: np.ndarray, datos: dict) -> str:
     bytes_ext = _bits_a_bytes(bits_ext)
     llave = datos["llave"][: len(bytes_ext)]
     bytes_rec = xor_encriptado(bytes_ext, llave)
-    return bytes(bytes_rec.tolist()).decode("utf-8", errors="replace")
+    return _a_texto(bytes(bytes_rec.tolist()))
 
 
 def _similitud_textual(a: str, b: str) -> float:
@@ -656,17 +689,17 @@ def analisis_sensibilidad_clave(datos):
     bits_correctos, _ = extraer_lsb_caotico(audio_mod, n_bits, X0_P, R_P, N_P)
     bytes_correctos = _bits_a_bytes(bits_correctos)
     llave_correcta = generar_llave(X0, R, N_WARMUP, len(bytes_correctos))
-    texto_recuperado_correcto = bytes(
+    texto_recuperado_correcto = _a_texto(bytes(
         xor_encriptado(np.array(bytes_correctos, dtype=np.uint8), llave_correcta).tolist()
-    ).decode("utf-8", errors="replace")
+    ))
 
     # --- Extracción con clave PERTURBADA (solo Δx0 en la maestra) ---
     bits_perturbados, _ = extraer_lsb_caotico(audio_mod, n_bits, x0p_pert, rp_pert, np_pert)
     bytes_perturbados = _bits_a_bytes(bits_perturbados)
     llave_perturbada = generar_llave(x0_perturbado, R, N_WARMUP, len(bytes_perturbados))
-    texto_recuperado_perturbado = bytes(
+    texto_recuperado_perturbado = _a_texto(bytes(
         xor_encriptado(np.array(bytes_perturbados, dtype=np.uint8), llave_perturbada).tolist()
-    ).decode("utf-8", errors="replace")
+    ))
 
     # Distancia de Hamming en bits extraídos desde el audio
     bits_dif_audio = sum(1 for a, b in zip(bits_correctos, bits_perturbados) if a != b)
@@ -846,12 +879,12 @@ def generar_6_fallo_perturbacion(datos):
     total_bits = len(cifrado_correcto) * 8
     pct_bits_dif = (bits_dif / total_bits * 100) if total_bits else 0.0
 
-    rec_correcto = bytes(
+    rec_correcto = _a_texto(bytes(
         xor_encriptado(cifrado_correcto, llave_correcta).tolist()
-    ).decode("utf-8", errors="replace")
-    rec_perturbado_con_clave_correcta = bytes(
+    ))
+    rec_perturbado_con_clave_correcta = _a_texto(bytes(
         xor_encriptado(cifrado_perturbado, llave_correcta).tolist()
-    ).decode("utf-8", errors="replace")
+    ))
 
     print(f"  Hamming keystream: {bits_dif}/{total_bits} ({pct_bits_dif:.2f}%)")
     print(f"  Texto (clave correcta):   {rec_correcto[:80]!r}")

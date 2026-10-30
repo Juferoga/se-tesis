@@ -1,0 +1,9 @@
+{
+  "formato": "payload_encriptado",
+  "longitud_bits": 1400,
+  "longitud_bytes": 175,
+  "payload_hex": "5aebcae5088770de5b0bb20a12de72b51145390cd088ea07243b1b5349f1de9edd1ec155820de6b758ff0cb301e7acf0a10aa062c959e014ea1d20ed3029cf0d7be9529bdf436773c84bbbfa566c671d0a304d8eac9f722525ff2779289a8a3c8b1154f8518e015fda1de57d5a7b0f7d59ae063fcd587a048ed864554aedf58c2442c4439725e19d148430b4460fffddc1b27e09fbfe240ae83bdcae3eee4af832dc8d4142c13662af25ab9fe1ce9c",
+  "llave_longitud_bytes": 175,
+  "nota": "Texto literario (José Asunción Silva) encriptado con XOR caótico.",
+  "texto_original_chars": 901
+}

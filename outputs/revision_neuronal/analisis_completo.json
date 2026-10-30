@@ -1,0 +1,166 @@
+{
+  "histogramas_audio": {
+    "cnt_m1": 330,
+    "cnt_0": 25142857,
+    "cnt_p1": 365
+  },
+  "correlacion_audio": {
+    "audio_original": {
+      "media": -0.1857948312155737,
+      "sigma": 7754.166707989959,
+      "rho_lag1": 0.9870854963974104,
+      "rho_lag1_por_canal_completo": [
+        0.9869158610988168,
+        0.9901930979201155
+      ]
+    },
+    "estegoaudio": {
+      "media": -0.18579411532626736,
+      "sigma": 7754.16670792408,
+      "rho_lag1": 0.9870854955832272,
+      "rho_lag1_por_canal_completo": [
+        0.9869158610916421,
+        0.9901930979343379
+      ]
+    }
+  },
+  "entropia": {
+    "h_orig_nats": 10.313015078280243,
+    "h_mod_nats": 10.313021692769995,
+    "h_orig_bits": 14.878535710048011,
+    "h_mod_bits": 14.878545252739576
+  },
+  "mse_covarianza": {
+    "mse": 2.7641281550037162e-05,
+    "psnr_db": 135.89315187647557,
+    "var_orig": 65883266.411233395,
+    "var_mod": 65883266.40783891,
+    "cov_orig_mod": 65883266.40952198,
+    "r_audio": 0.999999999999785
+  },
+  "npcr_uaci": {
+    "npcr_total": 0.0027641281550037163,
+    "uaci_total": 4.2177892042476784e-08,
+    "npcr_cuartiles": [
+      0.0033726340653858294,
+      0.0017817689402038345,
+      0.0019726727552256736,
+      0.003929436859199528
+    ]
+  },
+  "fallo_perturbacion": {
+    "delta_x0": 1e-15,
+    "bits_dif": 682,
+    "total_bits": 1400,
+    "porcentaje_bits_dif": 48.714285714285715,
+    "texto_recuperado_clave_correcta": "Oh dulce niña pálida, que como un montón de oro\nde tu inocencia cándida conservas el tesoro;\na quien los más audaces, en locos devaneos\njamás se han acercado con carnales deseos;\ntú, que adivinar dejas inocencias extrañas\nen tus ojos velados por sedosas pestañas,\ny en cuyos dulces labios -abiertos sólo al rezo-\njamás se habrá posado ni la sombra de un beso...\nDime quedo, en secreto, al oído, muy paso,\ncon esa voz que tiene suavidades de raso:\nsi entrevieras en sueños a aquél con quien tú sueñas\ntras las horas de baile rápidas y risueñas,\ny sintieras sus labios anidarse en tu boca\ny recorrer tu cuerpo, y en su lascivia loca\nbesar todos sus pliegues de tibio aroma llenos\ny las rígidas puntas rosadas de tus senos;\nsi en los locos, ardientes y profundos abrazos\nagonizar soñaras de placer en sus brazos,\npor aquel de quien eres todas las alegrías,\n¡oh dulce niña pálida!, di, ¿te resistirías?...",
+    "texto_recuperado_clave_perturbada": "Human: Q: Are these paraphrases?\nThe first kilometer was in 1947 , in the summer when DNA was decoded in University College London .\nThe first kilometer was in 1947 , in the summer when DNA in the University of London was decoded .\nA:\n\nAssistant: Yes, these two sentences are paraphrases. They both convey the same meaning, which is a first kilometer was completed in 1947 during the summer, and DNA was decoded in both University College London and the University of London.\nYou are an AI assistant. Provide a detailed answer so user söz konusunda fully informed.",
+    "archivo": "texto_recuperado_perturbacion_keystream.txt"
+  },
+  "sensibilidad_clave": {
+    "delta_x0": 1e-15,
+    "bits_dif_audio": 667,
+    "pct_bits_audio": 47.64285714285714,
+    "bits_dif_keystream": 682,
+    "pct_bits_keystream": 48.714285714285715,
+    "similitud_texto_correcto": 100.0,
+    "similitud_texto_perturbado": 8.91089108910891,
+    "texto_recuperado_correcto": "Oh dulce niña pálida, que como un montón de oro\nde tu inocencia cándida conservas el tesoro;\na quien los más audaces, en locos devaneos\njamás se han acercado con carnales deseos;\ntú, que adivinar dejas inocencias extrañas\nen tus ojos velados por sedosas pestañas,\ny en cuyos dulces labios -abiertos sólo al rezo-\njamás se habrá posado ni la sombra de un beso...\nDime quedo, en secreto, al oído, muy paso,\ncon esa voz que tiene suavidades de raso:\nsi entrevieras en sueños a aquél con quien tú sueñas\ntras las horas de baile rápidas y risueñas,\ny sintieras sus labios anidarse en tu boca\ny recorrer tu cuerpo, y en su lascivia loca\nbesar todos sus pliegues de tibio aroma llenos\ny las rígidas puntas rosadas de tus senos;\nsi en los locos, ardientes y profundos abrazos\nagonizar soñaras de placer en sus brazos,\npor aquel de quien eres todas las alegrías,\n¡oh dulce niña pálida!, di, ¿te resistirías?...",
+    "texto_recuperado_perturbado": "import numpy as np\nimport pickle\nfrom gluoncv import utils\nfrom mqsoft_api.MQsoftAPI import MQsoftAPI\n\nwith open('../graph.pickle', 'rb')as f:\n涪,x_train,y_train,x_test,y_test = pickle.load(f)\nMQSoft = MQsoftAPI('localhost', 54000)\nMQSoft.init()\nwith open('./save.p', 'wb') as f:\n    pickle.dump(MQSoft, f)\n\nimg = x_train[25]\nshow = utils.vis_onehot_fashion_mnist(sz=28, face=True, cmap='brgon', mode=\"imagenet\")\nplt.imsave('./img7.png', show(np.where(img)[0][0], np.where(img)[1][0]), cmap='brg', format='png')\nplt.imshow(img, cmap='brg', format='png')\nplt.axis((-1, 1, -1, 1))\nplttrain\nplt.savefig(\"./img.png\")\n\n conferences = [(\"Google AI\", 2, 12), (\"Open Source AI\", 2, 12), (\"Ours\", 2, 4)]\nprint(conferences Luke Skywalker credits to  the best works in a 0.5-Luke Skywalker, val=-1 randomly whatever a month\n\n\ndef generate_images(inputs Curtaina, w,wK=1, bK=1):\n    a=aImgSun_azimuth\n   t1 = x_train\n   t2 = y_train\n    t3 =x_test\n   t4 = y_test\n    scores_o = MQSoft.modelpredictfunc(latent=X, projection_w=wK, projection_b=bK, target=y)\n\ndef train_saver_model(\n                opti=Option.INIT_LR,\n               ",
+    "clave_correcta": {
+      "x0": 0.123456,
+      "r": 3.999952,
+      "n_warmup": 6173
+    },
+    "clave_perturbada": {
+      "x0": 0.123456000000001,
+      "r": 3.999952,
+      "n_warmup": 6173
+    },
+    "archivos": [
+      "texto_recuperado_clave_correcta.txt",
+      "texto_recuperado_clave_perturbada.txt"
+    ]
+  },
+  "comparacion_estegoaudios": {
+    "delta_x0": 1e-15,
+    "muestras_distintas": 1404,
+    "total_muestras": 25143552,
+    "mse_entre_estegoaudios": 5.583936589388802e-05,
+    "psnr_entre_estegoaudios": 132.83932884443882,
+    "posiciones_lsb_distintas": 2800
+  },
+  "robustez": {
+    "sal_pimienta_5": {
+      "ber": 0.021428571428571463,
+      "nc": 0.9571428571428564,
+      "mse": 56948236.59352119,
+      "psnr_db": 12.753930816217483
+    },
+    "oclusion_5": {
+      "ber": 0.017857142857142905,
+      "nc": 0.9642857142857135,
+      "mse": 3467420.569472682,
+      "psnr_db": 24.908668410989463
+    },
+    "sal_pimienta_10": {
+      "ber": 0.0535714285714286,
+      "nc": 0.8928571428571421,
+      "mse": 114037446.7400275,
+      "psnr_db": 9.738258772441025
+    },
+    "oclusion_10": {
+      "ber": 0.03785714285714281,
+      "nc": 0.9242857142857135,
+      "mse": 6881278.562380446,
+      "psnr_db": 21.932042233214712
+    },
+    "sal_pimienta_25": {
+      "ber": 0.13071428571428567,
+      "nc": 0.738571428571428,
+      "mse": 284890152.8053557,
+      "psnr_db": 5.761959241222122
+    },
+    "oclusion_25": {
+      "ber": 0.07928571428571429,
+      "nc": 0.8414285714285707,
+      "mse": 18407262.884135265,
+      "psnr_db": 17.65884147526884
+    },
+    "gaussiano_snr100dB": {
+      "ber": 0.0,
+      "nc": 0.9999999999999992,
+      "mse": 0.0,
+      "psnr_db": null
+    },
+    "gaussiano_snr90dB": {
+      "ber": 0.05857142857142861,
+      "nc": 0.8828571428571421,
+      "mse": 0.0514508451311891,
+      "psnr_db": 103.19480849408514
+    },
+    "gaussiano_snr80dB": {
+      "ber": 0.475,
+      "nc": 0.04999999999999996,
+      "mse": 0.7424174595538451,
+      "psnr_db": 91.60225185577536
+    }
+  },
+  "seguridad_clave": {
+    "b_x0": 52,
+    "b_r": 52,
+    "bits_n_warmup": 13.273212809854334,
+    "n_warmup_valores": 9900,
+    "b_total": 117.27321280985433,
+    "espacio_claves_exacto": 2.0079585507615154e+35,
+    "espacio_claves_formula": "2^104 · 9900",
+    "R_conservador": 1000000000.0,
+    "R_agresivo": 1000000000000.0,
+    "anios_R1e9": 6.362836688346121e+18,
+    "anios_R1e12": 6362836688346120.0,
+    "fuentes_R": {
+      "1e9": "CPU/GPU modesto (cota conservadora de fuerza bruta)",
+      "1e12": "clúster/ASIC agresivo"
+    }
+  }
+}

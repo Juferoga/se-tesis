@@ -13,7 +13,7 @@ import numpy as np
 from src.utils.caos import clave_valida, derivar_semillas, generar_llave, generar_posiciones_caoticas
 
 SALIDA = Path(os.environ.get("SALIDA_DIR", "outputs/revision_tecnologicas"))
-L_BYTES, M, NPOS = 570, 25143552, 256
+L_BYTES, M, NPOS = 175, 25143552, 256
 
 
 def independiente(k0, p0, clave):

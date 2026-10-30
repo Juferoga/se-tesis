@@ -1,0 +1,80 @@
+{
+  "equilibrio_keystream": {
+    "media": 0.4984666666666667,
+    "min": 0.46285714285714286,
+    "max": 0.5378571428571428,
+    "frac_entre_045_055": 1.0
+  },
+  "monte_carlo": {
+    "muestras": 100000,
+    "frac_r_caotico": 0.98475,
+    "frac_rp_caotico": 0.99182,
+    "frac_clave_valida": 0.97665,
+    "error_estandar": 0.0004775434796958282
+  },
+  "componentes": {
+    "x0": {
+      "rango": [
+        0.001,
+        0.999
+      ],
+      "valores_float64": 44918902683393327,
+      "bits": 55.31817220300303
+    },
+    "r": {
+      "rango": [
+        3.99,
+        4.0
+      ],
+      "valores_float64": 22517998136852,
+      "bits": 44.35614381022525
+    },
+    "N": {
+      "rango": [
+        100,
+        10000
+      ],
+      "valores": 9901,
+      "bits": 13.273358529266698
+    },
+    "fraccion_valida": {
+      "valor": 0.97665,
+      "bits": -0.03408645565299669
+    }
+  },
+  "total": {
+    "claves": 9.780857513285122e+33,
+    "bits": 112.91358808684197
+  },
+  "almacenamiento_bits": {
+    "x0_float64": 64,
+    "r_float64": 64,
+    "N_uint16": 16,
+    "total": 144
+  },
+  "fuerza_bruta_anios": {
+    "1e9": 3.099366717774838e+17,
+    "1e12": 309936671777483.75
+  },
+  "sensibilidad": {
+    "x0": {
+      "pct_bits_keystream_media": 49.927857142857135,
+      "min": 45.57142857142858,
+      "max": 54.714285714285715,
+      "posiciones_comunes_de_256_media": 0.0
+    },
+    "r": {
+      "pct_bits_keystream_media": 50.052857142857135,
+      "min": 46.14285714285714,
+      "max": 53.5,
+      "posiciones_comunes_de_256_media": 0.01
+    },
+    "N": {
+      "pct_bits_keystream_media": 50.105714285714285,
+      "min": 45.357142857142854,
+      "max": 54.64285714285714,
+      "posiciones_comunes_de_256_media": 0.0
+    },
+    "claves_descartadas_por_invalidas": 22
+  }
+}

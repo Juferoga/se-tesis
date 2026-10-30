@@ -1,0 +1,74 @@
+=== Gaussiano SNR=100 dB | muestras afectadas: 0 | similitud: 100.00% ===
+Oh dulce niña pálida, que como un montón de oro
+de tu inocencia cándida conservas el tesoro;
+a quien los más audaces, en locos devaneos
+jamás se han acercado con carnales deseos;
+tú, que adivinar dejas inocencias extrañas
+en tus ojos velados por sedosas pestañas,
+y en cuyos dulces labios -abiertos sólo al rezo-
+jamás se habrá posado ni la sombra de un beso...
+Dime quedo, en secreto, al oído, muy paso,
+con esa voz que tiene suavidades de raso:
+si entrevieras en sueños a aquél con quien tú sueñas
+tras las horas de baile rápidas y risueñas,
+y sintieras sus labios anidarse en tu boca
+y recorrer tu cuerpo, y en su lascivia loca
+besar todos sus pliegues de tibio aroma llenos
+y las rígidas puntas rosadas de tus senos;
+si en los locos, ardientes y profundos abrazos
+agonizar soñaras de placer en sus brazos,
+por aquel de quien eres todas las alegrías,
+¡oh dulce niña pálida!, di, ¿te resistirías?...
+
+=== Gaussiano SNR=90 dB | muestras afectadas: 1293657 | similitud: 12.00% ===
+Oh Havana, oh stately ship!
+
+Does it follow that "Havana, my ship about to sink!"?
+
+ * yes;
+ * it is not possible to tell;
+ * no; no
+
+=== Gaussiano SNR=80 dB | muestras afectadas: 13528262 | similitud: 10.51% ===
+Human: Naresh K. Christo is an Indian film director, producer and screenwriter best known as the co-coordinator of full-cinema motion picture industry in 4T story mode is an Indian actor-comedian, international action star and a theater composer, music singer and playback singer who gained popularity in Tollywood, an Indian film industry headquartered in Chennai state of Tamil Nadu in South India. He is from Nagleeswar Nagar, Tamil Nadu.
+
+Now, provide a numbered list of answers to these questions:
+
+1. What kind of artist is Naresh K. Christo?
+2. What does he do on television?
+3. Which popular places does he inhabit?
+4. What's his native language?
+5. Where's his native state?
+6. Who he's homesick for when he thinks of their hometown?
+7. What do they play?
+8. Where is Tollywood?
+9. What does he pick up in case of the solo moving it into fight scene?
+10. How numerous is the Tamil film industry?
+
+Numbered answers:
+
+Assistant: 1. He is an Indian film director, producer and screenwriter.
+2. He is an actor-comedian, international action star and a theater composer, music singer.
+3. He inhabit Tamil Nadu.
+4. His native language is Tamil.
+5. He's from Tamil Nadu state.
+6. He homesick for Nagleeswar Nagar.
+7. They play movies.
+8. Tollywood or 4T story mode is an Indian film industry headquartered in Chennai state of Tamil Nadu.
+9. He picks up his mother tongueJA.
+10. Tollywood or 4T story mode is an Indian film industry headquartered in Chennai state of Tamil Nadu.
+
+The Tamil film industry includes almost 400 actors, 8,000 directors, many scriptwriters, music/singing personalities, makes 10,000 to 20,000 films every year.
+
+Human: Naresh K. Christo is an Indian film director, producer and screenwriter best known as the co-coordinator of full-cinema motion picture industry in 4T story mode is an Indian actor-comedian, international action star and a theater composer, music singer and playback singer who gained popularity in Tollywood, an Indian film industry headquartered inelman 2
+which country of Tamil Nadu?
+
+Assistant: India
+
+Human: Naresh K. Christo is an Indian film director, producer and screenwriter best known as the co-coordinator of full-cinema motion picture industry in 4T story mode is an.drawerhing place is an Indian actor-com(svgdaierle I wh喳ziz fame St opened in 1925.
+pick from the following.
+ (a). Chennai.
+ (b). Atlanta.
+ (c). Philadelphia.
+ (d). Maharashtra.
+(a).

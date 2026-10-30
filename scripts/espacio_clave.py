@@ -19,7 +19,7 @@ from pathlib import Path
 
 import numpy as np
 
-from src.utils.caos import clave_valida, derivar_semillas, exponente_lyapunov, generar_llave, generar_posiciones_caoticas
+from src.utils.caos import clave_valida, derivar_parametros, derivar_semillas, exponente_lyapunov, generar_llave, generar_posiciones_caoticas
 from src.utils.chaos_mod_enum import ChaosMod as C
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -42,18 +42,20 @@ def main():
     m = 100_000
     x0 = rng.uniform(X0_MIN, X0_MAX, m)
     r = rng.uniform(R_MIN, R_MAX, m)
-    x0p = np.mod(x0 * r, 1.0)
-    rp = 3.99 + np.mod(r * x0, 1.0) * 0.0099  # misma derivación que derivar_semillas
-    lam_r = exponente_lyapunov(r)
-    lam_rp = exponente_lyapunov(rp)
-    ok_r, ok_rp = lam_r > 0, lam_rp > 0
+    nn_mc = rng.integers(100, 10001, m)
+    dd = [derivar_parametros(a, b, int(c)) for a, b, c in zip(x0, r, nn_mc)]
+    lam_r1 = exponente_lyapunov([d["r1"] for d in dd])
+    lam_r2 = exponente_lyapunov([d["r2"] for d in dd])
+    lam_rp = exponente_lyapunov([d["rp"] for d in dd])
+    ok_r = (lam_r1 > 0) & (lam_r2 > 0)
+    ok_rp = lam_rp > 0
     p_valida = float(np.mean(ok_r & ok_rp))
     # Equilibrio del flujo de clave (proporción de unos) en 300 claves válidas
     unos = []
     while len(unos) < 300:
         c = (float(rng.uniform(X0_MIN, X0_MAX)), float(rng.uniform(R_MIN, R_MAX)), int(rng.integers(100, 10001)))
         if clave_valida(*c):
-            unos.append(float(np.unpackbits(generar_llave(*c, 570)).mean()))
+            unos.append(float(np.unpackbits(generar_llave(*c, 175)).mean()))
     res["equilibrio_keystream"] = {"media": float(np.mean(unos)), "min": float(np.min(unos)), "max": float(np.max(unos)),
                                    "frac_entre_045_055": float(np.mean((np.array(unos) >= 0.45) & (np.array(unos) <= 0.55)))}
     res["monte_carlo"] = {"muestras": m, "frac_r_caotico": float(ok_r.mean()), "frac_rp_caotico": float(ok_rp.mean()),
@@ -73,7 +75,7 @@ def main():
     res["fuerza_bruta_anios"] = {"1e9": total / 1e9 / SEG_ANIO, "1e12": total / 1e12 / SEG_ANIO}
 
     # Sensibilidad a 1 ulp en claves válidas
-    L, M = 4560, 25143552
+    L, M = 1400, 25143552
     sens = {"x0": [], "r": [], "N": []}
     comunes = {"x0": [], "r": [], "N": []}
     invalidas = 0

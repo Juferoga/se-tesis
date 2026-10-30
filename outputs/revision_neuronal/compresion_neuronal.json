@@ -1,0 +1,17 @@
+{
+ "modelo": "Qwen/Qwen2.5-1.5B",
+ "dtype": "float32",
+ "hilos": 4,
+ "caracteres": 901,
+ "bytes_original": 928,
+ "tokens": 293,
+ "bytes_comprimido": 173,
+ "bytes_payload": 175,
+ "bits_payload": 1400,
+ "bits_por_caracter": 1.5360710321864595,
+ "tokens_primer_puesto": 113,
+ "t_carga_s": 3.342162847518921,
+ "t_compresion_s": 53.286115407943726,
+ "t_descompresion_s": 56.76967763900757,
+ "recuperacion_exacta": true
+}

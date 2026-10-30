@@ -1,0 +1,35 @@
+import numpy as np
+import pickle
+from gluoncv import utils
+from mqsoft_api.MQsoftAPI import MQsoftAPI
+
+with open('../graph.pickle', 'rb')as f:
+涪,x_train,y_train,x_test,y_test = pickle.load(f)
+MQSoft = MQsoftAPI('localhost', 54000)
+MQSoft.init()
+with open('./save.p', 'wb') as f:
+    pickle.dump(MQSoft, f)
+
+img = x_train[25]
+show = utils.vis_onehot_fashion_mnist(sz=28, face=True, cmap='brgon', mode="imagenet")
+plt.imsave('./img7.png', show(np.where(img)[0][0], np.where(img)[1][0]), cmap='brg', format='png')
+plt.imshow(img, cmap='brg', format='png')
+plt.axis((-1, 1, -1, 1))
+plttrain
+plt.savefig("./img.png")
+
+ conferences = [("Google AI", 2, 12), ("Open Source AI", 2, 12), ("Ours", 2, 4)]
+print(conferences Luke Skywalker credits to  the best works in a 0.5-Luke Skywalker, val=-1 randomly whatever a month
+
+
+def generate_images(inputs Curtaina, w,wK=1, bK=1):
+    a=aImgSun_azimuth
+   t1 = x_train
+   t2 = y_train
+    t3 =x_test
+   t4 = y_test
+    scores_o = MQSoft.modelpredictfunc(latent=X, projection_w=wK, projection_b=bK, target=y)
+
+def train_saver_model(
+                opti=Option.INIT_LR,
+               

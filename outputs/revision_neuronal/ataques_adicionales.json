@@ -1,0 +1,114 @@
+{
+ "configuraciones": [
+  {
+   "nsym": 0,
+   "repeticion": 1,
+   "L_bits": 1400,
+   "ataques": [
+    {
+     "ataque": "Compresión MP3",
+     "nivel": "320 kbps",
+     "ber_pct": 47.35714285714286,
+     "ber_tras_mayoria_pct": 47.35714285714286,
+     "muestras_alteradas_pct": 94.7248741943859,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Compresión MP3",
+     "nivel": "128 kbps",
+     "ber_pct": 44.857142857142854,
+     "ber_tras_mayoria_pct": 44.857142857142854,
+     "muestras_alteradas_pct": 98.06091438472974,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Remuestreo",
+     "nivel": "44.1 → 22.05 → 44.1 kHz",
+     "ber_pct": 49.5,
+     "ber_tras_mayoria_pct": 49.5,
+     "muestras_alteradas_pct": 95.18820968493235,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Filtro pasa bajas",
+     "nivel": "fc = 16 kHz",
+     "ber_pct": 29.57142857142857,
+     "ber_tras_mayoria_pct": 29.57142857142857,
+     "muestras_alteradas_pct": 60.29481435240335,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Cambio de amplitud",
+     "nivel": "× 0.99",
+     "ber_pct": 46.0,
+     "ber_tras_mayoria_pct": 46.0,
+     "muestras_alteradas_pct": 97.23280942963031,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Cambio de amplitud",
+     "nivel": "× 1.01",
+     "ber_pct": 46.0,
+     "ber_tras_mayoria_pct": 46.0,
+     "muestras_alteradas_pct": 97.22969928831058,
+     "recuperacion_exacta": false
+    }
+   ]
+  },
+  {
+   "nsym": 80,
+   "repeticion": 5,
+   "L_bits": 10200,
+   "ataques": [
+    {
+     "ataque": "Compresión MP3",
+     "nivel": "320 kbps",
+     "ber_pct": 45.22549019607843,
+     "ber_tras_mayoria_pct": 40.68627450980392,
+     "muestras_alteradas_pct": 94.74452933300752,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Compresión MP3",
+     "nivel": "128 kbps",
+     "ber_pct": 46.35294117647059,
+     "ber_tras_mayoria_pct": 42.254901960784316,
+     "muestras_alteradas_pct": 98.06045701100624,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Remuestreo",
+     "nivel": "44.1 → 22.05 → 44.1 kHz",
+     "ber_pct": 46.931372549019606,
+     "ber_tras_mayoria_pct": 44.65686274509804,
+     "muestras_alteradas_pct": 95.18962157773095,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Filtro pasa bajas",
+     "nivel": "fc = 16 kHz",
+     "ber_pct": 30.176470588235293,
+     "ber_tras_mayoria_pct": 17.5,
+     "muestras_alteradas_pct": 60.296691573251074,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Cambio de amplitud",
+     "nivel": "× 0.99",
+     "ber_pct": 45.28431372549019,
+     "ber_tras_mayoria_pct": 40.98039215686274,
+     "muestras_alteradas_pct": 97.23281340679311,
+     "recuperacion_exacta": false
+    },
+    {
+     "ataque": "Cambio de amplitud",
+     "nivel": "× 1.01",
+     "ber_pct": 45.28431372549019,
+     "ber_tras_mayoria_pct": 40.98039215686274,
+     "muestras_alteradas_pct": 97.22970326547339,
+     "recuperacion_exacta": false
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,491 @@
+{
+ "bits_por_secuencia": 1000000,
+ "secuencias": 10,
+ "alfa": 0.01,
+ "resumen": {
+  "Frecuencia (monobit)": {
+   "aprobadas": 8,
+   "evaluadas": 10,
+   "p_min": 0.0007738012359775489
+  },
+  "Frecuencia en bloques": {
+   "aprobadas": 8,
+   "evaluadas": 10,
+   "p_min": 0.008634064166275093
+  },
+  "Rachas": {
+   "aprobadas": 7,
+   "evaluadas": 10,
+   "p_min": 0.0010427386788549578
+  },
+  "Racha más larga de unos en un bloque": {
+   "aprobadas": 9,
+   "evaluadas": 10,
+   "p_min": 0.0007318480691993365
+  },
+  "Sumas acumuladas (1)": {
+   "aprobadas": 8,
+   "evaluadas": 10,
+   "p_min": 0.0011548604994451733
+  },
+  "Sumas acumuladas (2)": {
+   "aprobadas": 8,
+   "evaluadas": 10,
+   "p_min": 0.0003875449170748983
+  },
+  "Transformada discreta de Fourier": {
+   "aprobadas": 10,
+   "evaluadas": 10,
+   "p_min": 0.14203342260757357
+  },
+  "Entropía aproximada": {
+   "aprobadas": 8,
+   "evaluadas": 10,
+   "p_min": 6.838696399097866e-06
+  },
+  "Serial (1)": {
+   "aprobadas": 9,
+   "evaluadas": 10,
+   "p_min": 0.006582533021749966
+  },
+  "Serial (2)": {
+   "aprobadas": 10,
+   "evaluadas": 10,
+   "p_min": 0.05254385379197716
+  }
+ },
+ "control_urandom": {
+  "Frecuencia (monobit)": {
+   "aprobadas": 10,
+   "evaluadas": 10,
+   "p_min": 0.012631254445608493
+  },
+  "Frecuencia en bloques": {
+   "aprobadas": 10,
+   "evaluadas": 10,
+   "p_min": 0.12247416636103357
+  },
+  "Rachas": {
+   "aprobadas": 10,
+   "evaluadas": 10,
+   "p_min": 0.10092326443619108
+  },
+  "Racha más larga de unos en un bloque": {
+   "aprobadas": 9,
+   "evaluadas": 10,
+   "p_min": 0.00815820486611368
+  },
+  "Sumas acumuladas (1)": {
+   "aprobadas": 10,
+   "evaluadas": 10,
+   "p_min": 0.014462617762882508
+  },
+  "Sumas acumuladas (2)": {
+   "aprobadas": 10,
+   "evaluadas": 10,
+   "p_min": 0.01633818340715626
+  },
+  "Transformada discreta de Fourier": {
+   "aprobadas": 10,
+   "evaluadas": 10,
+   "p_min": 0.035601647421451055
+  },
+  "Entropía aproximada": {
+   "aprobadas": 10,
+   "evaluadas": 10,
+   "p_min": 0.13440778674854328
+  },
+  "Serial (1)": {
+   "aprobadas": 10,
+   "evaluadas": 10,
+   "p_min": 0.1557282746838459
+  },
+  "Serial (2)": {
+   "aprobadas": 10,
+   "evaluadas": 10,
+   "p_min": 0.046630566758633356
+  }
+ },
+ "detalle": [
+  {
+   "tipo": "flujo",
+   "clave": [
+    0.123456,
+    3.999952,
+    6173
+   ],
+   "unos": 0.498721,
+   "p": {
+    "Frecuencia (monobit)": 0.010527609226101905,
+    "Frecuencia en bloques": 0.19661866626083987,
+    "Rachas": 0.02578256786176291,
+    "Racha más larga de unos en un bloque": 0.6393999056823694,
+    "Sumas acumuladas (1)": 0.012176137097116527,
+    "Sumas acumuladas (2)": 0.010771761228015382,
+    "Transformada discreta de Fourier": 0.8114216873980027,
+    "Entropía aproximada": 0.3791141177199682,
+    "Serial (1)": 0.8643509575958115,
+    "Serial (2)": 0.48207403752425854
+   }
+  },
+  {
+   "tipo": "flujo",
+   "clave": [
+    0.34083454540014896,
+    3.9901273339231653,
+    2201
+   ],
+   "unos": 0.49862,
+   "p": {
+    "Frecuencia (monobit)": 0.005780136152452302,
+    "Frecuencia en bloques": 0.06784190082011997,
+    "Rachas": 0.10092308591745018,
+    "Racha más larga de unos en un bloque": 0.0007318480691993365,
+    "Sumas acumuladas (1)": 0.009022706766169402,
+    "Sumas acumuladas (2)": 0.009338739791689291,
+    "Transformada discreta de Fourier": 0.4855375919873811,
+    "Entropía aproximada": 0.00011729421852212432,
+    "Serial (1)": 0.020623157238431885,
+    "Serial (2)": 0.18834359311004562
+   }
+  },
+  {
+   "tipo": "flujo",
+   "clave": [
+    0.7280217646064917,
+    3.990743683284454,
+    4758
+   ],
+   "unos": 0.500292,
+   "p": {
+    "Frecuencia (monobit)": 0.5592203120386985,
+    "Frecuencia en bloques": 0.07474291070722884,
+    "Rachas": 0.4929280547248984,
+    "Racha más larga de unos en un bloque": 0.9095040599507533,
+    "Sumas acumuladas (1)": 0.4376897869238516,
+    "Sumas acumuladas (2)": 0.9343805829467082,
+    "Transformada discreta de Fourier": 0.4855375919873811,
+    "Entropía aproximada": 0.24015107776021552,
+    "Serial (1)": 0.23003636206551195,
+    "Serial (2)": 0.12957654538413557
+   }
+  },
+  {
+   "tipo": "flujo",
+   "clave": [
+    0.9208227597847737,
+    3.995317291571877,
+    2455
+   ],
+   "unos": 0.498319,
+   "p": {
+    "Frecuencia (monobit)": 0.0007738012359775489,
+    "Frecuencia en bloques": 0.009832893233243037,
+    "Rachas": 0.0010427386788549578,
+    "Racha más larga de unos en un bloque": 0.5943783197044357,
+    "Sumas acumuladas (1)": 0.0011548604994451733,
+    "Sumas acumuladas (2)": 0.0003875449170748983,
+    "Transformada discreta de Fourier": 0.44080363263524136,
+    "Entropía aproximada": 6.838696399097866e-06,
+    "Serial (1)": 0.006582533021749966,
+    "Serial (2)": 0.4531618784523525
+   }
+  },
+  {
+   "tipo": "flujo",
+   "clave": [
+    0.4729958697830844,
+    3.999828685842885,
+    6084
+   ],
+   "unos": 0.498985,
+   "p": {
+    "Frecuencia (monobit)": 0.04235653928534455,
+    "Frecuencia en bloques": 0.4603553431473584,
+    "Rachas": 0.6774972196155116,
+    "Racha más larga de unos en un bloque": 0.46790906999617865,
+    "Sumas acumuladas (1)": 0.0743203337186995,
+    "Sumas acumuladas (2)": 0.050052149980680305,
+    "Transformada discreta de Fourier": 0.14203342260757357,
+    "Entropía aproximada": 0.4253041239533602,
+    "Serial (1)": 0.07336044616818287,
+    "Serial (2)": 0.12761655666332333
+   }
+  },
+  {
+   "tipo": "flujo",
+   "clave": [
+    0.7563630098636788,
+    3.9952592907393956,
+    2601
+   ],
+   "unos": 0.499883,
+   "p": {
+    "Frecuencia (monobit)": 0.8149849786631618,
+    "Frecuencia en bloques": 0.008634064166275093,
+    "Rachas": 0.005675803781349144,
+    "Racha más larga de unos en un bloque": 0.47501238883057406,
+    "Sumas acumuladas (1)": 0.6642987832988498,
+    "Sumas acumuladas (2)": 0.4627266740235808,
+    "Transformada discreta de Fourier": 0.7067371399446579,
+    "Entropía aproximada": 0.041747842123901036,
+    "Serial (1)": 0.5855622689599337,
+    "Serial (2)": 0.8434466722962249
+   }
+  },
+  {
+   "tipo": "flujo",
+   "clave": [
+    0.951611667158102,
+    3.9926715006905926,
+    9785
+   ],
+   "unos": 0.499266,
+   "p": {
+    "Frecuencia (monobit)": 0.14210422290686456,
+    "Frecuencia en bloques": 0.5038569285420126,
+    "Rachas": 0.13057247560952098,
+    "Racha más larga de unos en un bloque": 0.62978496436965,
+    "Sumas acumuladas (1)": 0.2719075638610584,
+    "Sumas acumuladas (2)": 0.06279470851361028,
+    "Transformada discreta de Fourier": 0.44626281343698193,
+    "Entropía aproximada": 0.111973061106578,
+    "Serial (1)": 0.143005239581641,
+    "Serial (2)": 0.06888892091919237
+   }
+  },
+  {
+   "tipo": "flujo",
+   "clave": [
+    0.9190111876833523,
+    3.99493804254518,
+    7006
+   ],
+   "unos": 0.499769,
+   "p": {
+    "Frecuencia (monobit)": 0.6440813204486135,
+    "Frecuencia en bloques": 0.6834686893845733,
+    "Rachas": 0.06550631980635088,
+    "Racha más larga de unos en un bloque": 0.4730168110142282,
+    "Sumas acumuladas (1)": 0.9157685264466915,
+    "Sumas acumuladas (2)": 0.8280351071340091,
+    "Transformada discreta de Fourier": 0.600927021417659,
+    "Entropía aproximada": 0.1386957688892181,
+    "Serial (1)": 0.5703210920746249,
+    "Serial (2)": 0.7923587510082194
+   }
+  },
+  {
+   "tipo": "flujo",
+   "clave": [
+    0.7343683298982892,
+    3.9947023978849203,
+    9953
+   ],
+   "unos": 0.499641,
+   "p": {
+    "Frecuencia (monobit)": 0.47275728681591545,
+    "Frecuencia en bloques": 0.4232253486295525,
+    "Rachas": 0.5336027282280301,
+    "Racha más larga de unos en un bloque": 0.4447922661049851,
+    "Sumas acumuladas (1)": 0.8670071245594935,
+    "Sumas acumuladas (2)": 0.3966574863173249,
+    "Transformada discreta de Fourier": 0.7204267236121527,
+    "Entropía aproximada": 0.048205237831281465,
+    "Serial (1)": 0.07963883139284333,
+    "Serial (2)": 0.37137136083338274
+   }
+  },
+  {
+   "tipo": "flujo",
+   "clave": [
+    0.03271247374639169,
+    3.9915392504793568,
+    6999
+   ],
+   "unos": 0.499215,
+   "p": {
+    "Frecuencia (monobit)": 0.11641511127710609,
+    "Frecuencia en bloques": 0.08318496971014407,
+    "Rachas": 0.008350938180917972,
+    "Racha más larga de unos en un bloque": 0.4213313128079033,
+    "Sumas acumuladas (1)": 0.22231685870831983,
+    "Sumas acumuladas (2)": 0.02476863568118269,
+    "Transformada discreta de Fourier": 0.6529593400365595,
+    "Entropía aproximada": 0.47650468584356553,
+    "Serial (1)": 0.05624537665586621,
+    "Serial (2)": 0.05254385379197716
+   }
+  },
+  {
+   "tipo": "control",
+   "clave": null,
+   "unos": 0.501247,
+   "p": {
+    "Frecuencia (monobit)": 0.012631254445608493,
+    "Frecuencia en bloques": 0.27708800698447167,
+    "Rachas": 0.5377467770637463,
+    "Racha más larga de unos en un bloque": 0.9226622659563091,
+    "Sumas acumuladas (1)": 0.014462617762882508,
+    "Sumas acumuladas (2)": 0.01633818340715626,
+    "Transformada discreta de Fourier": 0.035601647421451055,
+    "Entropía aproximada": 0.8691952384706351,
+    "Serial (1)": 0.19424124987287505,
+    "Serial (2)": 0.18544503749425106
+   }
+  },
+  {
+   "tipo": "control",
+   "clave": null,
+   "unos": 0.500376,
+   "p": {
+    "Frecuencia (monobit)": 0.45205105878800667,
+    "Frecuencia en bloques": 0.4675998411120925,
+    "Rachas": 0.9081006861134047,
+    "Racha más larga de unos en un bloque": 0.9298586432092412,
+    "Sumas acumuladas (1)": 0.24371955675335233,
+    "Sumas acumuladas (2)": 0.7866785349911086,
+    "Transformada discreta de Fourier": 0.9414774452839101,
+    "Entropía aproximada": 0.6099298681175925,
+    "Serial (1)": 0.34476051313425593,
+    "Serial (2)": 0.20765737993430228
+   }
+  },
+  {
+   "tipo": "control",
+   "clave": null,
+   "unos": 0.500089,
+   "p": {
+    "Frecuencia (monobit)": 0.8587229757402333,
+    "Frecuencia en bloques": 0.12247416636103357,
+    "Rachas": 0.5131322052827183,
+    "Racha más larga de unos en un bloque": 0.7697085737813691,
+    "Sumas acumuladas (1)": 0.978755459945579,
+    "Sumas acumuladas (2)": 0.9897132714209732,
+    "Transformada discreta de Fourier": 0.5508540044152466,
+    "Entropía aproximada": 0.6056625442161478,
+    "Serial (1)": 0.9029758175779732,
+    "Serial (2)": 0.7450565844101043
+   }
+  },
+  {
+   "tipo": "control",
+   "clave": null,
+   "unos": 0.499271,
+   "p": {
+    "Frecuencia (monobit)": 0.14484054301594163,
+    "Frecuencia en bloques": 0.9252561011943885,
+    "Rachas": 0.7399836928133421,
+    "Racha más larga de unos en un bloque": 0.9777437081977591,
+    "Sumas acumuladas (1)": 0.20200860301216791,
+    "Sumas acumuladas (2)": 0.26360900476744403,
+    "Transformada discreta de Fourier": 0.6863806150605026,
+    "Entropía aproximada": 0.7315248163347605,
+    "Serial (1)": 0.8197801108197054,
+    "Serial (2)": 0.5602246893470547
+   }
+  },
+  {
+   "tipo": "control",
+   "clave": null,
+   "unos": 0.499227,
+   "p": {
+    "Frecuencia (monobit)": 0.1221045678211979,
+    "Frecuencia en bloques": 0.6501559233862187,
+    "Rachas": 0.10092326443619108,
+    "Racha más larga de unos en un bloque": 0.5366004422833743,
+    "Sumas acumuladas (1)": 0.2318962919042844,
+    "Sumas acumuladas (2)": 0.21610587940837167,
+    "Transformada discreta de Fourier": 0.4855375919873811,
+    "Entropía aproximada": 0.7544184537789379,
+    "Serial (1)": 0.1557282746838459,
+    "Serial (2)": 0.24311960986447825
+   }
+  },
+  {
+   "tipo": "control",
+   "clave": null,
+   "unos": 0.499386,
+   "p": {
+    "Frecuencia (monobit)": 0.21944696797795527,
+    "Frecuencia en bloques": 0.48600815090256116,
+    "Rachas": 0.430983861611942,
+    "Racha más larga de unos en un bloque": 0.3659067075770001,
+    "Sumas acumuladas (1)": 0.3344893629383939,
+    "Sumas acumuladas (2)": 0.2756008263490968,
+    "Transformada discreta de Fourier": 0.7480724512563635,
+    "Entropía aproximada": 0.27935522947501956,
+    "Serial (1)": 0.6394165576604061,
+    "Serial (2)": 0.40373835466270946
+   }
+  },
+  {
+   "tipo": "control",
+   "clave": null,
+   "unos": 0.499465,
+   "p": {
+    "Frecuencia (monobit)": 0.28461930871187846,
+    "Frecuencia en bloques": 0.20489219865518168,
+    "Rachas": 0.11384449662854544,
+    "Racha más larga de unos en un bloque": 0.24251696627257913,
+    "Sumas acumuladas (1)": 0.10771023776226543,
+    "Sumas acumuladas (2)": 0.4712789418821086,
+    "Transformada discreta de Fourier": 0.7830866243736909,
+    "Entropía aproximada": 0.13440778674854328,
+    "Serial (1)": 0.5841633550479853,
+    "Serial (2)": 0.5650090924135615
+   }
+  },
+  {
+   "tipo": "control",
+   "clave": null,
+   "unos": 0.499869,
+   "p": {
+    "Frecuencia (monobit)": 0.7933214421889863,
+    "Frecuencia en bloques": 0.5303715787657858,
+    "Rachas": 0.9473231711407474,
+    "Racha más larga de unos en un bloque": 0.9154884814319669,
+    "Sumas acumuladas (1)": 0.98060253748055,
+    "Sumas acumuladas (2)": 0.8147580927333777,
+    "Transformada discreta de Fourier": 0.07964729774559348,
+    "Entropía aproximada": 0.8918058568106837,
+    "Serial (1)": 0.16314626871402393,
+    "Serial (2)": 0.046630566758633356
+   }
+  },
+  {
+   "tipo": "control",
+   "clave": null,
+   "unos": 0.500302,
+   "p": {
+    "Frecuencia (monobit)": 0.5458436421715613,
+    "Frecuencia en bloques": 0.39560834752116436,
+    "Rachas": 0.3348628791125672,
+    "Racha más larga de unos en un bloque": 0.40218390989585806,
+    "Sumas acumuladas (1)": 0.5984284354861931,
+    "Sumas acumuladas (2)": 0.8453382137276586,
+    "Transformada discreta de Fourier": 0.8905174796760388,
+    "Entropía aproximada": 0.5243391761081851,
+    "Serial (1)": 0.6601309074956946,
+    "Serial (2)": 0.17037040406819554
+   }
+  },
+  {
+   "tipo": "control",
+   "clave": null,
+   "unos": 0.499477,
+   "p": {
+    "Frecuencia (monobit)": 0.29556103239012455,
+    "Frecuencia en bloques": 0.8875997234630066,
+    "Rachas": 0.7017892378183771,
+    "Racha más larga de unos en un bloque": 0.00815820486611368,
+    "Sumas acumuladas (1)": 0.4236998879591828,
+    "Sumas acumuladas (2)": 0.5230337591977499,
+    "Transformada discreta de Fourier": 0.09857669828582087,
+    "Entropía aproximada": 0.7491072599891003,
+    "Serial (1)": 0.42088782128452606,
+    "Serial (2)": 0.34262403030615357
+   }
+  }
+ ]
+}
